@@ -1,0 +1,6 @@
+# Local AI runtime state
+.atl/
+
+# Internal team workflow (not for client)
+openspec/
+AGENTS.md
