@@ -7,8 +7,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 // Testing Library: renderizado y simulación de interacciones.
 import { fireEvent, render, screen } from '@testing-library/react';
-// Componente de modal de bienvenida.
-import WelcomeModal from './components/WelcomeModal.jsx';
 // Página principal de ClientView para probar la integración real.
 import ClientPage from './pages/ClientPage.jsx';
 

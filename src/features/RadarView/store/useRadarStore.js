@@ -71,6 +71,11 @@ export const useRadarStore = create((set, get) => ({
 
   // Carga los datos generales del radar desde la capa de servicio.
   loadRadarData: async () => {
+    // Si ya existen mesas cargadas (ej. fixture inyectado por test), no sobrescribe.
+    if (get().tables.length > 0) {
+      set({ loading: false });
+      return;
+    }
     // Solicita mesas y resúmenes al servicio del radar.
     const overview = await fetchRadarOverview();
     // Actualiza las mesas en el estado y finaliza la carga.

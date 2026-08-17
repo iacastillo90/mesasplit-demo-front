@@ -11,8 +11,6 @@ import { render, screen } from '@testing-library/react';
 import { selectCostoPrimario, useCorporateStore } from './store/useCorporateStore.js';
 // Componente de tarjeta de costo primario.
 import CostoPrimarioCard from './components/CostoPrimarioCard.jsx';
-// Página principal de Super Admin.
-import SuperAdminPage from './pages/SuperAdminPage.jsx';
 
 describe('costo-primario: Indicador de Costo Primario read-only (Super Admin)', () => {
   beforeEach(() => {
