@@ -3,6 +3,7 @@
 // Cumple con las reglas obligatorias de AGENTS.md (comentarios en español por cada línea).
 
 import { useState } from 'react';
+import { useAudioSynth } from '../../hooks/useAudioSynth.js';
 
 export default function AppHeader({ title = 'MesaSplit', subtitle, currentRoute = '/', theme = 'light' }) {
   // Estado local para abrir el menú hamburguesa desplegable.
@@ -20,6 +21,7 @@ export default function AppHeader({ title = 'MesaSplit', subtitle, currentRoute 
   ];
 
   const isDark = theme === 'dark';
+  const { isMuted, toggleMute } = useAudioSynth();
 
   return (
     <header
@@ -56,6 +58,20 @@ export default function AppHeader({ title = 'MesaSplit', subtitle, currentRoute 
 
       {/* Lado Derecho: Conexión Realtime e Indicador de Estado */}
       <div className="flex items-center gap-2">
+        {/* Botón Toggle de Silencio Auditivo Global */}
+        <button
+          type="button"
+          onClick={toggleMute}
+          title={isMuted ? 'Activar sonido' : 'Silenciar sonido'}
+          className={`flex h-8 w-8 items-center justify-center rounded-xl border text-xs transition active:scale-95 cursor-pointer ${
+            isMuted
+              ? 'bg-rose-50 text-rose-600 border-rose-200'
+              : 'bg-emerald-50 text-emerald-600 border-emerald-200'
+          }`}
+        >
+          {isMuted ? '🔇' : '🔊'}
+        </button>
+
         <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1 text-[11px] font-semibold text-emerald-600 border border-emerald-500/20">
           <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
           Realtime Activo
