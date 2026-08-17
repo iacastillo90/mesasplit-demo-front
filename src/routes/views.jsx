@@ -15,6 +15,9 @@ export const PortalView = lazy(() => import('../features/Portal/pages/PortalPage
 // Slice: src/features/ClientView (task 2.5).
 export const ClientView = lazy(() => import('../features/ClientView/pages/ClientPage.jsx'));
 
+// Vista dedicada de comanda y carrito del cliente ("/cliente/carrito").
+export const ClientCartView = lazy(() => import('../features/ClientView/pages/ClientCartPage.jsx'));
+
 // Vista del garzón ("/garzon"): grilla de mesas y pad de comanda.
 // Slice: src/features/WaiterView (task 2.6).
 export const WaiterView = lazy(() => import('../features/WaiterView/pages/WaiterPage.jsx'));

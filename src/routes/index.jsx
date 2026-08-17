@@ -16,6 +16,7 @@ import NotFoundPage from '../app/NotFoundPage.jsx';
 // Vistas de la tabla (placeholders temporales hasta PR 3).
 import {
   ClientView,
+  ClientCartView,
   KdsView,
   PortalView,
   PosView,
@@ -48,6 +49,11 @@ export const routes = [
   {
     path: '/cliente',
     element: withSuspense(<ClientView />),
+  },
+  // Ruta de la comanda y carrito del cliente.
+  {
+    path: '/cliente/carrito',
+    element: withSuspense(<ClientCartView />),
   },
   // Ruta del Waiter (garzón).
   {

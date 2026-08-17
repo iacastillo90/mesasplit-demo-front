@@ -37,13 +37,16 @@ export function calculateEqualShares(total, count) {
   return applyLargestRemainder(exact, total);
 }
 
-// Deriva los comensales numerados Comensal 1..N sin registro.
+// Lista de nombres realistas para la experiencia multi-comensal.
+const DEMO_GUEST_NAMES = ['Ignacio (Tú)', 'Valentina', 'Matías', 'Camila', 'Sofía', 'Felipe'];
+
+// Deriva los comensales numerados o nombrados.
 export function buildGuests(count) {
   const safeCount = Math.max(0, count);
   return Array.from({ length: safeCount }, (_, index) => ({
     id: `guest-${index + 1}`,
-    label: `Comensal ${index + 1}`,
-    name: `Comensal ${index + 1}`,
+    label: DEMO_GUEST_NAMES[index] ?? `Comensal ${index + 1}`,
+    name: DEMO_GUEST_NAMES[index] ?? `Comensal ${index + 1}`,
     status: 'pending',
   }));
 }
@@ -110,7 +113,7 @@ export function splitByMode(firstArg, secondArg = 2, thirdArg = 'full', fourthAr
       return [
         {
           id: 'guest-1',
-          name: 'Comensal 1 (Total)',
+          name: 'Ignacio (Tú - Total)',
           amount: total,
           status: 'pending',
         },
@@ -120,7 +123,7 @@ export function splitByMode(firstArg, secondArg = 2, thirdArg = 'full', fourthAr
     const shares = calculateEqualShares(total, count);
     return shares.map((amount, idx) => ({
       id: `guest-${idx + 1}`,
-      name: `Comensal ${idx + 1}`,
+      name: DEMO_GUEST_NAMES[idx] ?? `Comensal ${idx + 1}`,
       amount,
       status: 'pending',
     }));

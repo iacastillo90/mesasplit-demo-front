@@ -6,6 +6,7 @@
 
 // useEffect: dispara la carga inicial del menú al montar la vista.
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 // Toast base: aviso al agregar un plato al carrito (success).
 import { Badge, Button, Toast } from '../../../shared/ui/index.js';
 // formatCurrency: precio de cada ítem del menú en CLP.
@@ -209,6 +210,13 @@ export default function ClientPage() {
               >
                 📅 Reservas
               </button>
+              {/* Botón para navegar a la vista dedicada de carrito interactivo. */}
+              <Link
+                to="/cliente/carrito"
+                className="rounded-full bg-sky-500/10 px-3 py-1 text-xs font-bold text-sky-700 hover:bg-sky-500/20 border border-sky-300 transition active:scale-95 flex items-center gap-1"
+              >
+                🛒 Ir a Comanda ({cartCount})
+              </Link>
               {/* Badge con el código QR de la sesión (identidad de la mesa). */}
               <Badge variant="brand">Código {tableContext?.code ?? '••••'}</Badge>
             </div>
