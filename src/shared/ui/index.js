@@ -19,4 +19,6 @@ export { default as AppFooter } from './AppFooter.jsx';
 export { default as AdminLayout } from './AdminLayout.jsx';
 // Re-exporta la barra flotante de simulación demo control.
 export { default as DemoControlBar } from './DemoControlBar.jsx';
+// Re-exporta el visualizador de plano de mesas 3D isométrico.
+export { default as IsometricTableGrid3D } from './IsometricTableGrid3D.jsx';
 
