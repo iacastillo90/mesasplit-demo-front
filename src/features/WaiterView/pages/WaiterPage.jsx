@@ -17,6 +17,12 @@ import TableGrid from '../components/TableGrid.jsx';
 import OrderPad from '../components/OrderPad.jsx';
 // Bus en tiempo real para suscribirse al evento call.waiter (S.O.S. de cliente).
 import { createRealtimeBus } from '../../../hooks/useRealtimeBus.js';
+// Selector puro de rendimiento del garzón (waiter-performance).
+import { selectWaiterPerformance } from '../services/performanceService.js';
+// Tarjeta presentacional de rendimiento.
+import WaiterPerformanceCard from '../components/WaiterPerformanceCard.jsx';
+// Store demo global para leer la lista de usuarios.
+import { useDemoStore } from '../../../store/useDemoStore.js';
 
 // Instancia del bus de eventos para la vista del garzón.
 const bus = createRealtimeBus('mesasplit');
@@ -33,6 +39,9 @@ export default function WaiterPage({ bus: busProp }) {
   const orderDraft = useWaiterStore((s) => s.orderDraft);
   const selectedCourse = useWaiterStore((s) => s.selectedCourse);
   const toastMessage = useWaiterStore((s) => s.toastMessage);
+
+  // Lista de usuarios para el selector de rendimiento.
+  const users = useDemoStore((s) => s.users);
 
   // Acciones expuestas por el store.
   const clockIn = useWaiterStore((s) => s.clockIn);
@@ -176,11 +185,16 @@ export default function WaiterPage({ bus: busProp }) {
           </div>
         )}
 
-        {/* Grilla de mesas asignadas con semáforos de estado. */}
+        {/* Grilla de selección de mesa asignada al garzón. */}
         <TableGrid
           tables={tables}
           selectedTableId={selectedTableId}
           onSelectTable={selectTable}
+        />
+
+        {/* Tarjeta de rendimiento del garzón en turno (waiter-performance). */}
+        <WaiterPerformanceCard
+          performance={selectWaiterPerformance('pedro-soto', users, tables)}
         />
 
         {/* Panel de la comanda y catálogo táctil de la mesa seleccionada. */}
