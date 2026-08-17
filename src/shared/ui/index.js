@@ -15,3 +15,5 @@ export { default as Toast } from './Toast.jsx';
 export { default as AppHeader } from './AppHeader.jsx';
 // Re-exporta el pie de página universal.
 export { default as AppFooter } from './AppFooter.jsx';
+// Re-exporta el layout universal de administración.
+export { default as AdminLayout } from './AdminLayout.jsx';

@@ -1,7 +1,7 @@
 // src/features/CorporateView/pages/SuperAdminPage.jsx — Panel Corporativo Super Admin Multi-Local (super-admin-corporate)
 // Vista "/admin/super" del spec super-admin-corporate: resumen de KPIs de la franquicia en CLP ($1.850.000+),
 // tarjetas de salud operacional por sucursal, reglas globales, compliance fiscal, gráficos en tiempo real, simulador What-If y matriz de menú.
-// Layout Fijo Responsivo: Sidebar fijo a la izquierda (h-full), Header/Footer fijos, scroll solo en main.
+// Utiliza AdminLayout con Sidebar Fijo a la izquierda (sm:flex), Header/Footer fijos y main scrollable.
 // Cumple estrictamente con las reglas obligatorias de AGENTS.md (comentarios por cada línea).
 
 import { useEffect, useState } from 'react';
@@ -15,7 +15,7 @@ import ComplianceSiiPanel from '../components/ComplianceSiiPanel.jsx';
 import WhatIfSimulator from '../components/WhatIfSimulator.jsx';
 import MenuEngineeringMatrix from '../components/MenuEngineeringMatrix.jsx';
 import RealtimeSalesChart from '../components/RealtimeSalesChart.jsx';
-import { AppHeader, AppFooter } from '../../../shared/ui/index.js';
+import { AdminLayout } from '../../../shared/ui/index.js';
 
 export default function SuperAdminPage() {
   const branches = useCorporateStore((s) => s.branches);
@@ -23,11 +23,7 @@ export default function SuperAdminPage() {
   const franchiseEvents = useCorporateStore((s) => s.franchiseEvents);
   const loading = useCorporateStore((s) => s.loading);
 
-  // Tab activo del menú lateral corporativo. 'all' muestra todas las secciones.
   const [activeTab, setActiveTab] = useState('all');
-
-  // Estado del menú lateral desplegable en móviles/tablets.
-  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   const loadCorporateData = useCorporateStore((s) => s.loadCorporateData);
   const toggleFeature = useCorporateStore((s) => s.toggleFeature);
@@ -43,7 +39,6 @@ export default function SuperAdminPage() {
   const totalActiveTables = branches.reduce((acc, b) => acc + (b.activeTables ?? 0), 0);
   const totalStaff = branches.reduce((acc, b) => acc + (b.activeStaff ?? 0), 0);
 
-  // Pestañas del Menú Lateral Corporativo.
   const navTabs = [
     { id: 'all', label: '🌐 Vista Completa', subtitle: 'Todas las métricas y módulos' },
     { id: 'kpis', label: '📊 Resumen & Sucursales', subtitle: 'KPIs globales y estado por local' },
@@ -55,294 +50,181 @@ export default function SuperAdminPage() {
   ];
 
   return (
-    // LAYOUT FIXTURE CONTENEDOR DE PANTALLA COMPLETA (h-screen overflow-hidden)
-    <div className="flex flex-col h-screen overflow-hidden bg-brand-50 text-brand-900">
-      {/* CABECERA FIJA SUPERIOR */}
-      <AppHeader title="Super Admin Corporativo" subtitle="Multi-Local" currentRoute="/admin/super" theme="light" />
+    <AdminLayout
+      currentRoute="/admin/super"
+      title="Super Admin Corporativo"
+      subtitle="Multi-Local"
+      theme="light"
+      sectionTabs={navTabs}
+      activeTab={activeTab}
+      onSelectTab={setActiveTab}
+    >
+      {/* Cabecera Corporativa */}
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-brand-200 pb-4 bg-white p-4 rounded-2xl border shadow-soft">
+        <div>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold text-brand-900">Panel Corporativo Multi-Local</h1>
+            <span className="rounded-full bg-brand-500/10 px-3 py-0.5 text-xs font-bold text-brand-500 border border-brand-500/20">
+              Super Admin
+            </span>
+          </div>
+          <p className="text-xs text-brand-800/70">Supervisión ejecutiva de red de restaurantes y franquicias</p>
+        </div>
 
-      {/* ÁREA CENTRAL FLEXIBLE (SIDEBAR FIJO IZQUIERDO + MAIN SCROLLABLE) */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* SIDEBAR DESKTOP FIJO A LA IZQUIERDA (h-full overflow-y-auto) */}
-        <aside className="hidden md:flex w-64 shrink-0 flex-col justify-between border-r border-brand-200 bg-white p-4 h-full overflow-y-auto shadow-soft">
-          <div className="flex flex-col gap-5">
-            <div className="flex items-center justify-between border-b border-brand-200 pb-3">
-              <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-brand-500">MesaSplit Franquicia</span>
-                <h2 className="text-lg font-bold text-brand-900 leading-tight">Super Admin</h2>
-              </div>
-              <span className="rounded-full bg-brand-500/10 px-2.5 py-0.5 text-[10px] font-extrabold text-brand-500 border border-brand-500/20">
-                Corporativo
-              </span>
+        <a
+          href="/admin"
+          onClick={(e) => {
+            if (typeof window !== 'undefined' && window.history?.pushState) {
+              e.preventDefault();
+              window.history.pushState({}, '', '/admin');
+              window.dispatchEvent(new PopStateEvent('popstate'));
+            }
+          }}
+          className="inline-flex items-center gap-2 rounded-xl bg-brand-900 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-brand-800 active:scale-95 shadow-soft"
+        >
+          ← Volver a Radar Local
+        </a>
+      </header>
+
+      {/* TAB ALL */}
+      {activeTab === 'all' && (
+        <div className="flex flex-col gap-6">
+          <section aria-label="Resumen de KPIs Corporativos" className="grid grid-cols-1 gap-4 sm:grid-cols-4">
+            <div className="flex flex-col rounded-2xl bg-white p-5 shadow-soft border border-brand-200">
+              <span className="text-xs font-bold text-brand-800/60 uppercase tracking-wider">Ventas Franquicia</span>
+              <span className="text-2xl font-extrabold text-brand-900 mt-1">{formatCurrency(totalSales)}</span>
+              <span className="text-[11px] text-emerald-600 font-semibold mt-1">↑ +14.2% vs ayer</span>
             </div>
 
-            <nav className="flex flex-col gap-1.5" aria-label="Navegación Corporativa">
-              {navTabs.map((tab) => {
-                const isActive = activeTab === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`flex flex-col items-start rounded-xl p-3 text-left transition cursor-pointer ${
-                      isActive
-                        ? 'bg-brand-900 text-white font-bold shadow-md'
-                        : 'text-brand-800 hover:bg-brand-100/80'
-                    }`}
-                  >
-                    <span className="text-xs font-bold">{tab.label}</span>
-                    <span className={`text-[10px] ${isActive ? 'text-white/80' : 'text-brand-800/50'}`}>
-                      {tab.subtitle}
-                    </span>
-                  </button>
-                );
-              })}
-            </nav>
-          </div>
-
-          <div className="border-t border-brand-200 pt-4 flex flex-col gap-2">
-            <a
-              href="/admin"
-              onClick={(e) => {
-                if (typeof window !== 'undefined' && window.history?.pushState) {
-                  e.preventDefault();
-                  window.history.pushState({}, '', '/admin');
-                  window.dispatchEvent(new PopStateEvent('popstate'));
-                }
-              }}
-              className="flex items-center justify-center gap-2 rounded-xl bg-brand-100 p-2.5 text-xs font-bold text-brand-900 hover:bg-brand-200 transition border border-brand-200"
-            >
-              ← Volver a Radar Local
-            </a>
-          </div>
-        </aside>
-
-        {/* SIDEBAR DESPLEGABLE EN MÓVILES Y TABLETS */}
-        {mobileSidebarOpen && (
-          <div className="md:hidden fixed inset-0 z-50 flex bg-brand-950/60 backdrop-blur-xs p-4 animate-in fade-in">
-            <div className="w-full max-w-xs rounded-2xl bg-white p-5 shadow-2xl border border-brand-200 flex flex-col justify-between gap-4">
-              <div className="flex flex-col gap-4">
-                <div className="flex items-center justify-between border-b border-brand-200 pb-3">
-                  <h3 className="font-bold text-sm text-brand-900 uppercase">Secciones Corporativas</h3>
-                  <button
-                    type="button"
-                    onClick={() => setMobileSidebarOpen(false)}
-                    className="rounded-xl bg-brand-100 px-2 py-1 text-xs font-bold"
-                  >
-                    ✕
-                  </button>
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  {navTabs.map((tab) => (
-                    <button
-                      key={tab.id}
-                      type="button"
-                      onClick={() => {
-                        setActiveTab(tab.id);
-                        setMobileSidebarOpen(false);
-                      }}
-                      className={`rounded-xl p-3 text-left text-xs font-bold transition ${
-                        activeTab === tab.id ? 'bg-brand-900 text-white' : 'bg-brand-50 text-brand-900'
-                      }`}
-                    >
-                      {tab.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* CONTENIDO PRINCIPAL (ÚNICO ELEMENTO QUE HACE SCROLL VERTICAL) */}
-        <main className="flex-1 h-full overflow-y-auto p-4 lg:p-6">
-          <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-            {/* BOTÓN DESPLEGABLE MÓVIL/TABLET */}
-            <div className="md:hidden flex items-center justify-between rounded-xl bg-white p-3 border border-brand-200 shadow-soft">
-              <span className="text-xs font-bold text-brand-900">Sección: {navTabs.find((t) => t.id === activeTab)?.label}</span>
-              <button
-                type="button"
-                onClick={() => setMobileSidebarOpen(true)}
-                className="rounded-lg bg-brand-900 px-3 py-1.5 text-xs font-bold text-white"
-              >
-                📋 Menú Secciones
-              </button>
+            <div className="flex flex-col rounded-2xl bg-white p-5 shadow-soft border border-brand-200">
+              <span className="text-xs font-bold text-brand-800/60 uppercase tracking-wider">Sucursales Activas</span>
+              <span className="text-2xl font-extrabold text-brand-900 mt-1">{branches.length} locales</span>
+              <span className="text-[11px] text-brand-800/60 mt-1">Santiago, Chile</span>
             </div>
 
-            {/* Cabecera Corporativa */}
-            <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-brand-200 pb-4 bg-white p-4 rounded-2xl border shadow-soft">
-              <div>
-                <div className="flex items-center gap-3">
-                  <h1 className="text-2xl font-bold text-brand-900">Panel Corporativo Multi-Local</h1>
-                  <span className="rounded-full bg-brand-500/10 px-3 py-0.5 text-xs font-bold text-brand-500 border border-brand-500/20">
-                    Super Admin
-                  </span>
-                </div>
-                <p className="text-xs text-brand-800/70">Supervisión ejecutiva de red de restaurantes y franquicias</p>
-              </div>
+            <div className="flex flex-col rounded-2xl bg-white p-5 shadow-soft border border-brand-200">
+              <span className="text-xs font-bold text-brand-800/60 uppercase tracking-wider">Mesas Ocupadas Red</span>
+              <span className="text-2xl font-extrabold text-brand-500 mt-1">{totalActiveTables} mesas</span>
+              <span className="text-[11px] text-brand-800/60 mt-1">En tiempo real</span>
+            </div>
 
-              <a
-                href="/admin"
-                onClick={(e) => {
-                  if (typeof window !== 'undefined' && window.history?.pushState) {
-                    e.preventDefault();
-                    window.history.pushState({}, '', '/admin');
-                    window.dispatchEvent(new PopStateEvent('popstate'));
-                  }
-                }}
-                className="inline-flex items-center gap-2 rounded-xl bg-brand-900 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-brand-800 active:scale-95 shadow-soft"
-              >
-                ← Volver a Radar Local
-              </a>
-            </header>
+            <div className="flex flex-col rounded-2xl bg-white p-5 shadow-soft border border-brand-200">
+              <span className="text-xs font-bold text-brand-800/60 uppercase tracking-wider">Personal en Turno</span>
+              <span className="text-2xl font-extrabold text-brand-900 mt-1">{totalStaff} mozos/caja</span>
+              <span className="text-[11px] text-emerald-600 font-semibold mt-1">Ley 40h Vigente</span>
+            </div>
+          </section>
 
-            {/* SECCIONES RESPONSIVAS DE CONTENIDO */}
+          <RealtimeSalesChart branches={branches} />
+          <CostoPrimarioCard />
 
-            {/* TAB ALL: Render completo e integrado */}
-            {activeTab === 'all' && (
-              <div className="flex flex-col gap-6">
-                <section aria-label="Resumen de KPIs Corporativos" className="grid grid-cols-1 gap-4 sm:grid-cols-4">
-                  <div className="flex flex-col rounded-2xl bg-white p-5 shadow-soft border border-brand-200">
-                    <span className="text-xs font-bold text-brand-800/60 uppercase tracking-wider">Ventas Franquicia</span>
-                    <span className="text-2xl font-extrabold text-brand-900 mt-1">{formatCurrency(totalSales)}</span>
-                    <span className="text-[11px] text-emerald-600 font-semibold mt-1">↑ +14.2% vs ayer</span>
-                  </div>
+          <section aria-label="Estado por Sucursal" className="flex flex-col gap-3">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-brand-800/70">
+              Salud Operacional por Sucursal ({branches.length})
+            </h2>
 
-                  <div className="flex flex-col rounded-2xl bg-white p-5 shadow-soft border border-brand-200">
-                    <span className="text-xs font-bold text-brand-800/60 uppercase tracking-wider">Sucursales Activas</span>
-                    <span className="text-2xl font-extrabold text-brand-900 mt-1">{branches.length} locales</span>
-                    <span className="text-[11px] text-brand-800/60 mt-1">Santiago, Chile</span>
-                  </div>
-
-                  <div className="flex flex-col rounded-2xl bg-white p-5 shadow-soft border border-brand-200">
-                    <span className="text-xs font-bold text-brand-800/60 uppercase tracking-wider">Mesas Ocupadas Red</span>
-                    <span className="text-2xl font-extrabold text-brand-500 mt-1">{totalActiveTables} mesas</span>
-                    <span className="text-[11px] text-brand-800/60 mt-1">En tiempo real</span>
-                  </div>
-
-                  <div className="flex flex-col rounded-2xl bg-white p-5 shadow-soft border border-brand-200">
-                    <span className="text-xs font-bold text-brand-800/60 uppercase tracking-wider">Personal en Turno</span>
-                    <span className="text-2xl font-extrabold text-brand-900 mt-1">{totalStaff} mozos/caja</span>
-                    <span className="text-[11px] text-emerald-600 font-semibold mt-1">Ley 40h Vigente</span>
-                  </div>
-                </section>
-
-                <RealtimeSalesChart branches={branches} />
-                <CostoPrimarioCard />
-
-                <section aria-label="Estado por Sucursal" className="flex flex-col gap-3">
-                  <h2 className="text-xs font-bold uppercase tracking-wider text-brand-800/70">
-                    Salud Operacional por Sucursal ({branches.length})
-                  </h2>
-
-                  {loading ? (
-                    <p className="py-8 text-center text-xs text-brand-800/60">Cargando métricas de sucursales…</p>
-                  ) : (
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                      {branches.map((branch) => (
-                        <BranchHealthCard key={branch.id} branch={branch} />
-                      ))}
-                    </div>
-                  )}
-                </section>
-
-                <GlobalConfigToggles featureToggles={featureToggles} onToggleFeature={toggleFeature} />
-                <ComplianceSiiPanel />
-                <WhatIfSimulator />
-                <MenuEngineeringMatrix />
-                <FranchiseEventStream franchiseEvents={franchiseEvents} />
+            {loading ? (
+              <p className="py-8 text-center text-xs text-brand-800/60">Cargando métricas de sucursales…</p>
+            ) : (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {branches.map((branch) => (
+                  <BranchHealthCard key={branch.id} branch={branch} />
+                ))}
               </div>
             )}
+          </section>
 
-            {/* TAB KPIS */}
-            {activeTab === 'kpis' && (
-              <div className="flex flex-col gap-6">
-                <section aria-label="Resumen de KPIs Corporativos" className="grid grid-cols-1 gap-4 sm:grid-cols-4">
-                  <div className="flex flex-col rounded-2xl bg-white p-5 shadow-soft border border-brand-200">
-                    <span className="text-xs font-bold text-brand-800/60 uppercase tracking-wider">Ventas Franquicia</span>
-                    <span className="text-2xl font-extrabold text-brand-900 mt-1">{formatCurrency(totalSales)}</span>
-                    <span className="text-[11px] text-emerald-600 font-semibold mt-1">↑ +14.2% vs ayer</span>
-                  </div>
+          <GlobalConfigToggles featureToggles={featureToggles} onToggleFeature={toggleFeature} />
+          <ComplianceSiiPanel />
+          <WhatIfSimulator />
+          <MenuEngineeringMatrix />
+          <FranchiseEventStream franchiseEvents={franchiseEvents} />
+        </div>
+      )}
 
-                  <div className="flex flex-col rounded-2xl bg-white p-5 shadow-soft border border-brand-200">
-                    <span className="text-xs font-bold text-brand-800/60 uppercase tracking-wider">Sucursales Activas</span>
-                    <span className="text-2xl font-extrabold text-brand-900 mt-1">{branches.length} locales</span>
-                    <span className="text-[11px] text-brand-800/60 mt-1">Santiago, Chile</span>
-                  </div>
+      {/* TAB KPIS */}
+      {activeTab === 'kpis' && (
+        <div className="flex flex-col gap-6">
+          <section aria-label="Resumen de KPIs Corporativos" className="grid grid-cols-1 gap-4 sm:grid-cols-4">
+            <div className="flex flex-col rounded-2xl bg-white p-5 shadow-soft border border-brand-200">
+              <span className="text-xs font-bold text-brand-800/60 uppercase tracking-wider">Ventas Franquicia</span>
+              <span className="text-2xl font-extrabold text-brand-900 mt-1">{formatCurrency(totalSales)}</span>
+              <span className="text-[11px] text-emerald-600 font-semibold mt-1">↑ +14.2% vs ayer</span>
+            </div>
 
-                  <div className="flex flex-col rounded-2xl bg-white p-5 shadow-soft border border-brand-200">
-                    <span className="text-xs font-bold text-brand-800/60 uppercase tracking-wider">Mesas Ocupadas Red</span>
-                    <span className="text-2xl font-extrabold text-brand-500 mt-1">{totalActiveTables} mesas</span>
-                    <span className="text-[11px] text-brand-800/60 mt-1">En tiempo real</span>
-                  </div>
+            <div className="flex flex-col rounded-2xl bg-white p-5 shadow-soft border border-brand-200">
+              <span className="text-xs font-bold text-brand-800/60 uppercase tracking-wider">Sucursales Activas</span>
+              <span className="text-2xl font-extrabold text-brand-900 mt-1">{branches.length} locales</span>
+              <span className="text-[11px] text-brand-800/60 mt-1">Santiago, Chile</span>
+            </div>
 
-                  <div className="flex flex-col rounded-2xl bg-white p-5 shadow-soft border border-brand-200">
-                    <span className="text-xs font-bold text-brand-800/60 uppercase tracking-wider">Personal en Turno</span>
-                    <span className="text-2xl font-extrabold text-brand-900 mt-1">{totalStaff} mozos/caja</span>
-                    <span className="text-[11px] text-emerald-600 font-semibold mt-1">Ley 40h Vigente</span>
-                  </div>
-                </section>
+            <div className="flex flex-col rounded-2xl bg-white p-5 shadow-soft border border-brand-200">
+              <span className="text-xs font-bold text-brand-800/60 uppercase tracking-wider">Mesas Ocupadas Red</span>
+              <span className="text-2xl font-extrabold text-brand-500 mt-1">{totalActiveTables} mesas</span>
+              <span className="text-[11px] text-brand-800/60 mt-1">En tiempo real</span>
+            </div>
 
-                <section aria-label="Estado por Sucursal" className="flex flex-col gap-3">
-                  <h2 className="text-xs font-bold uppercase tracking-wider text-brand-800/70">
-                    Salud Operacional por Sucursal ({branches.length})
-                  </h2>
+            <div className="flex flex-col rounded-2xl bg-white p-5 shadow-soft border border-brand-200">
+              <span className="text-xs font-bold text-brand-800/60 uppercase tracking-wider">Personal en Turno</span>
+              <span className="text-2xl font-extrabold text-brand-900 mt-1">{totalStaff} mozos/caja</span>
+              <span className="text-[11px] text-emerald-600 font-semibold mt-1">Ley 40h Vigente</span>
+            </div>
+          </section>
 
-                  {loading ? (
-                    <p className="py-8 text-center text-xs text-brand-800/60">Cargando métricas de sucursales…</p>
-                  ) : (
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                      {branches.map((branch) => (
-                        <BranchHealthCard key={branch.id} branch={branch} />
-                      ))}
-                    </div>
-                  )}
-                </section>
+          <section aria-label="Estado por Sucursal" className="flex flex-col gap-3">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-brand-800/70">
+              Salud Operacional por Sucursal ({branches.length})
+            </h2>
+
+            {loading ? (
+              <p className="py-8 text-center text-xs text-brand-800/60">Cargando métricas de sucursales…</p>
+            ) : (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {branches.map((branch) => (
+                  <BranchHealthCard key={branch.id} branch={branch} />
+                ))}
               </div>
             )}
+          </section>
+        </div>
+      )}
 
-            {/* TAB CHARTS */}
-            {activeTab === 'charts' && (
-              <div className="w-full">
-                <RealtimeSalesChart branches={branches} />
-              </div>
-            )}
+      {/* TAB CHARTS */}
+      {activeTab === 'charts' && (
+        <div className="w-full">
+          <RealtimeSalesChart branches={branches} />
+        </div>
+      )}
 
-            {/* TAB RULES */}
-            {activeTab === 'rules' && (
-              <div className="flex flex-col gap-6">
-                <CostoPrimarioCard />
-                <GlobalConfigToggles featureToggles={featureToggles} onToggleFeature={toggleFeature} />
-                <ComplianceSiiPanel />
-              </div>
-            )}
+      {/* TAB RULES */}
+      {activeTab === 'rules' && (
+        <div className="flex flex-col gap-6">
+          <CostoPrimarioCard />
+          <GlobalConfigToggles featureToggles={featureToggles} onToggleFeature={toggleFeature} />
+          <ComplianceSiiPanel />
+        </div>
+      )}
 
-            {/* TAB WHATIF */}
-            {activeTab === 'whatif' && (
-              <div className="w-full">
-                <WhatIfSimulator />
-              </div>
-            )}
+      {/* TAB WHATIF */}
+      {activeTab === 'whatif' && (
+        <div className="w-full">
+          <WhatIfSimulator />
+        </div>
+      )}
 
-            {/* TAB MATRIX */}
-            {activeTab === 'matrix' && (
-              <div className="w-full">
-                <MenuEngineeringMatrix />
-              </div>
-            )}
+      {/* TAB MATRIX */}
+      {activeTab === 'matrix' && (
+        <div className="w-full">
+          <MenuEngineeringMatrix />
+        </div>
+      )}
 
-            {/* TAB EVENTS */}
-            {activeTab === 'events' && (
-              <div className="w-full">
-                <FranchiseEventStream franchiseEvents={franchiseEvents} />
-              </div>
-            )}
-          </div>
-        </main>
-      </div>
-
-      {/* PIE DE PÁGINA FIJO INFERIOR */}
-      <AppFooter theme="light" />
-    </div>
+      {/* TAB EVENTS */}
+      {activeTab === 'events' && (
+        <div className="w-full">
+          <FranchiseEventStream franchiseEvents={franchiseEvents} />
+        </div>
+      )}
+    </AdminLayout>
   );
 }

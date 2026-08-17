@@ -14,8 +14,8 @@ import PaymentMethodPicker from '../components/PaymentMethodPicker.jsx';
 import DteModal from '../components/DteModal.jsx';
 import BlindCloseModal from '../components/BlindCloseModal.jsx';
 import CashShiftModal from '../components/CashShiftModal.jsx';
-// AppHeader y AppFooter compartidos.
-import { AppHeader, AppFooter } from '../../../shared/ui/index.js';
+// AdminLayout compartido.
+import { AdminLayout } from '../../../shared/ui/index.js';
 
 // Componente principal de la página del POS.
 export default function PosPage() {
@@ -119,10 +119,12 @@ export default function PosPage() {
     : 0;
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden bg-brand-50 text-brand-900">
-      <AppHeader title="Caja POS" subtitle="Punto de Venta" currentRoute="/admin/caja" theme="light" />
-      {/* Contenedor principal scrollable de la vista POS. */}
-      <main className="flex-1 h-full overflow-y-auto p-4 md:p-6">
+    <AdminLayout
+      currentRoute="/admin/caja"
+      title="Caja POS"
+      subtitle="Punto de Venta"
+      theme="light"
+    >
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
         {/* Banner de notificación cuando el turno de caja se cierra exitosamente. */}
         {shiftClosedNotice && (
@@ -293,8 +295,6 @@ export default function PosPage() {
           onClose={() => setCashShiftModalOpen(false)}
         />
       </div>
-    </main>
-    <AppFooter theme="light" />
-  </div>
-);
+    </AdminLayout>
+  );
 }
