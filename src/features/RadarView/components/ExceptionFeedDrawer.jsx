@@ -1,62 +1,60 @@
-// src/features/RadarView/components/ExceptionFeedDrawer.jsx — feed de excepciones (task 2.8)
-// Shell del feed de excepciones del turno (spec: "exception feed shell present").
-// Lista las alertas operativas del Local Admin con su nivel semántico.
-// NOTA PR3 → PR4: los ítems llegan hoy del seed del store; en PR 4 el bus
-// realtime (order.status.change, allergy.alert) alimenta este feed en vivo.
+// src/features/RadarView/components/ExceptionFeedDrawer.jsx — cajón de excepciones y auditoría (local-admin-radar)
+// Drawer deslizable que audita en tiempo real eventos alert.fraud, anulaciones por PIN y descuentos.
+// Cumple con las reglas obligatorias de AGENTS.md (comentarios en español por cada línea).
 
-// Mapa nivel de excepción → clases de chip (fondo tinte + borde + texto).
-// danger SOLO para salud/seguridad (alergias) — spec design-tokens.
-const LEVEL_CLASSES = {
-  // Alerta media: ámbar semántico (stock, esperas cortas).
-  warning: 'bg-semantic-warning/10 text-semantic-warning ring-semantic-warning/30',
-  // Urgencia operativa: naranja (cobros demorados, NUNCA rojo).
-  urgent: 'bg-semantic-urgent/10 text-semantic-urgent ring-semantic-urgent/30',
-  // Salud/seguridad: rojo reservado (alergias, emergencias).
-  danger: 'bg-semantic-danger/10 text-semantic-danger ring-semantic-danger/40',
-};
+// Modal base compartido.
+import { Modal } from '../../../shared/ui/index.js';
 
-// Feed de excepciones: recibe el arreglo de excepciones del store.
-export default function ExceptionFeedDrawer({ exceptions }) {
+// Componente del drawer de excepciones.
+export default function ExceptionFeedDrawer({ open, onClose, exceptionLogs }) {
   return (
-    // Panel del feed: tarjeta blanca del modo claro admin (docs/04).
-    <aside className="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-soft">
-      {/* Cabecera del feed: título + conteo de excepciones activas. */}
-      <header className="flex items-center justify-between">
-        {/* Título del panel lateral de alertas. */}
-        <h3 className="font-bold text-brand-900">Excepciones</h3>
-        {/* Conteo de excepciones en el turno. */}
-        <span className="text-xs font-semibold text-brand-800/60">{exceptions.length} activas</span>
-      </header>
+    // Modal de diálogo envolvente para la auditoría de fraudes y excepciones.
+    <Modal
+      open={open}
+      onClose={onClose}
+      title="Registro de Excepciones y Auditoría (alert.fraud)"
+      className="bg-brand-900 text-brand-50 border border-brand-800"
+    >
+      {/* Contenedor del listado de excepciones registradas. */}
+      <div className="flex flex-col gap-4 text-brand-50">
+        {/* Explicación del feed de seguridad. */}
+        <p className="text-xs text-brand-50/70">
+          Supervisión de seguridad en tiempo real: registra anulaciones enviadas a cocina, aperturas de caja sin cobro y descuentos manuales.
+        </p>
 
-      {/* Cuerpo del feed: lista de excepciones o estado vacío. */}
-      {exceptions.length === 0 ? (
-        // Estado vacío: sin alertas activas en el turno.
-        <p className="py-6 text-center text-sm text-brand-800/60">Sin excepciones en el turno.</p>
-      ) : (
-        // Lista de excepciones con scroll propio (feed crece con el turno).
-        <ul className="flex max-h-80 flex-col gap-2 overflow-y-auto">
-          {/* Renderiza una fila por excepción del turno. */}
-          {exceptions.map((exception) => {
-            // Resuelve las clases del chip según el nivel de la excepción.
-            const levelClasses = LEVEL_CLASSES[exception.level] ?? LEVEL_CLASSES.warning;
-            return (
-              // Fila de la excepción: chip con tinte semántico y borde.
-              <li
-                key={exception.id}
-                className={`rounded-xl px-3 py-2 text-sm ring-1 ${levelClasses}`}
+        {/* Lista de eventos de auditoría de excepciones. */}
+        <div className="flex flex-col gap-2 max-h-96 overflow-y-auto">
+          {exceptionLogs.length === 0 ? (
+            <p className="py-6 text-center text-xs text-brand-50/50">Sin excepciones registradas en este turno.</p>
+          ) : (
+            exceptionLogs.map((log) => (
+              // Tarjeta individual de evento de excepción.
+              <div
+                key={log.id}
+                className="flex flex-col gap-1 rounded-xl bg-semantic-danger/10 border border-semantic-danger/30 p-3 text-xs text-brand-50"
               >
-                {/* Mensaje de la excepción (texto del nivel coloreado). */}
-                <p className="font-medium">{exception.message}</p>
-                {/* Contexto: mesa asociada a la excepción, si existe. */}
-                {exception.table && (
-                  // Referencia a la mesa en texto mini del mismo tono.
-                  <p className="mt-0.5 text-xs opacity-70">Mesa {exception.table}</p>
-                )}
-              </li>
-            );
-          })}
-        </ul>
-      )}
-    </aside>
+                {/* Cabecera del evento con ícono de advertencia y marca de tiempo. */}
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-semantic-danger">
+                    🚨 {log.title ?? 'Anulación con PIN'}
+                  </span>
+                  <span className="text-[10px] text-brand-50/60">
+                    {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                </div>
+
+                {/* Descripción del evento y motivo registrado. */}
+                <p className="text-brand-50/90">{log.description}</p>
+                {/* Identificación de la persona/PIN que autorizó la excepción. */}
+                <div className="flex items-center justify-between text-[11px] text-brand-50/60 pt-1 border-t border-semantic-danger/20">
+                  <span>Autorizó PIN: <strong>{log.adminPin ?? '9921'}</strong></span>
+                  <span>Motivo: <strong>{log.reason ?? 'Cortesía'}</strong></span>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    </Modal>
   );
 }

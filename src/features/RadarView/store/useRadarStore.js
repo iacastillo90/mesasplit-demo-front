@@ -1,59 +1,139 @@
-// src/features/RadarView/store/useRadarStore.js — store del radar local (task 2.8)
-// Slice de estado del Local Admin (patrón FSD docs/03): mesas del salón para el
-// mapa topológico + excepciones del turno para el feed. Zustand v5 (design D6).
-// PR 4 (tasks 3.1/3.3): las mesas ya NO viven acá; el store raíz useDemoStore
-// las siembra desde src/mocks/tables.json (persist + reseteo coordinado) y
-// loadTables las lee de ese store (design: "demo store → radar"). El seed de
-// excepciones queda en el slice: no tiene fixture dedicado en los mocks.
+// src/features/RadarView/store/useRadarStore.js — store del Radar Local Admin (local-admin-radar)
+// Slice de estado de RadarView: mapa topológico, delivery omnicanal, registro de excepciones (alert.fraud),
+// Modo Hora Punta, control de mermas y botón de pánico.
+// Escucha y publica eventos en tiempo real a través de createRealtimeBus.
 
-// create: fábrica de store de Zustand v5 (hooks de React directos).
+// create: fábrica de store de Zustand v5.
 import { create } from 'zustand';
-// Store raíz de la demo: fuente de las mesas seed (persist + mocks de tables).
-import { useDemoStore } from '../../../store/useDemoStore.js';
+// Servicio de datos del radar.
+import { fetchRadarOverview } from '../services/radarService.js';
+// Instancia del bus en tiempo real de la aplicación.
+import { createRealtimeBus } from '../../../hooks/useRealtimeBus.js';
 
-// Excepciones demo del turno para el feed.
-// Cada una: id, nivel (warning/urgent/danger), mensaje y mesa asociada.
-// danger queda reservado a salud/seguridad (alergias) — spec design-tokens.
-const SEED_EXCEPTIONS = [
-  // Alerta de salud: alergia declarada en mesa 3 → SOLO rojo danger.
-  { id: 'e1', level: 'danger', message: 'Alergia a maní declarada', table: 3 },
-  // Urgencia operativa: mesa 2 esperando cobro → naranja urgent (nunca rojo).
-  { id: 'e2', level: 'urgent', message: 'Esperando cobro hace 15 min', table: 2 },
-  // Alerta media: stock bajo en barra → ámbar warning.
-  { id: 'e3', level: 'warning', message: 'Stock bajo de papas fritas', table: null },
+// Instancia única del bus para las acciones y suscripciones del radar.
+const bus = createRealtimeBus('mesasplit');
+
+// Fixture canónico inicial de comandas de delivery omnicanal.
+const INITIAL_DELIVERY = [
+  { id: 'del-1', platform: 'ubereats', customerName: 'Camila Rojas', itemsSummary: '2x Hamburguesa + Limonada', total: 15400, elapsedMinutes: 8, driverName: 'Juan P.' },
+  { id: 'del-2', platform: 'rappi', customerName: 'Ignacio Silva', itemsSummary: '1x Pizza Margherita', total: 10900, elapsedMinutes: 14, driverName: 'Rodrigo M.' },
+  { id: 'del-3', platform: 'pedidosya', customerName: 'Felipe Soto', itemsSummary: '3x Papas fritas + 2x Cerveza', total: 13500, elapsedMinutes: 22, driverName: 'Matías L.' },
 ];
 
-// Estado inicial del slice (las mesas llegan del store raíz en loadTables).
+// Fixture canónico inicial de auditorías y excepciones registradas.
+const INITIAL_EXCEPTIONS = [
+  { id: 'ex-1', title: 'Anulación de plato enviado a cocina', description: 'Item "Hamburguesa Clásica" anulado en Mesa 1 con PIN 9921', adminPin: '9921', reason: 'Cortesía', timestamp: Date.now() - 600000 },
+  { id: 'ex-2', title: 'Apertura manual de gaveta de dinero', description: 'Apertura de caja sin transacción en POS 1', adminPin: '9921', reason: 'Cambio de sencillo', timestamp: Date.now() - 1200000 },
+];
+
+// Estado inicial del store de Radar.
 const initialState = {
-  // Mesas del salón para el mapa topológico (vacías hasta loadTables).
+  // Mesas asignadas para el plano topológico.
   tables: [],
-  // Excepciones del turno para el feed lateral.
-  exceptions: SEED_EXCEPTIONS,
-  // Flag de carga: simula la preparación de datos al montar la vista.
+  // Zona seleccionada para el filtro ('todos', 'Salón', 'Terraza', 'Barra').
+  activeZone: 'todos',
+  // Lista de comandas de delivery omnicanal.
+  deliveryOrders: INITIAL_DELIVERY,
+  // Lista de auditorías y excepciones registradas.
+  exceptionLogs: INITIAL_EXCEPTIONS,
+  // Visibilidad del cajón modal de excepciones.
+  exceptionDrawerOpen: false,
+  // Indicador de activación del Modo Hora Punta (alta luminosidad/contraste).
+  focusMode: false,
+  // Registro de mermas de insumos.
+  mermaLogs: [
+    { id: 'm-1', description: '2 kilos de palta oxidadas', estimatedLoss: 7000, timestamp: Date.now() - 3600000 },
+  ],
+  // Flag de activación del Botón de Pánico de emergencia.
+  panicActive: false,
+  // Estado de carga inicial de datos.
   loading: true,
 };
 
-// Store del radar: estado + acciones que mutan ese estado.
-export const useRadarStore = create((set) => ({
-  // Estado inicial del slice.
+// Store de Zustand para el slice de RadarView.
+export const useRadarStore = create((set, get) => ({
+  // Carga las propiedades del estado inicial.
   ...initialState,
 
-  // Carga las mesas del salón desde el STORE RAÍZ (seed de tables.json).
-  loadTables: () => {
-    // Lee las mesas seed del store raíz (useDemoStore las sembró de los mocks).
-    const { tables } = useDemoStore.getState();
-    // Setea las mesas del salón y apaga el flag de carga al instante.
-    set({ tables, loading: false });
+  // Carga los datos generales del radar desde la capa de servicio.
+  loadRadarData: async () => {
+    // Solicita mesas y resúmenes al servicio del radar.
+    const overview = await fetchRadarOverview();
+    // Actualiza las mesas en el estado y finaliza la carga.
+    set({ tables: overview.tables ?? [], loading: false });
   },
 
-  // Cambia el estado de una mesa (lo consumirá el bus realtime en PR 4).
-  // Recibe el id de la mesa y el nuevo estado (enum TABLE_STATUS).
-  setTableStatus: (id, status) =>
-    set((state) => ({
-      // Mapea las mesas actualizando el estado de la indicada.
-      tables: state.tables.map((table) => (table.id === id ? { ...table, status } : table)),
-    })),
+  // Suscribe el store a eventos del bus en tiempo real (table.status_changed, alert.fraud).
+  setupRealtimeListeners: () => {
+    // Escucha cambios de estado de mesa (table.status_changed).
+    const offTableStatus = bus.subscribe('table.status_changed', (payload) => {
+      if (!payload || !payload.tableId) return;
+      const { tables } = get();
+      const updatedTables = tables.map((t) =>
+        t.id === payload.tableId ? { ...t, status: payload.status } : t,
+      );
+      set({ tables: updatedTables });
+    });
 
-  // Reinicia el slice a su estado inicial (resetDemo de PR 4 lo coordina).
+    // Escucha eventos de auditoría de fraude y excepciones (alert.fraud).
+    const offFraudAlert = bus.subscribe('alert.fraud', (payload) => {
+      if (!payload) return;
+      const newEntry = {
+        id: `ex-${Date.now()}`,
+        title: 'Anulación autorizada de comanda',
+        description: `Ítem ${payload.itemId ?? ''} anulado por el mozo`,
+        adminPin: payload.adminPin ?? '9921',
+        reason: payload.reason ?? 'Cortesía',
+        timestamp: payload.timestamp ?? Date.now(),
+      };
+      set({ exceptionLogs: [newEntry, ...get().exceptionLogs] });
+    });
+
+    // Devuelve la función de limpieza de desuscripción.
+    return () => {
+      offTableStatus();
+      offFraudAlert();
+    };
+  },
+
+  // Cambia el filtro de zona activa del plano (Salón, Terraza, Barra).
+  setZone: (activeZone) => set({ activeZone }),
+
+  // Conmuta la visibilidad del cajón modal de excepciones de auditoría.
+  setExceptionDrawerOpen: (exceptionDrawerOpen) => set({ exceptionDrawerOpen }),
+
+  // Conmuta el estado de Modo Hora Punta (Focus Mode).
+  toggleFocusMode: () => set((s) => ({ focusMode: !s.focusMode })),
+
+  // Registra una nueva entrada en el control de mermas de insumos.
+  addMerma: (description) => {
+    // Crea la entrada de merma con timestamp y estimación.
+    const newEntry = {
+      id: `merma-${Date.now()}`,
+      description,
+      estimatedLoss: 3500,
+      timestamp: Date.now(),
+    };
+    // Agrega el registro al inicio del listado de mermas.
+    set({ mermaLogs: [newEntry, ...get().mermaLogs] });
+  },
+
+  // Activa el Botón de Pánico de emergencia y emite el evento alert.panic.
+  triggerPanic: () => {
+    // Enciende la alerta de pánico en el estado.
+    set({ panicActive: true });
+
+    // Emite el evento de pánico por el bus en tiempo real.
+    bus.publish('alert.panic', {
+      type: 'emergency_button_pressed',
+      supervisor: 'Local Admin',
+      timestamp: Date.now(),
+    });
+  },
+
+  // Desactiva la alerta de pánico.
+  clearPanic: () => set({ panicActive: false }),
+
+  // Restablece el slice a su estado inicial.
   resetDemo: () => set(initialState),
 }));
