@@ -12,6 +12,8 @@ import { formatCurrency } from '../../../shared/utils/index.js';
 import CourseControlPicker from './CourseControlPicker.jsx';
 // Modal de autorización por PIN.
 import PinAuthModal from './PinAuthModal.jsx';
+// Selector puro de sugerencia de upsell (waiter-upsell).
+import { suggestUpsell } from '../services/upsellService.js';
 
 // Menú de productos mock del catálogo del garzón.
 const MENU_CATALOG = [
@@ -42,6 +44,12 @@ export default function OrderPad({
 
   // Calcula el total general de la comanda en borrador.
   const totalAmount = orderDraft.reduce((acc, line) => acc + line.price * line.qty, 0);
+
+  // Upsell asistido: sugiere un candidato según la ÚLTIMA línea agregada al borrador.
+  // El chip jamás auto-agrega; solo propone (waiter-upsell: NUNCA auto-add).
+  const lastDraftLine = orderDraft[orderDraft.length - 1];
+  // Selector puro: devuelve un candidato (máx. 1) o null si no hay regla.
+  const suggestion = lastDraftLine ? suggestUpsell(lastDraftLine.productId, MENU_CATALOG) : null;
 
   // Inicia la anulación de una línea.
   const handleInitiateVoid = (line) => {
@@ -140,6 +148,34 @@ export default function OrderPad({
               })}
             </div>
           </div>
+
+          {/* Chip de sugerencia de upsell: visible solo si el último plato tiene regla.
+              Es explícito: NO agrega nada por sí solo; solo al tocarlo agrega una
+              unidad del sugerido por el flujo normal (onAddToCart → addToDraft). */}
+          {suggestion && (
+            <button
+              type="button"
+              onClick={() => onAddToCart(suggestion)}
+              className="flex w-full items-center justify-between rounded-2xl border border-brand-300 bg-brand-500/5 px-4 py-3 text-left transition hover:bg-brand-500/10 active:scale-[0.99]"
+            >
+              <div className="flex items-center gap-2">
+                {/* Ícono de sugerencia del mozo. */}
+                <span className="text-xl" aria-hidden="true">💡</span>
+                <div>
+                  {/* Etiqueta de la sugerencia de venta adicional. */}
+                  <p className="text-xs font-bold text-brand-500">Sugerencia del mozo</p>
+                  {/* Producto sugerido por la regla demo. */}
+                  <p className="text-sm font-bold text-brand-900">
+                    {suggestion.name} · {formatCurrency(suggestion.price)}
+                  </p>
+                </div>
+              </div>
+              {/* Acción explícita de agregar una unidad del sugerido. */}
+              <span className="rounded-xl bg-brand-500 px-3 py-1.5 text-xs font-bold text-white shadow-soft">
+                + Agregar
+              </span>
+            </button>
+          )}
 
           {/* Resumen de líneas agregadas a la comanda actual. */}
           <div className="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-soft">
