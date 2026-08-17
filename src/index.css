@@ -1,22 +1,67 @@
-/* src/index.css — hoja de estilos global de MesaSplit (entrada de Tailwind) */
+/* src/index.css — hoja de estilos global de MesaSplit (entrada de Tailwind + Design Tokens) */
+/* Carga de la tipografía moderna Plus Jakarta Sans e Inter desde Google Fonts. */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
 
 /* Inyecta reset y estilos base de Tailwind (Preflight). */
 @tailwind base;
 
-/* Inyecta las clases de componentes registradas por plugins (vacío hoy). */
+/* Inyecta las clases de componentes registradas por plugins. */
 @tailwind components;
 
 /* Inyecta las utilidades (bg-brand-500, text-semantic-danger, etc.). */
 @tailwind utilities;
 
-/* Base de tipografía: Inter para todo el cuerpo, ya definida en tailwind.config. */
+/* Base de tipografía y reset del sistema de diseño. */
 @layer base {
   html {
-    /* Inter es la fuente del sistema de diseño (spec design-tokens). */
-    @apply font-sans antialiased;
+    /* Plus Jakarta Sans e Inter para la tipografía corporativa de marca. */
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+    @apply antialiased scroll-smooth;
   }
   body {
     /* Fondo por defecto en modo claro: brand-50 (docs/04). */
-    @apply bg-brand-50 text-brand-900;
+    @apply bg-brand-50 text-brand-900 selection:bg-sky-500 selection:text-white;
+  }
+}
+
+/* Scrollbars personalizados oscuros y elegantes. */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.6);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(56, 189, 248, 0.25);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(56, 189, 248, 0.5);
+}
+
+/* Utilidades CSS para Glassmorphism y luces Neón resplandecientes. */
+@layer utilities {
+  /* Tarjeta Glassmorphic con desenfoque de fondo y borde semitransparente. */
+  .glass-card {
+    background: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  /* Resplandor neón azul/sky. */
+  .glow-sky {
+    box-shadow: 0 0 25px rgba(56, 189, 248, 0.25);
+  }
+
+  /* Resplandor neón esmeralda. */
+  .glow-emerald {
+    box-shadow: 0 0 25px rgba(16, 185, 129, 0.25);
+  }
+
+  /* Resplandor neón ámbar. */
+  .glow-amber {
+    box-shadow: 0 0 25px rgba(245, 158, 11, 0.25);
   }
 }
