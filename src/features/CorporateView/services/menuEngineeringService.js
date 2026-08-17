@@ -15,7 +15,7 @@ export function classifyProduct(product, medianVolume = 10, medianMargin = 50) {
   return 'perro';
 }
 
-export function classifyMenu(menu = [], events = []) {
+export function classifyMenu(menu = []) {
   if (!menu || menu.length === 0) {
     return { estrella: [], 'caballo de batalla': [], puzzle: [], perro: [] };
   }
