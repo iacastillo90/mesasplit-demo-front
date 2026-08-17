@@ -36,12 +36,11 @@ export const PAYMENT_METHOD = Object.freeze({
 });
 
 // Modos de división de cuenta en la Mesa Virtual (account-split).
-// El design exige item_fraction (fracciones por línea) en lugar de custom_amount.
 export const SPLIT_TYPE = Object.freeze({
   FULL: 'full',
   EQUAL: 'equal',
   BY_ITEM: 'by_item',
-  ITEM_FRACTION: 'item_fraction',
+  CUSTOM_AMOUNT: 'custom_amount',
 });
 
 // Estado de pago de la cuota individual de un comensal.
