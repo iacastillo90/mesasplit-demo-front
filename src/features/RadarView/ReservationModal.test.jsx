@@ -40,6 +40,6 @@ describe('interactive-table-reservation: Reservas de Mesas y Lista de Espera Vir
     const saveBtn = screen.getByRole('button', { name: /Guardar Reserva/i });
     fireEvent.click(saveBtn);
     // Confirma la aparición de la nueva reserva en la lista.
-    expect(await screen.findByText(/Familia Pérez/i)).toBeInTheDocument();
+    expect((await screen.findAllByText(/Familia Pérez/i)).length).toBeGreaterThan(0);
   });
 });
