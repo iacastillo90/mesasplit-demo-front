@@ -40,6 +40,8 @@ import ItemCustomizerModal from '../components/ItemCustomizerModal.jsx';
 import ClientReservationAssistant from '../components/ClientReservationAssistant.jsx';
 // Widget de lealtad y gamificación MesaSplit Rewards.
 import RewardsBadgeWidget from '../components/RewardsBadgeWidget.jsx';
+// Modal de reseñas y feedback granular por plato.
+import ItemReviewModal from '../components/ItemReviewModal.jsx';
 
 
 // ClientPage: pantalla principal de la Mesa Virtual del comensal.
@@ -90,6 +92,8 @@ export default function ClientPage() {
   const [customizingItem, setCustomizingItem] = useState(null);
   // Estado local para controlar la apertura del asistente inteligente de reservas por local.
   const [assistantOpen, setAssistantOpen] = useState(false);
+  // Estado local para el plato a evaluar en el modal de reseñas.
+  const [reviewItem, setReviewItem] = useState(null);
 
 
   // Store de división de cuenta (account-split).
@@ -277,18 +281,29 @@ export default function ClientPage() {
                           </div>
                         )}
                       </div>
-                      {/* Columna derecha: precio y botón de agregado. */}
+                      {/* Columna derecha: precio y acciones del plato. */}
                       <div className="flex shrink-0 flex-col items-end gap-2">
                         {/* Precio del plato en CLP con la marca de CTA. */}
                         <p className="font-bold text-brand-900">{formatCurrency(item.price)}</p>
-                        {/* Botón agregar al carrito (CTA compacto de marca). */}
-                        <button
-                          type="button"
-                          onClick={() => handleAdd(item)}
-                          className="rounded-xl border border-brand-500 px-4 py-2 text-sm font-semibold text-brand-500 transition hover:bg-brand-500 hover:text-white active:scale-95"
-                        >
-                          Agregar
-                        </button>
+                        <div className="flex items-center gap-1.5">
+                          {/* Botón para calificar el plato individualmente. */}
+                          <button
+                            type="button"
+                            onClick={() => setReviewItem(item)}
+                            className="rounded-xl border border-amber-300 bg-amber-50 px-2.5 py-2 text-xs font-semibold text-amber-800 transition hover:bg-amber-100 active:scale-95"
+                            title="Calificar este plato"
+                          >
+                            ★ Evaluar
+                          </button>
+                          {/* Botón agregar al carrito (CTA compacto de marca). */}
+                          <button
+                            type="button"
+                            onClick={() => handleAdd(item)}
+                            className="rounded-xl border border-brand-500 px-4 py-2 text-sm font-semibold text-brand-500 transition hover:bg-brand-500 hover:text-white active:scale-95"
+                          >
+                            Agregar
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </article>
@@ -369,6 +384,13 @@ export default function ClientPage() {
         <ClientReservationAssistant
           open={assistantOpen}
           onClose={() => setAssistantOpen(false)}
+        />
+
+        {/* Modal de calificación y feedback granular por plato */}
+        <ItemReviewModal
+          open={Boolean(reviewItem)}
+          item={reviewItem}
+          onClose={() => setReviewItem(null)}
         />
 
         {/* Toast de confirmación al agregar un plato (base shared/ui). */}
