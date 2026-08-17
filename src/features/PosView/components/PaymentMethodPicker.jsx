@@ -5,6 +5,8 @@
 // Formateador de moneda en CLP.
 import { formatCurrency } from '../../../shared/utils/index.js';
 
+import KeyboardShortcutsBadge from '../../../shared/ui/KeyboardShortcutsBadge.jsx';
+
 // Componente del selector multimedio de pagos.
 export default function PaymentMethodPicker({
   selectedMethod,
@@ -17,10 +19,14 @@ export default function PaymentMethodPicker({
   return (
     // Sección contenedora del panel de métodos de pago.
     <section aria-label="Métodos de Pago" className="flex flex-col gap-4">
-      {/* Título de la sección. */}
-      <h3 className="text-xs font-bold uppercase tracking-wider text-brand-800/70">
-        1. Selección de Método de Pago
-      </h3>
+      {/* Título de la sección con badge de atajo [F2] */}
+      <div className="flex items-center justify-between">
+        <h3 className="text-xs font-bold uppercase tracking-wider text-brand-800/70">
+          1. Selección de Método de Pago
+        </h3>
+        <KeyboardShortcutsBadge shortcutKey="F2" label="Atajo Cobro:" />
+      </div>
+
 
       {/* Botones de radio/pestañas para seleccionar el medio de pago. */}
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
