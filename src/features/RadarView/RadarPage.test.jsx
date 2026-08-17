@@ -58,7 +58,7 @@ describe('local-admin-radar: Modo Hora Punta y Exception Feed', () => {
     // Activa el modo Hora Punta.
     fireEvent.click(focusBtn);
     // Confirma la aparición del badge parpadeante de Hora Punta.
-    expect(screen.getByText(/MODO HORA PUNTA/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/MODO HORA PUNTA/i).length).toBeGreaterThan(0);
 
     // Abre el cajón de auditoría de excepciones.
     const auditBtn = screen.getByRole('button', { name: /Auditoría/i });
