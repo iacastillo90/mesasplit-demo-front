@@ -18,6 +18,7 @@ import {
   ClientView,
   KdsView,
   PortalView,
+  PosView,
   RadarView,
   SuperAdminView,
   WaiterView,
@@ -67,7 +68,12 @@ export const routes = [
         index: true,
         element: withSuspense(<RadarView />),
       },
-      // /admin/super: hijo anidado con el placeholder de Super Admin.
+      // /admin/caja: Caja POS de cobro, turno de caja y notas de crédito.
+      {
+        path: 'caja',
+        element: withSuspense(<PosView />),
+      },
+      // /admin/super: hijo anidado con Super Admin Corporativo.
       {
         path: 'super',
         element: withSuspense(<SuperAdminView />),

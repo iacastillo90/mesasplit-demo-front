@@ -116,7 +116,7 @@ describe('app-routing: tabla de rutas (spec)', () => {
     // Espera a que el hub esté montado (título de landing).
     await screen.findByRole('heading', { name: /División de Cuentas/i }, { timeout: 5000 });
     // Verifica un launcher por vista del spec app-routing.
-    const labels = ['Mesa Virtual', 'Garzón', 'Cocina', 'Local Admin', 'Super Admin'];
+    const labels = ['Mesa Virtual', 'Garzón', 'Cocina', 'Caja POS', 'Local Admin', 'Super Admin'];
     // Recorre cada etiqueta esperada del hub.
     labels.forEach((label) => {
       // Cada launcher es un link con el nombre visible de la vista.

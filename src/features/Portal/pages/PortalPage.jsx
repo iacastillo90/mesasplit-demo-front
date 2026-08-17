@@ -33,19 +33,25 @@ const VIEW_DESTINATIONS = [
   {
     to: '/cocina',
     title: 'Cocina',
-    description: 'KDS en modo oscuro estricto (#011623), tiempos y Lista 86.',
+    description: 'KDS en modo oscuro estricto (#011623), tiempos, Lista 86 y Expo View.',
     tone: 'dark',
+  },
+  {
+    to: '/admin/caja',
+    title: 'Caja POS',
+    description: 'Cobro de cuentas, boletas DTE, turno de caja, notas de crédito y CFD.',
+    tone: 'light',
   },
   {
     to: '/admin',
     title: 'Local Admin',
-    description: 'Plano topológico con mapa de calor por zonas, delivery y pánico.',
+    description: 'Plano topológico con mapa de calor, delivery omnicanal y gamificación.',
     tone: 'neutral',
   },
   {
     to: '/admin/super',
     title: 'Super Admin',
-    description: 'Panel corporativo multi-local, KPIs globales y switches de franquicia.',
+    description: 'Panel corporativo multi-local, KPIs globales, What-If e Ingeniería de Menú.',
     tone: 'neutral',
   },
 ];

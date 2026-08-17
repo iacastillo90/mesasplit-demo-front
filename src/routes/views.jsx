@@ -32,3 +32,7 @@ export const RadarView = lazy(() => import('../features/RadarView/pages/RadarPag
 export const SuperAdminView = lazy(
   () => import('../features/CorporateView/pages/SuperAdminPage.jsx'),
 );
+
+// Caja POS ("/admin/caja"): cobro, boletas DTE, arqueo y nota de crédito.
+// Slice: src/features/PosView.
+export const PosView = lazy(() => import('../features/PosView/pages/PosPage.jsx'));
