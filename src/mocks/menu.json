@@ -6,7 +6,8 @@
     "price": 8900,
     "category": "Hamburguesas",
     "allergens": [],
-    "alcoholic": false
+    "alcoholic": false,
+    "cost": 4600
   },
   {
     "id": "m2",
@@ -14,8 +15,11 @@
     "description": "Bacon crocante, cebolla crispy y salsa BBQ ahumada.",
     "price": 10400,
     "category": "Hamburguesas",
-    "allergens": ["gluten"],
-    "alcoholic": false
+    "allergens": [
+      "gluten"
+    ],
+    "alcoholic": false,
+    "cost": 5400
   },
   {
     "id": "m3",
@@ -23,8 +27,12 @@
     "description": "Mozzarella fresca, tomate y albahaca sobre masa artesanal.",
     "price": 10900,
     "category": "Pizzas",
-    "allergens": ["lácteos", "gluten"],
-    "alcoholic": false
+    "allergens": [
+      "lácteos",
+      "gluten"
+    ],
+    "alcoholic": false,
+    "cost": 5600
   },
   {
     "id": "m4",
@@ -32,8 +40,13 @@
     "description": "Pasta fresca, panceta, yema y queso pecorino.",
     "price": 9800,
     "category": "Pasta",
-    "allergens": ["huevo", "lácteos", "gluten"],
-    "alcoholic": false
+    "allergens": [
+      "huevo",
+      "lácteos",
+      "gluten"
+    ],
+    "alcoholic": false,
+    "cost": 5000
   },
   {
     "id": "m5",
@@ -41,8 +54,12 @@
     "description": "Lechuga romana, pollo grillado, parmesano y croutons.",
     "price": 7400,
     "category": "Ensaladas",
-    "allergens": ["lácteos", "gluten"],
-    "alcoholic": false
+    "allergens": [
+      "lácteos",
+      "gluten"
+    ],
+    "alcoholic": false,
+    "cost": 3400
   },
   {
     "id": "m6",
@@ -51,7 +68,8 @@
     "price": 2900,
     "category": "Bebidas",
     "allergens": [],
-    "alcoholic": false
+    "alcoholic": false,
+    "cost": 900
   },
   {
     "id": "m7",
@@ -59,7 +77,10 @@
     "description": "Cerveza rubia artesanal 330cc (5.8% ABV).",
     "price": 4500,
     "category": "Bebidas",
-    "allergens": ["gluten"],
-    "alcoholic": true
+    "allergens": [
+      "gluten"
+    ],
+    "alcoholic": true,
+    "cost": 2100
   }
 ]

@@ -27,6 +27,10 @@ import { createConnectivityAdapter } from '../services/connectivityService.js';
 import ExpoDisplay from '../components/ExpoDisplay.jsx';
 // Componente de vista agregada por plato (kds-batch-view).
 import BatchSummaryView from '../components/BatchSummaryView.jsx';
+// Store de RadarView para leer las órdenes de delivery activas.
+import { selectActiveDelivery, useRadarStore } from '../../RadarView/store/useRadarStore.js';
+// Modal de checklist de empaque delivery (kds-delivery-checklist).
+import PackingChecklistModal from '../components/PackingChecklistModal.jsx';
 
 // Componente principal de la página KDS de cocina.
 export default function KdsPage() {
@@ -58,6 +62,14 @@ export default function KdsPage() {
   const [isRecallOpen, setIsRecallOpen] = useState(false);
   const [isLista86Open, setIsLista86Open] = useState(false);
   const [isBatchView, setIsBatchView] = useState(false);
+  const [selectedPackingOrder, setSelectedPackingOrder] = useState(null);
+
+  // Obtiene las órdenes de delivery activas desde useRadarStore.
+  const deliveryOrders = useRadarStore((s) => s.deliveryOrders);
+  const activeDeliveryOrders = useMemo(
+    () => selectActiveDelivery(deliveryOrders),
+    [deliveryOrders],
+  );
 
   // Carga inicial de tickets al montar.
   useEffect(() => {
@@ -106,8 +118,10 @@ export default function KdsPage() {
           <KdsHeader
             activeCount={visibleTickets.length}
             recallCount={recallStack.length}
+            deliveryCount={activeDeliveryOrders.length}
             onOpenRecall={() => setIsRecallOpen(true)}
             onOpenLista86={() => setIsLista86Open(true)}
+            onOpenPacking={() => setSelectedPackingOrder(activeDeliveryOrders[0] ?? null)}
             onToggleExpo={toggleExpoMode}
             isBatchView={isBatchView}
             onToggleBatch={() => setIsBatchView((prev) => !prev)}
@@ -155,6 +169,13 @@ export default function KdsPage() {
             onClose={() => setIsLista86Open(false)}
             stock86={stock86}
             onToggle86={toggleStock86}
+          />
+
+          {/* Modal de checklist de empaque delivery (kds-delivery-checklist). */}
+          <PackingChecklistModal
+            open={Boolean(selectedPackingOrder)}
+            order={selectedPackingOrder}
+            onClose={() => setSelectedPackingOrder(null)}
           />
         </>
       )}

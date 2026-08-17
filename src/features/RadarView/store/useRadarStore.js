@@ -153,6 +153,14 @@ export const useRadarStore = create((set, get) => ({
   // Desactiva la alerta de pánico.
   clearPanic: () => set({ panicActive: false }),
 
+  // Transiciona una orden de delivery a estado 'completed' (despachada por checklist).
+  completeDeliveryOrder: (orderId) =>
+    set((state) => ({
+      deliveryOrders: (state.deliveryOrders ?? []).map((o) =>
+        o.id === orderId ? { ...o, status: 'completed' } : o,
+      ),
+    })),
+
   // Restablece el slice a su estado inicial.
   resetDemo: () => set(initialState),
 }));

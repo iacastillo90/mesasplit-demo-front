@@ -1,13 +1,15 @@
-// src/features/KdsView/components/KdsHeader.jsx — cabecera KDS de cocina (kds-kitchen + kds-expo-view + kds-batch-view)
-// Cabecera superior en modo oscuro con métricas en vivo, botones Expo View, Vista Batch, Lista 86 y Recall.
+// src/features/KdsView/components/KdsHeader.jsx — cabecera KDS de cocina (kds-kitchen + kds-expo-view + kds-batch-view + kds-delivery-checklist)
+// Cabecera superior en modo oscuro con métricas en vivo, botones Expo View, Vista Batch, Empaque Delivery, Lista 86 y Recall.
 // Cumple con las reglas de AGENTS.md (comentarios en español por cada línea).
 
 // Componente presentacional de la cabecera de cocina KDS.
 export default function KdsHeader({
   activeCount,
   recallCount,
+  deliveryCount = 0,
   onOpenRecall,
   onOpenLista86,
+  onOpenPacking,
   onToggleExpo,
   isBatchView,
   onToggleBatch,
@@ -17,19 +19,35 @@ export default function KdsHeader({
     <header className="flex flex-wrap items-center justify-between border-b border-brand-800/60 px-6 py-4 gap-4">
       {/* Título de la vista de cocina y subtítulo operativo. */}
       <div>
-        {/* Título de la pantalla KDS (mantiene el rol de heading 'Cocina' para la suite de routing). */}
+        {/* Título de la pantalla KDS. */}
         <h1 className="text-2xl font-bold text-brand-50">Cocina</h1>
         {/* Información del turno actual. */}
         <p className="text-sm text-brand-50/60">Turno tarde · Control de línea en vivo</p>
       </div>
 
-      {/* Acciones de la cabecera: indicador de tickets, botones Expo View, Vista Batch, Lista 86 y Recall. */}
+      {/* Acciones de la cabecera: indicador de tickets, botones Empaque Delivery, Vista Batch, Expo View, Lista 86 y Recall. */}
       <div className="flex items-center gap-3">
         {/* Indicador visual de la cantidad de comandas activas en pantalla. */}
         <span className="inline-flex items-center gap-2 rounded-full bg-brand-800 px-3 py-1.5 text-sm font-semibold text-brand-50">
           <span aria-hidden="true" className="h-2 w-2 rounded-full bg-semantic-success" />
           {activeCount} tickets
         </span>
+
+        {/* Botón para abrir el checklist de empaque de delivery (kds-delivery-checklist). */}
+        {onOpenPacking && (
+          <button
+            type="button"
+            onClick={onOpenPacking}
+            className="relative rounded-xl bg-brand-800 px-4 py-2 text-sm font-semibold text-brand-50 hover:bg-brand-800/80 transition active:scale-95 border border-brand-800/60"
+          >
+            📦 Empaque Delivery
+            {deliveryCount > 0 && (
+              <span className="ml-2 rounded-full bg-brand-500 px-2 py-0.5 text-xs font-bold text-white">
+                {deliveryCount}
+              </span>
+            )}
+          </button>
+        )}
 
         {/* Botón para alternar la vista agregada por plato (kds-batch-view). */}
         <button
@@ -71,7 +89,7 @@ export default function KdsHeader({
           🔄 Recall
           {/* Badge flotante con el conteo de comandas en la pila de Recall. */}
           {recallCount > 0 && (
-            <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-semantic-warning text-xs font-bold text-brand-950">
+            <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-semantic-warning text-brand-950">
               {recallCount}
             </span>
           )}
