@@ -1,7 +1,7 @@
-// src/app/main.jsx — punto de entrada de la app MeshSplit (montaje de React)
+// src/app/main.jsx — punto de entrada de la app MesaSplit (montaje de React)
 // Carga los estilos globales y monta el árbol de la app en el nodo #root.
-// NOTA: este es el arranque mínimo del PR 1 (toolchain). El RouterProvider
-// completo llega en el PR 2 (task 2.1/2.2), que reemplazará App.jsx.
+// NOTA: queda como entry point; App.jsx (task 2.1) ya monta el RouterProvider
+// con la tabla de rutas de src/routes/index.jsx (task 2.2).
 
 // createRoot: API moderna de React 18 para montar el árbol de la app.
 import { createRoot } from 'react-dom/client';

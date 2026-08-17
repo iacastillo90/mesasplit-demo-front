@@ -1,14 +1,24 @@
-// src/app/App.jsx — componente raíz del frontend MesaSplit
-// PR 1: placeholder mínimo para que el toolchain compile (build verde).
-// PR 2 (task 2.1): será reemplazado por <RouterProvider> con la tabla de rutas.
+// src/app/App.jsx — componente raíz de la SPA MesaSplit
+// Reemplaza el placeholder del PR 1: ahora monta el data router (RR v6)
+// con la tabla de rutas definida en src/routes/index.jsx (task 2.2).
 
-// Componente raíz: devuelve un contenedor que valida el pipeline de Tailwind.
+// Suspense: boundary único para todas las vistas lazy de la tabla de rutas.
+import { Suspense } from 'react';
+// RouterProvider: monta el router de data API de React Router v6 (design D5).
+import { RouterProvider } from 'react-router-dom';
+// Tabla de rutas (createBrowserRouter) creada en el task 2.2.
+import { router } from '../routes/index.jsx';
+// Fallback visual mientras resuelven las vistas lazy (solo spinner, tokens).
+import RouteFallback from '../routes/RouteFallback.jsx';
+
+// Componente raíz: envuelve el RouterProvider en un Suspense para que las
+// vistas diferidas (lazy) muestren un loading en lugar de romper el render.
 export default function App() {
   return (
-    // Fondo de marca y fuente Inter desde los tokens (verifica @tailwind).
-    <main className="flex min-h-screen items-center justify-center bg-brand-50">
-      {/* Texto de arranque: confirma que Vite + React + Tailwind renderizan. */}
-      <h1 className="text-2xl font-bold text-brand-900">MesaSplit — scaffold listo</h1>
-    </main>
+    // Suspense captura la suspensión de cualquier ruta lazy de la tabla.
+    <Suspense fallback={<RouteFallback />}>
+      {/* RouterProvider ejecuta la tabla de rutas y renderiza la vista match. */}
+      <RouterProvider router={router} />
+    </Suspense>
   );
 }
