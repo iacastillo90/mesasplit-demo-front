@@ -13,6 +13,7 @@ import { usePosStore } from '../store/usePosStore.js';
 import PaymentMethodPicker from '../components/PaymentMethodPicker.jsx';
 import DteModal from '../components/DteModal.jsx';
 import BlindCloseModal from '../components/BlindCloseModal.jsx';
+import CashShiftModal from '../components/CashShiftModal.jsx';
 
 // Componente principal de la página del POS.
 export default function PosPage() {
@@ -31,6 +32,8 @@ export default function PosPage() {
   const tenderedAmount = usePosStore((s) => s.tenderedAmount);
   const dteModalOpen = usePosStore((s) => s.dteModalOpen);
   const blindCloseOpen = usePosStore((s) => s.blindCloseOpen);
+  const cashShift = usePosStore((s) => s.cashShift);
+  const cashShiftModalOpen = usePosStore((s) => s.cashShiftModalOpen);
 
   // Acciones del store.
   const loadPosData = usePosStore((s) => s.loadPosData);
@@ -41,6 +44,7 @@ export default function PosPage() {
   const setTenderedAmount = usePosStore((s) => s.setTenderedAmount);
   const setDteModalOpen = usePosStore((s) => s.setDteModalOpen);
   const setBlindCloseOpen = usePosStore((s) => s.setBlindCloseOpen);
+  const setCashShiftModalOpen = usePosStore((s) => s.setCashShiftModalOpen);
   const confirmPayment = usePosStore((s) => s.confirmPayment);
   const submitBlindClose = usePosStore((s) => s.submitBlindClose);
   const setupRealtimeListeners = usePosStore((s) => s.setupRealtimeListeners);
@@ -135,6 +139,15 @@ export default function PosPage() {
 
           {/* Botones de acción de la cabecera. */}
           <div className="flex items-center gap-2">
+            {/* Botón de control de turno operativo de caja (cash-shift). */}
+            <button
+              type="button"
+              onClick={() => setCashShiftModalOpen(true)}
+              className="rounded-xl border border-brand-200 bg-white px-3 py-2 text-xs font-bold text-brand-900 hover:bg-brand-50 transition active:scale-95 shadow-soft"
+            >
+              ⏱️ Turno: {cashShift?.status === 'open' ? 'Abierto' : 'Cerrado'}
+            </button>
+
             <button
               type="button"
               onClick={() => setBlindCloseOpen(true)}
@@ -268,6 +281,12 @@ export default function PosPage() {
           onClose={() => setBlindCloseOpen(false)}
           expectedCash={150000}
           onSubmitClose={handleBlindCloseSubmit}
+        />
+
+        {/* Modal para control de turno operativo de caja (cash-shift). */}
+        <CashShiftModal
+          open={cashShiftModalOpen}
+          onClose={() => setCashShiftModalOpen(false)}
         />
       </div>
     </main>
