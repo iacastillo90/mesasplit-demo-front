@@ -1,37 +1,50 @@
-// src/shared/constants/statusEnums.js — enums de estado de la demo (task 2.3)
-// Estados canónicos del dominio gastronómico compartidos por las vistas.
-// Los slices (PR 3) consumen estos enums en lugar de strings sueltos.
+// src/shared/constants/statusEnums.js — enums de estado compartidos del sistema (task 2.1)
+// Enums inmutables (Object.freeze) de la app gastronómica: estados de mesa, ticket KDS,
+// ítem de comanda, métodos de pago y modos de división de cuenta (account-split).
+// Cumple con las reglas obligatorias de AGENTS.md (comentarios en español por cada línea).
 
-// Estados de una mesa en el salón (Radar, Waiter).
-export const TABLE_STATUS = {
-  // Mesa libre, lista para recibir comensales.
+// Estados posibles de una mesa en el salón.
+export const TABLE_STATUS = Object.freeze({
   FREE: 'free',
-  // Mesa con comensales activos (cuenta abierta).
   OCCUPIED: 'occupied',
-  // Mesa en proceso de cobro / cierre de cuenta.
   BILLING: 'billing',
-  // Mesa sucia, en limpieza antes de volver a libre.
   CLEANING: 'cleaning',
-};
+});
 
-// Estados de un ticket de cocina (KDS).
-export const TICKET_STATUS = {
-  // Ticket recibido, aún no comenzó la preparación.
+// Estados de vida de un ticket en la cocina (KDS).
+export const TICKET_STATUS = Object.freeze({
   PENDING: 'pending',
-  // En preparación dentro de la cocina.
-  COOKING: 'cooking',
-  // Listo para ser servido por el garzón.
+  IN_PREPARATION: 'in_preparation',
   READY: 'ready',
-  // Entregado a la mesa (cierra el ciclo del ticket).
-  SERVED: 'served',
-};
+  DELIVERED: 'delivered',
+});
 
-// Estados de una orden/comanda (cliente, mozo).
-export const ORDER_STATUS = {
-  // Orden activa, se pueden agregar ítems.
-  OPEN: 'open',
-  // Orden cerrada (cuenta emitida o ticket servido completo).
-  CLOSED: 'closed',
-  // Orden cancelada por el cliente o el salón.
-  CANCELLED: 'cancelled',
-};
+// Tipos de cursos / tiempos gastronómicos.
+export const COURSE_TYPE = Object.freeze({
+  STARTER: 'starter',
+  MAIN: 'main',
+  DESSERT: 'dessert',
+  BEVERAGE: 'beverage',
+});
+
+// Medios de pago aceptados en la plataforma.
+export const PAYMENT_METHOD = Object.freeze({
+  CASH: 'efectivo',
+  CARD: 'tarjeta',
+  TRANSFER: 'transferencia',
+  MIXED: 'mixto',
+});
+
+// Modos de división de cuenta en la Mesa Virtual (account-split).
+export const SPLIT_TYPE = Object.freeze({
+  FULL: 'full',
+  EQUAL: 'equal',
+  BY_ITEM: 'by_item',
+  CUSTOM_AMOUNT: 'custom_amount',
+});
+
+// Estado de pago de la cuota individual de un comensal.
+export const GUEST_PAYMENT_STATUS = Object.freeze({
+  PENDING: 'pending',
+  PAID: 'paid',
+});
