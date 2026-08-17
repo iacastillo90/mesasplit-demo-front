@@ -223,7 +223,7 @@ export default function ClientPage() {
         {/* Hero Promocional Ultra-Premium para la Mesa Virtual */}
         <ClientPageHero
           onSelectStarDish={() =>
-            handleAddToCartAttempt({ id: 'm1', name: 'Lomo Lo Ovalle & Pisco Sour', price: 18900, category: 'Fuego', isAlcohol: false })
+            handleAdd({ id: 'm1', name: 'Lomo Lo Ovalle & Pisco Sour', price: 18900, category: 'Fuego', isAlcohol: false })
           }
         />
 
