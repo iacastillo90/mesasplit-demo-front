@@ -32,8 +32,12 @@ const withSuspense = (view) => (
   <Suspense fallback={<RouteFallback />}>{view}</Suspense>
 );
 
-// Router único de la app: la tabla de 7 rutas del spec app-routing.
-export const router = createBrowserRouter([
+// Tabla de rutas de la SPA: la MISMA definición para el router de la app y para
+// los routers de memoria de los tests (design: "memory router for non-/ paths").
+// PR 4 extrajo el arreglo a un export nombrado SIN cambiar paths/index/nested/
+// catch-all: el router de producción se construye a partir de routes y los tests
+// crean su createMemoryRouter con la misma fuente (cero divergencias).
+export const routes = [
   // Ruta raíz del hub: es la landing por defecto (spec "root renders hub").
   {
     path: '/',
@@ -75,4 +79,8 @@ export const router = createBrowserRouter([
     path: '*',
     element: <NotFoundPage />,
   },
-]);
+];
+
+// Router único de la app (producción): build sobre la tabla compartida.
+// React Router v6 data router montado por RouterProvider en src/app/App.jsx.
+export const router = createBrowserRouter(routes);
