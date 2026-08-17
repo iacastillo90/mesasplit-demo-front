@@ -1,7 +1,8 @@
-// src/features/KdsView/store/useKdsStore.js — store de cocina KDS (kds-kitchen)
+// src/features/KdsView/store/useKdsStore.js — store de cocina KDS (kds-kitchen + kds-offline)
 // Slice de estado de KDS: tickets activos, historial de Recall (últimos 10),
-// productos en Lista 86 (agotados), filtro de estación y acciones de despacho.
+// productos en Lista 86 (agotados), filtro de estación, acciones de despacho y cola offline FIFO.
 // Integra suscripciones y publicación a createRealtimeBus (eventos kds.item_ready y kds.stock_86).
+// Cumple con las reglas de AGENTS.md (comentarios en español por línea).
 
 // create: fábrica de store de Zustand v5.
 import { create } from 'zustand';
@@ -11,7 +12,8 @@ import { fetchKitchenTickets } from '../services/kdsService.js';
 import { createRealtimeBus } from '../../../hooks/useRealtimeBus.js';
 
 // Instancia única del bus para las acciones del store.
-const bus = createRealtimeBus('mesasplit');
+export const kdsBus = createRealtimeBus('mesasplit');
+const bus = kdsBus;
 
 // Estación por defecto para mostrar todos los tickets.
 export const STATION_ALL = 'todas';
@@ -26,9 +28,27 @@ const initialState = {
   stock86: {},
   // Estación seleccionada en el filtro de pestañas.
   activeStation: STATION_ALL,
+  // Estado de conectividad de red del KDS.
+  isOnline: true,
+  // Cola local de eventos encolados en modo offline (FIFO).
+  offlineQueue: [],
   // Estado de carga inicial.
   loading: true,
 };
+
+// Publica un evento por el bus o lo encola en la cola FIFO si el KDS está offline.
+function publishOrEnqueue(get, set, topic, payload) {
+  const { isOnline, offlineQueue } = get();
+  if (isOnline) {
+    try {
+      bus.publish(topic, payload);
+    } catch {
+      // Tolera la ausencia de transporte realtime sin lanzar excepción.
+    }
+  } else {
+    set({ offlineQueue: [...offlineQueue, { topic, payload }] });
+  }
+}
 
 // Store de Zustand para la vista de cocina KDS.
 export const useKdsStore = create((set, get) => ({
@@ -37,16 +57,36 @@ export const useKdsStore = create((set, get) => ({
 
   // Carga los tickets de cocina desde la capa de servicio mockFetch.
   loadTickets: async () => {
-    // Solicita los tickets al servicio de cocina.
     const rawTickets = await fetchKitchenTickets();
-    // Procesa los tickets asignando secciones de Course Control y alergias.
     const tickets = rawTickets.map((t) => ({
       ...t,
-      // Asigna la propiedad data-has-allergy si algún ítem tiene alérgenos declarados.
       hasAllergy: t.items.some((item) => item.allergens && item.allergens.length > 0),
     }));
-    // Actualiza el store con los tickets procesados y desactiva el spinner de carga.
     set({ tickets, loading: false });
+  },
+
+  // Actualiza el estado de conectividad e inicia auto-flush al reconectar a internet.
+  setOnlineState: (isOnline) => {
+    const state = get();
+    const wasOffline = !state.isOnline;
+
+    set({ isOnline });
+
+    // Si pasó de offline a online y hay eventos en la cola, ejecuta flush FIFO.
+    if (wasOffline && isOnline && state.offlineQueue.length > 0) {
+      const queueToFlush = [...state.offlineQueue];
+      // Vacía la cola en el estado antes de publicar para evitar loops.
+      set({ offlineQueue: [] });
+
+      // Emite cada evento encolado en orden de llegada exacto.
+      queueToFlush.forEach((item) => {
+        try {
+          bus.publish(item.topic, item.payload);
+        } catch {
+          // Noop: tolera fallos de transmisión sin bloquear el flush.
+        }
+      });
+    }
   },
 
   // Selecciona la estación activa del filtro.
@@ -54,78 +94,60 @@ export const useKdsStore = create((set, get) => ({
 
   // Marca un ticket completo como despachado ("MARCAR LISTO").
   completeTicket: (ticketId) => {
-    // Obtiene el ticket objetivo a completar.
     const state = get();
-    // Encuentra la comanda correspondiente por ID.
     const targetTicket = state.tickets.find((t) => t.id === ticketId);
-    // Si no existe el ticket, cancela la operación.
     if (!targetTicket) return;
 
-    // Filtra la lista eliminando la comanda despachada.
     const newTickets = state.tickets.filter((t) => (t.id === ticketId ? false : true));
-    // Agrega la comanda al historial de Recall manteniendo máximo 10 elementos.
     const newRecallStack = [targetTicket, ...state.recallStack].slice(0, 10);
 
-    // Actualiza el estado con la lista filtrada y la pila de Recall.
     set({ tickets: newTickets, recallStack: newRecallStack });
 
-    // Emite el evento en tiempo real kds.item_ready por el bus de la demo.
-    bus.publish('kds.item_ready', {
+    // Publica kds.item_ready o encola si se encuentra en modo offline.
+    const payload = {
       ticketId: targetTicket.id,
       tableNumber: targetTicket.tableNumber,
       status: 'ready',
       timestamp: Date.now(),
-    });
+    };
+    publishOrEnqueue(get, set, 'kds.item_ready', payload);
   },
 
   // Restaura un ticket completado desde la pila de Recall de vuelta a la pantalla.
   restoreTicket: (ticketId) => {
-    // Obtiene el estado actual.
     const state = get();
-    // Busca el ticket a restaurar en la pila de Recall.
     const ticketToRestore = state.recallStack.find((t) => t.id === ticketId);
-    // Si no está en la pila, finaliza la acción.
     if (!ticketToRestore) return;
 
-    // Quita el ticket de la pila de Recall.
     const newRecallStack = state.recallStack.filter((t) => (t.id === ticketId ? false : true));
-    // Lo inserta al inicio de la lista de tickets activos.
     const newTickets = [ticketToRestore, ...state.tickets];
 
-    // Guarda los cambios en el store.
     set({ tickets: newTickets, recallStack: newRecallStack });
   },
 
   // Conmuta el estado de disponibilidad de un producto (Lista 86).
   toggleStock86: (productId, productName) => {
-    // Lee el estado actual de Lista 86.
     const state = get();
-    // Calcula el nuevo valor booleano (si estaba agotado pasa a disponible y viceversa).
     const isCurrently86 = Boolean(state.stock86[productId]);
-    // Crea el objeto actualizado de mapa de productos agotados.
     const newStock86 = { ...state.stock86, [productId]: !isCurrently86 };
 
-    // Actualiza la lista en el store.
     set({ stock86: newStock86 });
 
-    // Emite el evento kds.stock_86 por el bus en tiempo real.
-    bus.publish('kds.stock_86', {
+    // Publica kds.stock_86 o encola si se encuentra en modo offline.
+    const payload = {
       productId,
       productName,
       status: isCurrently86 ? 'available' : 'out_of_stock',
       timestamp: Date.now(),
-    });
+    };
+    publishOrEnqueue(get, set, 'kds.stock_86', payload);
   },
 
   // Maneja eventos course.fire de Mozo para activar platos en espera.
   fireCourse: (orderId, courseType) => {
-    // Obtiene el listado de tickets activos.
     const { tickets } = get();
-    // Actualiza los tickets que coincidan con la orden.
     const updatedTickets = tickets.map((ticket) => {
-      // Si la comanda no pertenece a la orden objetivo, no sufre cambios.
       if (ticket.id !== orderId && ticket.tableNumber !== orderId) return ticket;
-      // Modifica los ítems cuyo curso corresponda al evento enviado.
       const updatedItems = ticket.items.map((item) => {
         if (item.course === courseType || !item.course) {
           return { ...item, onHold: false };
@@ -134,15 +156,12 @@ export const useKdsStore = create((set, get) => ({
       });
       return { ...ticket, items: updatedItems };
     });
-    // Guarda los tickets actualizados en el store.
     set({ tickets: updatedTickets });
   },
 
   // Tacha o destacha un ítem individual de una comanda al tocarlo.
   toggleItemPrepared: (ticketId, itemId) => {
-    // Obtiene el estado actual de tickets.
     const { tickets } = get();
-    // Recorre y muta el ítem objetivo en el ticket correspondiente.
     const updatedTickets = tickets.map((t) => {
       if (t.id !== ticketId) return t;
       const updatedItems = t.items.map((item) => {
@@ -153,7 +172,6 @@ export const useKdsStore = create((set, get) => ({
       });
       return { ...t, items: updatedItems };
     });
-    // Guarda los tickets modificados.
     set({ tickets: updatedTickets });
   },
 

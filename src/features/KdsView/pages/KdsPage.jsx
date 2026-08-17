@@ -19,6 +19,10 @@ import TicketCard from '../components/TicketCard.jsx';
 import RecallModal from '../components/RecallModal.jsx';
 // Modal de gestión de Lista 86.
 import Lista86Modal from '../components/Lista86Modal.jsx';
+// Indicador visual de modo offline.
+import OfflineBanner from '../components/OfflineBanner.jsx';
+// Adaptador de conectividad de red.
+import { createConnectivityAdapter } from '../services/connectivityService.js';
 
 // Componente principal de la página KDS de cocina.
 export default function KdsPage() {
@@ -27,6 +31,8 @@ export default function KdsPage() {
   const recallStack = useKdsStore((s) => s.recallStack);
   const stock86 = useKdsStore((s) => s.stock86);
   const activeStation = useKdsStore((s) => s.activeStation);
+  const isOnline = useKdsStore((s) => s.isOnline);
+  const offlineQueue = useKdsStore((s) => s.offlineQueue);
   const loading = useKdsStore((s) => s.loading);
 
   // Acciones extraídas del store.
@@ -37,6 +43,7 @@ export default function KdsPage() {
   const toggleStock86 = useKdsStore((s) => s.toggleStock86);
   const toggleItemPrepared = useKdsStore((s) => s.toggleItemPrepared);
   const fireCourse = useKdsStore((s) => s.fireCourse);
+  const setOnlineState = useKdsStore((s) => s.setOnlineState);
 
   // Estado del bus en tiempo real.
   const bus = useRealtimeBus('mesasplit');
@@ -59,6 +66,14 @@ export default function KdsPage() {
     });
     return () => unsubscribe();
   }, [bus, fireCourse]);
+
+  // Suscripción al adaptador de conectividad de red (kds-offline).
+  useEffect(() => {
+    const adapter = createConnectivityAdapter((status) => {
+      setOnlineState(status);
+    });
+    return () => adapter.unsubscribe();
+  }, [setOnlineState]);
 
   // Deriva la lista de estaciones disponibles a partir de las comandas.
   const stations = useMemo(() => {
@@ -85,6 +100,9 @@ export default function KdsPage() {
 
       {/* Barra deslizable de estaciones de cocina. */}
       <StationFilterTabs stations={stations} activeStation={activeStation} onChange={setStation} />
+
+      {/* Indicador visual de modo offline si se perdió la conexión a internet. */}
+      {!isOnline && <OfflineBanner pendingCount={offlineQueue.length} />}
 
       {/* Área principal con grilla responsiva de tarjetas de comanda. */}
       <div className="px-6 pb-10">
