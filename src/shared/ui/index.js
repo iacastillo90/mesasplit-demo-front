@@ -17,3 +17,6 @@ export { default as AppHeader } from './AppHeader.jsx';
 export { default as AppFooter } from './AppFooter.jsx';
 // Re-exporta el layout universal de administración.
 export { default as AdminLayout } from './AdminLayout.jsx';
+// Re-exporta la barra flotante de simulación demo control.
+export { default as DemoControlBar } from './DemoControlBar.jsx';
+
