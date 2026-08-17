@@ -63,7 +63,7 @@ describe('app-routing: tabla de rutas (spec)', () => {
     renderApp('/');
     // Espera el título del hub (contenido sincrónico del Portal).
     expect(
-      await screen.findByRole('heading', { name: 'Demo de división de cuentas' }, { timeout: 5000 }),
+      await screen.findByRole('heading', { name: /División de Cuentas/i }, { timeout: 5000 }),
     ).toBeInTheDocument();
   });
 
@@ -114,7 +114,7 @@ describe('app-routing: tabla de rutas (spec)', () => {
     // Renderiza la app arrancando en la raíz (hub).
     renderApp('/');
     // Espera a que el hub esté montado (título de landing).
-    await screen.findByRole('heading', { name: 'Demo de división de cuentas' }, { timeout: 5000 });
+    await screen.findByRole('heading', { name: /División de Cuentas/i }, { timeout: 5000 });
     // Verifica un launcher por vista del spec app-routing.
     const labels = ['Mesa Virtual', 'Garzón', 'Cocina', 'Local Admin', 'Super Admin'];
     // Recorre cada etiqueta esperada del hub.
@@ -151,7 +151,7 @@ describe('app-routing: tabla de rutas (spec)', () => {
     // El hub vuelve a montarse en la raíz (pathname y vista).
     expect(screen.getByTestId('pathname').textContent).toBe('/');
     expect(
-      await screen.findByRole('heading', { name: 'Demo de división de cuentas' }, { timeout: 5000 }),
+      await screen.findByRole('heading', { name: /División de Cuentas/i }, { timeout: 5000 }),
     ).toBeInTheDocument();
   });
 });

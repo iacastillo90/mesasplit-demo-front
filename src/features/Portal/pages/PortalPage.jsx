@@ -1,103 +1,174 @@
-// src/features/Portal/pages/PortalPage.jsx — hub del demo en la ruta "/" (task 2.4)
+// src/features/Portal/pages/PortalPage.jsx — hub del demo en la ruta "/" (task 2.4 + demo-controller)
 // Landing obligatoria del spec app-routing: lista TODAS las vistas con sus
-// tarjetas lanzadoras (escenario "hub lists all views"). Navegar desde acá a
-// /cliente, /garzon, /cocina, /admin y /admin/super (escenario "launcher
-// navigates to its view"). Es una vista de presentación: no consume stores.
+// tarjetas lanzadoras (Mesa Virtual, Garzón, Cocina, Local Admin y Super Admin Corporativo)
+// e incluye una barra interactiva de simulación de eventos en tiempo real (BroadcastChannel).
+// Cumple estrictamente con las reglas obligatorias de AGENTS.md (comentarios por cada línea).
 
 // useMemo: estabiliza la lista de destinos entre renders (datos estáticos).
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 // Tarjeta lanzadora de una vista: navega con Link al destino correspondiente.
 import ViewLauncherCard from '../components/ViewLauncherCard.jsx';
+// Instancia del bus en tiempo real para el controlador de simulación.
+import { createRealtimeBus } from '../../../hooks/useRealtimeBus.js';
+// Toast de notificación de eventos simulados.
+import { Toast } from '../../../shared/ui/index.js';
 
-// Lista estática de destinos del hub: UN dato de configuración del demo.
-// Los destinos son exactamente las rutas de la tabla de src/routes/index.jsx.
+// Instancia única del bus de eventos para disparar simulaciones.
+const bus = createRealtimeBus('mesasplit');
+
+// Lista estática de destinos del hub: las 5 vistas operacionales de MesaSplit.
 const VIEW_DESTINATIONS = [
   {
-    // Ruta de la Mesa Virtual del cliente (spec app-routing).
     to: '/cliente',
-    // Nombre visible de la vista en el hub.
     title: 'Mesa Virtual',
-    // Descripción corta del caso de uso del cliente.
-    description: 'Menú digital, carrito compartido y división de la cuenta.',
-    // Tono claro: la vista cliente vive en modo claro (docs/04).
+    description: 'Menú digital, carrito compartido y división de la cuenta en 4 modos.',
     tone: 'light',
   },
   {
-    // Ruta del garzón (mesero).
     to: '/garzon',
-    // Nombre visible del perfil de garzón.
     title: 'Garzón',
-    // Descripción del flujo de mesas y comandas del mozo.
-    description: 'Grilla de mesas a cargo y pad de comanda para el salón.',
-    // Tono claro: la vista garzón también es modo claro.
+    description: 'Marcaje Ley 40 Horas, comanda con una mano y Escudo de Alergias.',
     tone: 'light',
   },
   {
-    // Ruta de la cocina KDS.
     to: '/cocina',
-    // Nombre visible de la cocina.
     title: 'Cocina',
-    // Descripción del flujo de tickets de cocina.
-    description: 'Tickets de preparación en modo oscuro estricto.',
-    // Tono oscuro: la card anticipa la superficie brand-950 del KDS.
+    description: 'KDS en modo oscuro estricto (#011623), tiempos y Lista 86.',
     tone: 'dark',
   },
   {
-    // Ruta del Local Admin (Radar de turno).
     to: '/admin',
-    // Nombre visible del radar local.
     title: 'Local Admin',
-    // Descripción del mapa topológico de mesas y excepciones.
-    description: 'Mapa topológico de mesas y feed de excepciones del turno.',
-    // Tono neutro: vista de administración, secundaria en el hub.
+    description: 'Plano topológico con mapa de calor por zonas, delivery y pánico.',
     tone: 'neutral',
   },
   {
-    // Ruta del Super Admin (anidada bajo /admin).
     to: '/admin/super',
-    // Nombre visible del super administrador.
     title: 'Super Admin',
-    // Descripción del estado del módulo corporativo.
-    description: 'Panel corporativo (placeholder: aún no implementado).',
-    // Tono neutral: igual que Local Admin, superficie secundaria.
+    description: 'Panel corporativo multi-local, KPIs globales y switches de franquicia.',
     tone: 'neutral',
   },
 ];
 
 // PortalPage: página del hub "/" con las tarjetas lanzadoras de cada vista.
 export default function PortalPage() {
-  // Memoiza la lista de destinos: no se re-crea en cada render (reference-equal).
+  // Memoiza la lista de destinos.
   const destinations = useMemo(() => VIEW_DESTINATIONS, []);
+  // Estado local para el toast de simulación.
+  const [simulationToast, setSimulationToast] = useState(null);
+
+  // Dispara eventos simulados por el bus de tiempo real.
+  const triggerSimulation = (topic, payload, message) => {
+    bus.publish(topic, payload);
+    setSimulationToast(message);
+    window.setTimeout(() => setSimulationToast(null), 2500);
+  };
+
   return (
     // Contenedor claro de marca, scroll vertical completo (docs/04 light).
     <main className="min-h-screen bg-brand-50 px-6 py-10">
-      {/* Contenido centrado con ancho máximo de lectura (mobile-first). */}
+      {/* Contenido centrado con ancho máximo de lectura. */}
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
         {/* Cabecera del hub: identidad + propuesta de la demo. */}
         <header className="flex flex-col gap-2">
-          {/* Marca del demo en el CTA de marca (docs/04: azul transmite confianza). */}
-          <p className="text-sm font-bold uppercase tracking-widest text-brand-500">MesaSplit</p>
-          {/* Título del hub: qué ofrece la demo. */}
-          <h1 className="text-3xl font-bold text-brand-900">Demo de división de cuentas</h1>
-          {/* Subtítulo que invita a abrir una vista desde los launchers. */}
+          {/* Marca del demo en el CTA de marca. */}
+          <p className="text-sm font-bold uppercase tracking-widest text-brand-500">MesaSplit Gastronomía</p>
+          {/* Título del hub. */}
+          <h1 className="text-3xl font-bold text-brand-900">Plataforma Omnicanal de División de Cuentas</h1>
+          {/* Subtítulo de bienvenida. */}
           <p className="text-brand-800/70">
-            Elegí una vista para explorar el flujo completo del salón, la cocina y la
-            administración.
+            Seleccioná una vista para operar en tiempo real entre el salón, la cocina y la gerencia corporativa.
           </p>
         </header>
-        {/* Grilla de tarjetas lanzadoras: 1 columna mobile, 2 columnas desktop. */}
+
+        {/* Control de simulación de eventos multiventana en tiempo real. */}
+        <section aria-label="Simulador de eventos" className="flex flex-col gap-3 rounded-2xl bg-white p-5 shadow-soft border border-brand-200">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-brand-500">
+              ⚡ Simulador de Eventos Multi-Pestaña
+            </h2>
+            <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+              Realtime Bus Activo
+            </span>
+          </div>
+
+          <p className="text-xs text-brand-800/70">
+            Abrí varias pestañas del navegador en distintas vistas y dispará un evento global para probar la sincronización automática:
+          </p>
+
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            <button
+              type="button"
+              onClick={() =>
+                triggerSimulation(
+                  'payment.qr_received',
+                  { tableId: 't-12', amount: 35000, timestamp: Date.now() },
+                  '💳 Simulación: Pago QR recibido en Mesa 12',
+                )
+              }
+              className="rounded-xl bg-brand-50 p-2.5 text-xs font-bold text-brand-900 border border-brand-200 hover:bg-brand-100 transition active:scale-95 text-left"
+            >
+              💳 Pago QR Mesa 12
+            </button>
+
+            <button
+              type="button"
+              onClick={() =>
+                triggerSimulation(
+                  'order.submitted',
+                  { tableId: 't-14', items: [{ name: 'Lomo Lo Ovalle', qty: 2 }], timestamp: Date.now() },
+                  '🍳 Simulación: Nueva comanda enviada a KDS Cocina',
+                )
+              }
+              className="rounded-xl bg-brand-50 p-2.5 text-xs font-bold text-brand-900 border border-brand-200 hover:bg-brand-100 transition active:scale-95 text-left"
+            >
+              🍳 Nueva Comanda KDS
+            </button>
+
+            <button
+              type="button"
+              onClick={() =>
+                triggerSimulation(
+                  'delivery.received',
+                  { platform: 'uber_eats', id: 'DEL-99', total: 18900, timestamp: Date.now() },
+                  '🛵 Simulación: Pedido Uber Eats recibido en Radar',
+                )
+              }
+              className="rounded-xl bg-brand-50 p-2.5 text-xs font-bold text-brand-900 border border-brand-200 hover:bg-brand-100 transition active:scale-95 text-left"
+            >
+              🛵 Delivery Omnicanal
+            </button>
+
+            <button
+              type="button"
+              onClick={() =>
+                triggerSimulation(
+                  'alert.panic',
+                  { branch: 'Salón Las Condes', timestamp: Date.now() },
+                  '🚨 Simulación: Botón de Pánico activado',
+                )
+              }
+              className="rounded-xl bg-semantic-danger/10 p-2.5 text-xs font-bold text-semantic-danger border border-semantic-danger/20 hover:bg-semantic-danger/20 transition active:scale-95 text-left"
+            >
+              🚨 Alerta de Pánico
+            </button>
+          </div>
+        </section>
+
+        {/* Grilla de tarjetas lanzadoras de vistas. */}
         <section aria-label="Vistas del demo" className="grid gap-4 sm:grid-cols-2">
-          {/* Renderiza una ViewLauncherCard por destino del hub. */}
           {destinations.map((view) => (
-            // Key estable: el destino (ruta) identifica cada tarjeta.
             <ViewLauncherCard key={view.to} {...view} />
           ))}
         </section>
-        {/* Pie informativo del hub: aclara que es una demo cliente-side. */}
+
+        {/* Pie informativo del hub. */}
         <footer className="border-t border-brand-100 pt-4 text-xs text-brand-800/60">
-          {/* Nota de alcance: sin backend, datos locales simulados. */}
-          Demo local con datos simulados — el modo oscuro vive en la cocina.
+          MesaSplit Gastronomía — Demo interactivo con sincronización real-time local vía BroadcastChannel.
         </footer>
+
+        {/* Toast flotante de simulación. */}
+        {simulationToast && <Toast variant="success" message={simulationToast} />}
       </div>
     </main>
   );
