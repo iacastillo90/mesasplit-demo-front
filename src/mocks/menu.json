@@ -1,93 +1,272 @@
 [
   {
     "id": "m1",
-    "name": "Hamburguesa Clásica",
-    "description": "Pan brioche, carne 180g, cheddar y salsa de la casa.",
-    "price": 8900,
-    "category": "Hamburguesas",
+    "name": "Lomo Lo Ovalle",
+    "description": "Corte de lomo vetado 300g a las brasas con sal de mar y papas nativas.",
+    "price": 18900,
+    "category": "Fuego & Carnes",
     "allergens": [],
     "alcoholic": false,
-    "cost": 4600,
-    "image": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=400&q=80"
+    "popular": true,
+    "glutenFree": true,
+    "spicy": false,
+    "cost": 8500
   },
   {
     "id": "m2",
-    "name": "Hamburguesa BBQ Bacon",
-    "description": "Bacon crocante, cebolla crispy y salsa BBQ ahumada.",
-    "price": 10400,
+    "name": "Hamburguesa Clásica Brioche",
+    "description": "Pan brioche artesanal, carne 180g, queso cheddar fundido y salsa secreta.",
+    "price": 8900,
     "category": "Hamburguesas",
-    "allergens": [
-      "gluten"
-    ],
+    "allergens": ["gluten", "lácteos"],
     "alcoholic": false,
-    "cost": 5400,
-    "image": "https://images.unsplash.com/photo-1586190848861-99aa4a171e90?auto=format&fit=crop&w=400&q=80"
+    "popular": true,
+    "glutenFree": false,
+    "spicy": false,
+    "cost": 4600
   },
   {
     "id": "m3",
-    "name": "Pizza Margherita",
-    "description": "Mozzarella fresca, tomate y albahaca sobre masa artesanal.",
-    "price": 10900,
-    "category": "Pizzas",
-    "allergens": [
-      "lácteos",
-      "gluten"
-    ],
+    "name": "Hamburguesa BBQ Bacon",
+    "description": "Bacon crocante ahumado, cebolla crispy y salsa BBQ artesanal.",
+    "price": 10400,
+    "category": "Hamburguesas",
+    "allergens": ["gluten"],
     "alcoholic": false,
-    "cost": 5600,
-    "image": "https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?auto=format&fit=crop&w=400&q=80"
+    "popular": true,
+    "glutenFree": false,
+    "spicy": false,
+    "cost": 5400
   },
   {
     "id": "m4",
-    "name": "Carbonara",
-    "description": "Pasta fresca, panceta, yema y queso pecorino.",
-    "price": 9800,
-    "category": "Pasta",
-    "allergens": [
-      "huevo",
-      "lácteos",
-      "gluten"
-    ],
+    "name": "Hamburguesa Diablo Picante 🌶️",
+    "description": "Doble carne, jalapeños salteados, queso pepper jack y sriracha mayo.",
+    "price": 11900,
+    "category": "Hamburguesas",
+    "allergens": ["gluten", "lácteos"],
     "alcoholic": false,
-    "cost": 5000,
-    "image": "https://images.unsplash.com/photo-1612874742237-6526221588e3?auto=format&fit=crop&w=400&q=80"
+    "popular": true,
+    "glutenFree": false,
+    "spicy": true,
+    "cost": 5800
   },
   {
     "id": "m5",
-    "name": "Ensalada César",
-    "description": "Lechuga romana, pollo grillado, parmesano y croutons.",
-    "price": 7400,
-    "category": "Ensaladas",
-    "allergens": [
-      "lácteos",
-      "gluten"
-    ],
+    "name": "Hamburguesa Veggie Portobello 🥗",
+    "description": "Hongo portobello a la parrilla, queso de cabra, rúcula y mayo de ajo.",
+    "price": 9900,
+    "category": "Hamburguesas",
+    "allergens": ["gluten", "lácteos"],
     "alcoholic": false,
-    "cost": 3400,
-    "image": "https://images.unsplash.com/photo-1550304943-4f24f54ddde9?auto=format&fit=crop&w=400&q=80"
+    "popular": false,
+    "vegetarian": true,
+    "glutenFree": false,
+    "cost": 4200
   },
   {
     "id": "m6",
-    "name": "Limonada Menta",
-    "description": "Limonada natural con menta fresca y hielo.",
-    "price": 2900,
-    "category": "Bebidas",
-    "allergens": [],
+    "name": "Pizza Margherita Fina",
+    "description": "Mozzarella fior di latte, tomate san marzano y albahaca fresca.",
+    "price": 10900,
+    "category": "Pizzas",
+    "allergens": ["lácteos", "gluten"],
     "alcoholic": false,
-    "cost": 900,
-    "image": "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=400&q=80"
+    "popular": true,
+    "vegetarian": true,
+    "glutenFree": false,
+    "cost": 4900
   },
   {
     "id": "m7",
-    "name": "Cerveza Artesanal IPA",
-    "description": "Cerveza rubia artesanal 330cc (5.8% ABV).",
-    "price": 4500,
-    "category": "Bebidas",
-    "allergens": [
-      "gluten"
-    ],
+    "name": "Pizza Pepperoni Fuego 🌶️",
+    "description": "Doble pepperoni crocante, mozzarella y aceite de chile rojo.",
+    "price": 12400,
+    "category": "Pizzas",
+    "allergens": ["lácteos", "gluten"],
+    "alcoholic": false,
+    "popular": true,
+    "spicy": true,
+    "glutenFree": false,
+    "cost": 5800
+  },
+  {
+    "id": "m8",
+    "name": "Pizza Quattro Formaggi",
+    "description": "Gorgonzola, parmesano reggiano, mozzarella y queso provolone.",
+    "price": 12900,
+    "category": "Pizzas",
+    "allergens": ["lácteos", "gluten"],
+    "alcoholic": false,
+    "vegetarian": true,
+    "cost": 5900
+  },
+  {
+    "id": "m9",
+    "name": "Pizza Sin Gluten Huerto 🌾",
+    "description": "Masa de yuca y harina de arroz, vegetales asados y queso vegano.",
+    "price": 13500,
+    "category": "Pizzas",
+    "allergens": [],
+    "alcoholic": false,
+    "glutenFree": true,
+    "vegetarian": true,
+    "cost": 6100
+  },
+  {
+    "id": "m10",
+    "name": "Pasta Carbonara Tradizionale",
+    "description": "Fettuccine fresco, guanciale crocante, yemas de huevo y pecorino romano.",
+    "price": 11900,
+    "category": "Pastas",
+    "allergens": ["huevo", "lácteos", "gluten"],
+    "alcoholic": false,
+    "popular": true,
+    "cost": 5200
+  },
+  {
+    "id": "m11",
+    "name": "Gnocchi Arrabiata Picante 🌶️",
+    "description": "Ñoquis artesanales de papa en salsa pomodoro con peperoncino.",
+    "price": 10500,
+    "category": "Pastas",
+    "allergens": ["gluten", "huevo"],
+    "alcoholic": false,
+    "spicy": true,
+    "vegetarian": true,
+    "cost": 4500
+  },
+  {
+    "id": "m12",
+    "name": "Ensalada César con Pollo",
+    "description": "Lechuga hidropónica, pechuga a la plancha, croutons y aderezo césar.",
+    "price": 8400,
+    "category": "Ensaladas",
+    "allergens": ["lácteos", "gluten"],
+    "alcoholic": false,
+    "cost": 3800
+  },
+  {
+    "id": "m13",
+    "name": "Ensalada Quinoa & Palta Sin Gluten 🌾🥗",
+    "description": "Quinoa real, palta hass, tomates cherry, almendras tostadas y limón.",
+    "price": 8900,
+    "category": "Ensaladas",
+    "allergens": ["frutos secos"],
+    "alcoholic": false,
+    "glutenFree": true,
+    "vegetarian": true,
+    "cost": 3900
+  },
+  {
+    "id": "m14",
+    "name": "Poke Bowl Salmón & Sésamo 🌾",
+    "description": "Salmón fresco, arroz sushi, edamame, palta, mango y sésamo negro.",
+    "price": 12900,
+    "category": "Ensaladas",
+    "allergens": ["pescado", "sésamo"],
+    "alcoholic": false,
+    "glutenFree": true,
+    "popular": true,
+    "cost": 6200
+  },
+  {
+    "id": "m15",
+    "name": "Volcán de Chocolate Cacao 70% 🍰",
+    "description": "Bizcocho tibio de cacao ecuatoriano con centro fluido y helado de vainilla.",
+    "price": 5900,
+    "category": "Postres",
+    "allergens": ["huevo", "lácteos", "gluten"],
+    "alcoholic": false,
+    "sweet": true,
+    "popular": true,
+    "cost": 2200
+  },
+  {
+    "id": "m16",
+    "name": "Cheesecake de Frutos Rojos 🍰",
+    "description": "Tarta de queso crema estilo New York con coulis de mirtilos y frutilla.",
+    "price": 5400,
+    "category": "Postres",
+    "allergens": ["lácteos", "gluten"],
+    "alcoholic": false,
+    "sweet": true,
+    "cost": 2100
+  },
+  {
+    "id": "m17",
+    "name": "Tiramisú Tradicional Café 🍰",
+    "description": "Bizcocho de soletilla empapado en espresso, queso mascarpone y cacao.",
+    "price": 5800,
+    "category": "Postres",
+    "allergens": ["huevo", "lácteos", "gluten"],
+    "alcoholic": false,
+    "sweet": true,
+    "cost": 2300
+  },
+  {
+    "id": "m18",
+    "name": "Mousse de Lucuma Sin Gluten 🌾🍰",
+    "description": "Mousse suave de lúcuma natural con virutas de chocolate amargo.",
+    "price": 4900,
+    "category": "Postres",
+    "allergens": ["lácteos"],
+    "alcoholic": false,
+    "glutenFree": true,
+    "sweet": true,
+    "cost": 1900
+  },
+  {
+    "id": "m19",
+    "name": "Pisco Sour Artesanal 🍹",
+    "description": "Pisco aromático 40°, jugo de limón de pica fresco y amargo de angostura.",
+    "price": 5900,
+    "category": "Barra",
+    "allergens": ["huevo"],
     "alcoholic": true,
-    "cost": 2100,
-    "image": "https://images.unsplash.com/photo-1608270586620-248524c67de9?auto=format&fit=crop&w=400&q=80"
+    "popular": true,
+    "cost": 1800
+  },
+  {
+    "id": "m20",
+    "name": "Mojito Cubano Menta 🍹",
+    "description": "Ron blanco, menta fresca, jugo de lima, azúcar de caña y agua con gas.",
+    "price": 5400,
+    "category": "Barra",
+    "allergens": [],
+    "alcoholic": true,
+    "cost": 1600
+  },
+  {
+    "id": "m21",
+    "name": "Aperol Spritz 🍹",
+    "description": "Aperol italiano, espumante prosecco, rodaja de naranja fresca y soda.",
+    "price": 6400,
+    "category": "Barra",
+    "allergens": [],
+    "alcoholic": true,
+    "popular": true,
+    "cost": 2100
+  },
+  {
+    "id": "m22",
+    "name": "Cerveza IPA Artesanal 330cc",
+    "description": "Cerveza rubia con perfil lúpulo cítrico y amargor moderado 6° ABV.",
+    "price": 4500,
+    "category": "Barra",
+    "allergens": ["gluten"],
+    "alcoholic": true,
+    "cost": 1900
+  },
+  {
+    "id": "m23",
+    "name": "Limonada Menta & Jengibre",
+    "description": "Limonada natural prensada en frío con menta y un toque picante de jengibre.",
+    "price": 3500,
+    "category": "Barra",
+    "allergens": [],
+    "alcoholic": false,
+    "glutenFree": true,
+    "cost": 1100
   }
 ]

@@ -72,8 +72,8 @@ export default function ItemReviewModal({ open, onClose, item, onSubmitReview })
   if (!open || !item) return null;
 
   return (
-    // Modal envolvente de calificación del plato.
-    <Modal open={open} onClose={onClose} title={`⭐ Evaluar Plato: ${item.name}`}>
+    // Modal envolvente de calificación del plato centrado en el medio de la pantalla.
+    <Modal open={open} onClose={onClose} title={`⭐ Evaluar Plato: ${item.name}`} position="center">
       <div className="flex flex-col gap-4 text-brand-900">
         {/* Banner de confirmación al enviar. */}
         {submitted ? (
