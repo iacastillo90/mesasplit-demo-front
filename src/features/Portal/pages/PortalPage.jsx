@@ -151,6 +151,20 @@ export default function PortalPage() {
               type="button"
               onClick={() =>
                 triggerSimulation(
+                  'reservation.created',
+                  { customerName: 'Reserva VIP Hub', guests: 4, time: '21:00', zone: 'Terraza', timestamp: Date.now() },
+                  '📅 Simulación: Nueva Reserva recibida en Providencia',
+                )
+              }
+              className="rounded-xl bg-emerald-50 p-2.5 text-xs font-bold text-emerald-800 border border-emerald-200 hover:bg-emerald-100 transition active:scale-95 text-left"
+            >
+              📅 Reserva Providencia
+            </button>
+
+            <button
+              type="button"
+              onClick={() =>
+                triggerSimulation(
                   'alert.panic',
                   { branch: 'Salón Las Condes', timestamp: Date.now() },
                   '🚨 Simulación: Botón de Pánico activado',

@@ -36,6 +36,8 @@ import ReconnectBanner from '../components/ReconnectBanner.jsx';
 import MenuFilterPills from '../components/MenuFilterPills.jsx';
 // Modal de personalización de opciones del plato.
 import ItemCustomizerModal from '../components/ItemCustomizerModal.jsx';
+// Asistente inteligente de reservas por local y fila virtual.
+import ClientReservationAssistant from '../components/ClientReservationAssistant.jsx';
 
 
 // ClientPage: pantalla principal de la Mesa Virtual del comensal.
@@ -84,6 +86,8 @@ export default function ClientPage() {
   const [activeDietFilter, setActiveDietFilter] = useState('all');
   // Estado local para el plato actualmente en proceso de personalización.
   const [customizingItem, setCustomizingItem] = useState(null);
+  // Estado local para controlar la apertura del asistente inteligente de reservas por local.
+  const [assistantOpen, setAssistantOpen] = useState(false);
 
 
   // Store de división de cuenta (account-split).
@@ -188,6 +192,14 @@ export default function ClientPage() {
                 className="rounded-full bg-brand-900/10 px-3 py-1 text-xs font-bold text-brand-900 hover:bg-brand-900/20 border border-brand-900/30 transition active:scale-95"
               >
                 📄 Solicitar Factura
+              </button>
+              {/* Botón para abrir el asistente inteligente de reservas por local y fila virtual. */}
+              <button
+                type="button"
+                onClick={() => setAssistantOpen(true)}
+                className="rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-700 hover:bg-emerald-500/20 border border-emerald-300 transition active:scale-95"
+              >
+                📅 Reservas
               </button>
               {/* Badge con el código QR de la sesión (identidad de la mesa). */}
               <Badge variant="brand">Código {tableContext?.code ?? '••••'}</Badge>
@@ -346,6 +358,12 @@ export default function ClientPage() {
             handleAdd(customizedItem);
             setCustomizingItem(null);
           }}
+        />
+
+        {/* Modal del asistente inteligente de reservas por sucursal y fila virtual */}
+        <ClientReservationAssistant
+          open={assistantOpen}
+          onClose={() => setAssistantOpen(false)}
         />
 
         {/* Toast de confirmación al agregar un plato (base shared/ui). */}

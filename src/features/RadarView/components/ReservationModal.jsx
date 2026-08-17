@@ -2,8 +2,8 @@
 // Administra reservas de salón y cola de espera con estimación de tiempo y emisión de eventos reservation.created por el bus real-time.
 // Cumple estrictamente con las reglas obligatorias de AGENTS.md (comentarios en español por cada línea).
 
-// useState para gestionar las pestañas y el listado de reservas.
-import { useState } from 'react';
+// useEffect y useState para gestionar las pestañas y la sincronización en tiempo real.
+import { useState, useEffect } from 'react';
 // Modal base reutilizable.
 import { Modal } from '../../../shared/ui/index.js';
 // Instancia del bus en tiempo real.
@@ -31,7 +31,43 @@ export default function ReservationModal({ open, onClose }) {
   // Listado de reservas.
   const [reservations, setReservations] = useState(INITIAL_RESERVATIONS);
   // Listado de la cola de espera.
-  const [waitlist] = useState(INITIAL_WAITLIST);
+  const [waitlist, setWaitlist] = useState(INITIAL_WAITLIST);
+
+  // Escucha los eventos en tiempo real emitidos desde el asistente de reservas del cliente.
+  useEffect(() => {
+    // Suscripción al evento de creación de reserva.
+    const unsubCreated = bus.subscribe('reservation.created', (data) => {
+      if (!data) return;
+      const formattedRes = {
+        id: data.id || `res-${Date.now()}`,
+        name: data.customerName || data.name || 'Reserva Cliente',
+        guests: data.guests || 2,
+        time: data.time || '20:30',
+        table: data.table || data.zone || 'Por Asignar',
+        status: 'Confirmada',
+      };
+      setReservations((prev) => [formattedRes, ...prev]);
+    });
+
+    // Suscripción al evento de ingreso a la fila virtual.
+    const unsubWaitlist = bus.subscribe('waitlist.joined', (data) => {
+      if (!data) return;
+      const formattedWait = {
+        id: data.id || `wait-${Date.now()}`,
+        name: data.customerName || 'Comensal en Espera',
+        guests: data.guests || 2,
+        waitTime: `${data.estimatedWaitMinutes || 15} min`,
+        status: 'En Espera',
+      };
+      setWaitlist((prev) => [formattedWait, ...prev]);
+    });
+
+    // Cancela las suscripciones al desmontar el modal.
+    return () => {
+      unsubCreated();
+      unsubWaitlist();
+    };
+  }, []);
 
   // Campos del formulario para nueva reserva.
   const [name, setName] = useState('');
