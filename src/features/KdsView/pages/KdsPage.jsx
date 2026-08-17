@@ -25,6 +25,8 @@ import OfflineBanner from '../components/OfflineBanner.jsx';
 import { createConnectivityAdapter } from '../services/connectivityService.js';
 // Componente de exhibición fullscreen Expo View.
 import ExpoDisplay from '../components/ExpoDisplay.jsx';
+// Componente de vista agregada por plato (kds-batch-view).
+import BatchSummaryView from '../components/BatchSummaryView.jsx';
 
 // Componente principal de la página KDS de cocina.
 export default function KdsPage() {
@@ -52,9 +54,10 @@ export default function KdsPage() {
   // Estado del bus en tiempo real.
   const bus = useRealtimeBus('mesasplit');
 
-  // Estado local para visibilidad de modales.
+  // Estado local para visibilidad de modales y vista batch.
   const [isRecallOpen, setIsRecallOpen] = useState(false);
   const [isLista86Open, setIsLista86Open] = useState(false);
+  const [isBatchView, setIsBatchView] = useState(false);
 
   // Carga inicial de tickets al montar.
   useEffect(() => {
@@ -106,6 +109,8 @@ export default function KdsPage() {
             onOpenRecall={() => setIsRecallOpen(true)}
             onOpenLista86={() => setIsLista86Open(true)}
             onToggleExpo={toggleExpoMode}
+            isBatchView={isBatchView}
+            onToggleBatch={() => setIsBatchView((prev) => !prev)}
           />
 
           {/* Barra deslizable de estaciones de cocina. */}
@@ -114,9 +119,11 @@ export default function KdsPage() {
           {/* Indicador visual de modo offline si se perdió la conexión a internet. */}
           {!isOnline && <OfflineBanner pendingCount={offlineQueue.length} />}
 
-          {/* Área principal con grilla responsiva de tarjetas de comanda. */}
+          {/* Área principal con grilla responsiva de tarjetas de comanda o resumen batch. */}
           <div className="px-6 pb-10">
-            {loading ? (
+            {isBatchView ? (
+              <BatchSummaryView tickets={visibleTickets} activeStation={activeStation} />
+            ) : loading ? (
               <p className="py-16 text-center text-brand-50/60">Cargando tickets de cocina…</p>
             ) : visibleTickets.length === 0 ? (
               <p className="py-16 text-center text-brand-50/60">No hay tickets activos en esta estación.</p>
