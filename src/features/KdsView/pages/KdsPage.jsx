@@ -1,85 +1,126 @@
-// src/features/KdsView/pages/KdsPage.jsx — cocina KDS modo oscuro estricto (task 2.7)
-// Ruta "/cocina" del spec feature-views: fondo brand-950 (#011623), tickets
-// brand-800 (#024064) y texto claro — NINGUNA superficie clara en el slice
-// (escenarios "dark surfaces throughout" y "no light-mode leakage").
-// Orquesta el servicio (tickets) y el store (filtro por estación) del slice.
+// src/features/KdsView/pages/KdsPage.jsx — pantalla principal KDS de cocina (kds-kitchen)
+// Orquesta la vista en modo oscuro estricto (`#011623`), filtrado por estaciones, comanda activa,
+// modales de Recall y Lista 86, y suscripciones en tiempo real a useRealtimeBus (eventos course.fire).
+// Cumple con las reglas obligatorias de AGENTS.md (comentarios en español por cada línea).
 
-// useEffect: dispara la carga de tickets al montar la vista.
-import { useEffect, useMemo } from 'react';
-// Store de cocina: tickets, estación activa y acciones.
+// Hooks de React para estado local y efectos secundarios.
+import { useEffect, useMemo, useState } from 'react';
+// Store central del KDS de cocina.
 import { STATION_ALL, useKdsStore } from '../store/useKdsStore.js';
-// Cabecera oscura del KDS (conteo de tickets en curso).
+// Hook de bus de eventos en tiempo real.
+import { useRealtimeBus } from '../../../hooks/useRealtimeBus.js';
+// Cabecera superior del KDS.
 import KdsHeader from '../components/KdsHeader.jsx';
-// Tabs de estación: filtro por zona de cocina (chips oscuros).
+// Pestañas de filtrado de estación.
 import StationFilterTabs from '../components/StationFilterTabs.jsx';
-// Tarjeta de ticket en brand-800 con semáforo y escudo de alergias.
+// Tarjeta individual de comanda.
 import TicketCard from '../components/TicketCard.jsx';
+// Modal de historial de Recall.
+import RecallModal from '../components/RecallModal.jsx';
+// Modal de gestión de Lista 86.
+import Lista86Modal from '../components/Lista86Modal.jsx';
 
-// KdsPage: pantalla de la cocina en modo oscuro estricto.
+// Componente principal de la página KDS de cocina.
 export default function KdsPage() {
-  // Suscripción al store: tickets de cocina cargados.
+  // Suscripción al store de KDS.
   const tickets = useKdsStore((s) => s.tickets);
-  // Estación activa del filtro (STATION_ALL = ver todas).
+  const recallStack = useKdsStore((s) => s.recallStack);
+  const stock86 = useKdsStore((s) => s.stock86);
   const activeStation = useKdsStore((s) => s.activeStation);
-  // Flag de carga de la primera llamada al servicio.
   const loading = useKdsStore((s) => s.loading);
-  // Acción de carga inicial de tickets (se dispara una vez abajo).
-  const loadTickets = useKdsStore((s) => s.loadTickets);
-  // Acción de cambiar la estación activa del filtro.
-  const setStation = useKdsStore((s) => s.setStation);
 
-  // Carga los tickets UNA vez al montar la vista.
+  // Acciones extraídas del store.
+  const loadTickets = useKdsStore((s) => s.loadTickets);
+  const setStation = useKdsStore((s) => s.setStation);
+  const completeTicket = useKdsStore((s) => s.completeTicket);
+  const restoreTicket = useKdsStore((s) => s.restoreTicket);
+  const toggleStock86 = useKdsStore((s) => s.toggleStock86);
+  const toggleItemPrepared = useKdsStore((s) => s.toggleItemPrepared);
+  const fireCourse = useKdsStore((s) => s.fireCourse);
+
+  // Estado del bus en tiempo real.
+  const bus = useRealtimeBus('mesasplit');
+
+  // Estado local para visibilidad de modales.
+  const [isRecallOpen, setIsRecallOpen] = useState(false);
+  const [isLista86Open, setIsLista86Open] = useState(false);
+
+  // Carga inicial de tickets al montar.
   useEffect(() => {
-    // Invoca la acción del store que resuelve los tickets del servicio.
     loadTickets();
-    // Sin deps: solo al montar (los datos del demo no cambian en sesión).
   }, [loadTickets]);
 
-  // Deriva la lista de estaciones disponibles + "Todas" para los tabs.
+  // Suscripción a eventos en tiempo real course.fire desde el bus.
+  useEffect(() => {
+    const unsubscribe = bus.subscribe('course.fire', (payload) => {
+      if (payload && payload.orderId) {
+        fireCourse(payload.orderId, payload.courseType);
+      }
+    });
+    return () => unsubscribe();
+  }, [bus, fireCourse]);
+
+  // Deriva la lista de estaciones disponibles a partir de las comandas.
   const stations = useMemo(() => {
-    // Extrae las estaciones únicas de los tickets (Set elimina duplicados).
-    const unique = [...new Set(tickets.map((ticket) => ticket.station))];
-    // Antepone la opción "todas" al arreglo de estaciones.
+    const unique = [...new Set(tickets.map((t) => t.station).filter(Boolean))];
     return [STATION_ALL, ...unique];
   }, [tickets]);
 
-  // Filtra los tickets por la estación activa (o devuelve todos).
-  const visibleTickets = useMemo(
-    // Si el filtro es "todas" muestra todo; si no, solo la estación activa.
-    () =>
-      activeStation === STATION_ALL ? tickets : tickets.filter((t) => t.station === activeStation),
-    // Recalcula cuando cambian los tickets o la estación activa.
-    [tickets, activeStation],
-  );
+  // Filtra los tickets según la pestaña de estación activa.
+  const visibleTickets = useMemo(() => {
+    if (activeStation === STATION_ALL) return tickets;
+    return tickets.filter((t) => t.station === activeStation);
+  }, [tickets, activeStation]);
 
   return (
-    // Contenedor OSCURO ESTRICTO: fondo brand-950 en toda la vista.
+    // Contenedor principal en MODO OSCURO ESTRICTO (#011623).
     <main className="min-h-screen bg-brand-950 text-brand-50">
-      {/* Cabecera del KDS: título, turno y conteo de tickets activos. */}
-      <KdsHeader activeCount={visibleTickets.length} />
-      {/* Tabs de estación: filtran los tickets por zona de cocina. */}
+      {/* Cabecera superior KDS con indicador de tickets activos y lanzadores de modales. */}
+      <KdsHeader
+        activeCount={visibleTickets.length}
+        recallCount={recallStack.length}
+        onOpenRecall={() => setIsRecallOpen(true)}
+        onOpenLista86={() => setIsLista86Open(true)}
+      />
+
+      {/* Barra deslizable de estaciones de cocina. */}
       <StationFilterTabs stations={stations} activeStation={activeStation} onChange={setStation} />
 
-      {/* Cuerpo: grilla de tickets o estado de carga inicial. */}
+      {/* Área principal con grilla responsiva de tarjetas de comanda. */}
       <div className="px-6 pb-10">
-        {/* Estado de carga: texto claro mientras resuelve el servicio. */}
         {loading ? (
-          // Mensaje de carga de tickets con tipografía clara legible.
           <p className="py-16 text-center text-brand-50/60">Cargando tickets de cocina…</p>
         ) : visibleTickets.length === 0 ? (
-          // Sin tickets para la estación activa: estado vacío oscuro.
-          <p className="py-16 text-center text-brand-50/60">No hay tickets en esta estación.</p>
+          <p className="py-16 text-center text-brand-50/60">No hay tickets activos en esta estación.</p>
         ) : (
-          // Grilla responsiva de tarjetas de ticket (1→4 columnas).
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-            {/* Renderiza una TicketCard por ticket visible del filtro. */}
             {visibleTickets.map((ticket) => (
-              // Key estable del ticket en la grilla.
-              <TicketCard key={ticket.id} ticket={ticket} />
+              <TicketCard
+                key={ticket.id}
+                ticket={ticket}
+                onComplete={completeTicket}
+                onTogglePrepared={toggleItemPrepared}
+              />
             ))}
           </div>
         )}
       </div>
+
+      {/* Modal de Recall de comandas despachadas. */}
+      <RecallModal
+        isOpen={isRecallOpen}
+        onClose={() => setIsRecallOpen(false)}
+        recallStack={recallStack}
+        onRestore={restoreTicket}
+      />
+
+      {/* Modal de gestión de Lista 86 (Agotados). */}
+      <Lista86Modal
+        isOpen={isLista86Open}
+        onClose={() => setIsLista86Open(false)}
+        stock86={stock86}
+        onToggle86={toggleStock86}
+      />
     </main>
   );
 }

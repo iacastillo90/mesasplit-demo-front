@@ -1,25 +1,22 @@
-// src/features/KdsView/components/AllergyShieldAlert.jsx — escudo de alergias (task 2.7)
-// Alerta de salud/seguridad del ticket: SOLO rojo semántico (danger #EF4444).
-// El spec design-tokens reserva el rojo para alergias y emergencias; cualquier
-// otra urgencia operativa debe usar naranja (urgent), nunca este componente.
-// El resplandor danger-glow refuerza la alerta en la pantalla de cocina.
+// src/features/KdsView/components/AllergyShieldAlert.jsx — Escudo de Alergias del KDS (kds-kitchen)
+// Muestra una alerta destacada en Rojo Puro (#EF4444) para advertir al cocinero sobre restricciones médicas/alergias.
+// Cumple con las reglas de AGENTS.md y la Regla de Oro (el rojo puro se usa exclusivamente para alergias/emergencias).
 
-// Escudo de alergias: píldora roja con las alergias declaradas del ítem.
+// Componente presentacional del Escudo de Alergias.
 export default function AllergyShieldAlert({ allergens }) {
-  // Si no hay alergias declaradas, no renderiza nada (sin falso positivo).
+  // Si no hay alergias declaradas, no renderiza nada.
   if (!allergens || allergens.length === 0) return null;
+
   return (
-    // Píldora roja de salud/seguridad con resplandor danger-glow (shadow token).
-    <span
+    // Banner superior parpadeante en Rojo Puro #EF4444 con sombra de riesgo.
+    <div
       role="alert"
-      className="inline-flex items-center gap-1 rounded-full bg-semantic-danger px-2.5 py-1 text-[11px] font-bold text-white shadow-danger-glow"
+      className="flex items-center gap-2 rounded-xl bg-semantic-danger px-3 py-2 text-xs font-bold text-white shadow-danger-glow animate-pulse"
     >
-      {/* Símbolo de advertencia de la alerta (salud/seguridad). */}
-      <span aria-hidden="true">⚠</span>
-      {/* Etiqueta que identifica la naturaleza de la alerta. */}
-      Alergia:
-      {/* Lista de alergias declaradas separadas por coma. */}
-      {allergens.join(', ')}
-    </span>
+      {/* Ícono visual de advertencia de seguridad alimentaria. */}
+      <span className="text-base" aria-hidden="true">⚠️</span>
+      {/* Texto explícito en mayúsculas con las alergias declaradas. */}
+      <span>ALERGIA: {allergens.join(', ').toUpperCase()} DECLARADA POR CLIENTE</span>
+    </div>
   );
 }
