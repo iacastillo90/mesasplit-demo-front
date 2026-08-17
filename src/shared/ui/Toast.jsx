@@ -11,29 +11,28 @@ const VARIANT_CLASSES = {
   danger: 'bg-semantic-danger text-white',
 };
 
-// Toast: aviso flotante fijo abajo al centro. Props: variant, message, onClose.
-// onClose es opcional: si no se pasa, el toast es solo informativo (sin botón).
+// Toast: aviso flotante al centro de la pantalla. Props: variant, message, onClose.
 export default function Toast({ variant = 'success', message = '', onClose }) {
   // Compone el estilo del contenedor con la variante elegida.
-  const containerClasses = `pointer-events-auto flex max-w-sm items-center gap-3 rounded-xl px-4 py-3 shadow-soft ${VARIANT_CLASSES[variant] ?? VARIANT_CLASSES.success}`;
+  const containerClasses = `pointer-events-auto flex max-w-md items-center gap-3 rounded-2xl p-4 font-bold text-sm shadow-2xl ${VARIANT_CLASSES[variant] ?? VARIANT_CLASSES.success}`;
   return (
-    // Contenedor fijo que no roba clicks al resto de la UI (pointer-events-none).
-    <div className="pointer-events-none fixed inset-x-0 bottom-4 z-50 flex justify-center px-4">
+    // Contenedor centrado en pantalla completa con telón translúcido.
+    <div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-brand-950/40 backdrop-blur-xs p-4">
       {/* Panel del toast: reintroduce los eventos para poder interactuar. */}
       <div role="status" aria-live="polite" className={containerClasses}>
         {/* Indicador visual de la variante: punto de color (semántica pura). */}
-        <span aria-hidden="true" className="text-base leading-none">
-          {variant === 'success' ? '✓' : '✕'}
+        <span aria-hidden="true" className="text-xl leading-none">
+          {variant === 'success' ? '✨' : '⚠️'}
         </span>
         {/* Mensaje del aviso en texto normal legible sobre el fondo coloreado. */}
-        <p className="flex-1 text-sm font-medium">{message}</p>
+        <p className="flex-1 text-sm font-bold">{message}</p>
         {/* Cierre manual: solo si el consumidor provee el handler (opcional). */}
         {onClose && (
           <button
             type="button"
             onClick={onClose}
             aria-label="Cerrar aviso"
-            className="rounded-full p-1 text-current/80 hover:bg-white/20"
+            className="rounded-xl bg-white/20 p-1 text-current hover:bg-white/30"
           >
             ✕
           </button>

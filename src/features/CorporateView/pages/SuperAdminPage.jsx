@@ -1,147 +1,276 @@
 // src/features/CorporateView/pages/SuperAdminPage.jsx — Panel Corporativo Super Admin Multi-Local (super-admin-corporate)
 // Vista "/admin/super" del spec super-admin-corporate: resumen de KPIs de la franquicia en CLP ($1.850.000+),
-// tarjetas de salud operacional por sucursal (Las Condes, Providencia, Vitacura, Santiago Centro),
-// conmutadores de reglas operacionales globales (Ley 40h, Alergias, DTE) y flujo de auditoría real-time.
+// tarjetas de salud operacional por sucursal, reglas globales, compliance fiscal, simulador What-If y matriz de menú.
+// Organizado en Layout con Menú Lateral (Sidebar) para navegar entre secciones funcionales sin scroll.
 // Cumple estrictamente con las reglas obligatorias de AGENTS.md (comentarios por cada línea).
 
-// useEffect de React.
-import { useEffect } from 'react';
-// Link de React Router.
-import { Link } from 'react-router-dom';
-// Formateador de moneda en CLP.
+import { useEffect, useState } from 'react';
 import { formatCurrency } from '../../../shared/utils/index.js';
-// Store de Zustand del panel corporativo.
 import { useCorporateStore } from '../store/useCorporateStore.js';
-// Componentes del slice corporativo.
 import BranchHealthCard from '../components/BranchHealthCard.jsx';
 import GlobalConfigToggles from '../components/GlobalConfigToggles.jsx';
 import FranchiseEventStream from '../components/FranchiseEventStream.jsx';
 import CostoPrimarioCard from '../components/CostoPrimarioCard.jsx';
 import ComplianceSiiPanel from '../components/ComplianceSiiPanel.jsx';
-// Simulador What-If de precios de menú (corporate-what-if).
 import WhatIfSimulator from '../components/WhatIfSimulator.jsx';
-// Matriz de ingeniería de menú (corporate-menu-engineering).
 import MenuEngineeringMatrix from '../components/MenuEngineeringMatrix.jsx';
 
-// Componente principal de la página de Super Admin Corporativo.
 export default function SuperAdminPage() {
-  // Suscripción al store corporativo.
   const branches = useCorporateStore((s) => s.branches);
   const featureToggles = useCorporateStore((s) => s.featureToggles);
   const franchiseEvents = useCorporateStore((s) => s.franchiseEvents);
   const loading = useCorporateStore((s) => s.loading);
 
-  // Acciones del store.
+  // Tab activo del menú lateral corporativo. 'all' muestra todas las secciones.
+  const [activeTab, setActiveTab] = useState('all');
+
   const loadCorporateData = useCorporateStore((s) => s.loadCorporateData);
   const toggleFeature = useCorporateStore((s) => s.toggleFeature);
   const setupRealtimeListeners = useCorporateStore((s) => s.setupRealtimeListeners);
 
-  // Carga inicial y listeners en tiempo real al montar la vista.
   useEffect(() => {
     loadCorporateData();
     const cleanup = setupRealtimeListeners();
     return cleanup;
   }, [loadCorporateData, setupRealtimeListeners]);
 
-  // Calcula las ventas globales acumuladas de la franquicia.
   const totalSales = branches.reduce((acc, b) => acc + (b.salesTotal ?? 0), 0);
-  // Calcula el total de mesas activas en la red.
   const totalActiveTables = branches.reduce((acc, b) => acc + (b.activeTables ?? 0), 0);
-  // Calcula el total de personal en turno.
   const totalStaff = branches.reduce((acc, b) => acc + (b.activeStaff ?? 0), 0);
 
+  // Pestañas del Menú Lateral Corporativo.
+  const navTabs = [
+    { id: 'all', label: '🌐 Vista Completa', subtitle: 'Todas las métricas y módulos' },
+    { id: 'kpis', label: '📊 Resumen & Sucursales', subtitle: 'KPIs globales y estado por local' },
+    { id: 'rules', label: '⚙️ Reglas & Compliance', subtitle: 'Switches, Ley 40h y SII' },
+    { id: 'whatif', label: '🎛️ Simulador What-If', subtitle: 'Estrategia y proyecciones de precio' },
+    { id: 'matrix', label: '📈 Ingeniería de Menú', subtitle: 'Matriz BCG (Estrellas, Puzzles...)' },
+    { id: 'events', label: '⚡ Flujo de Eventos', subtitle: 'Auditoría en tiempo real de red' },
+  ];
+
   return (
-    // Contenedor principal del Panel Corporativo en modo claro de marca.
-    <main className="min-h-screen bg-brand-50 px-6 py-6 text-brand-900">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-        {/* Cabecera corporativa con navegación de regreso al radar local. */}
-        <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-brand-200 pb-4">
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold text-brand-900">Panel Corporativo Multi-Local</h1>
-              <span className="rounded-full bg-brand-500/10 px-3 py-0.5 text-xs font-bold text-brand-500 border border-brand-500/20">
-                Super Admin
+    <main className="min-h-screen bg-brand-50 px-4 py-4 text-brand-900">
+      <div className="mx-auto flex w-full max-w-7xl flex-col lg:flex-row gap-6">
+        {/* MENÚ LATERAL CORPORATIVO (SIDEBAR NAVIGATION) */}
+        <aside className="w-full lg:w-64 shrink-0 rounded-2xl bg-white border border-brand-200 p-4 flex flex-col justify-between gap-6 shadow-soft">
+          <div className="flex flex-col gap-5">
+            {/* Cabecera del Sidebar */}
+            <div className="flex items-center justify-between border-b border-brand-200 pb-3">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-brand-500">MesaSplit Franquicia</span>
+                <h2 className="text-lg font-bold text-brand-900 leading-tight">Super Admin</h2>
+              </div>
+              <span className="rounded-full bg-brand-500/10 px-2.5 py-0.5 text-[10px] font-extrabold text-brand-500 border border-brand-500/20">
+                Corporativo
               </span>
             </div>
-            <p className="text-xs text-brand-800/70">Supervisión ejecutiva de red de restaurantes y franquicias</p>
+
+            {/* Opciones del Menú Lateral */}
+            <nav className="flex flex-col gap-1.5" aria-label="Navegación Corporativa">
+              {navTabs.map((tab) => {
+                const isActive = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`flex flex-col items-start rounded-xl p-3 text-left transition ${
+                      isActive
+                        ? 'bg-brand-900 text-white font-bold shadow-md'
+                        : 'text-brand-800 hover:bg-brand-100/80'
+                    }`}
+                  >
+                    <span className="text-xs font-bold">{tab.label}</span>
+                    <span className={`text-[10px] ${isActive ? 'text-white/80' : 'text-brand-800/50'}`}>
+                      {tab.subtitle}
+                    </span>
+                  </button>
+                );
+              })}
+            </nav>
           </div>
 
-          <Link
-            to="/admin"
-            className="inline-flex items-center gap-2 rounded-xl bg-brand-900 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-brand-800 active:scale-95 shadow-soft"
-          >
-            ← Volver a Radar Local
-          </Link>
-        </header>
-
-        {/* Banner de KPIs globales acumulados de la franquicia. */}
-        <section aria-label="Resumen de KPIs Corporativos" className="grid grid-cols-1 gap-4 sm:grid-cols-4">
-          {/* Card 1: Ventas totales acumuladas de la red en CLP. */}
-          <div className="flex flex-col rounded-2xl bg-white p-5 shadow-soft border border-brand-200">
-            <span className="text-xs font-bold text-brand-800/60 uppercase tracking-wider">Ventas Franquicia</span>
-            <span className="text-2xl font-extrabold text-brand-900 mt-1">{formatCurrency(totalSales)}</span>
-            <span className="text-[11px] text-emerald-600 font-semibold mt-1">↑ +14.2% vs ayer</span>
+          {/* Enlace seguro al Radar Local */}
+          <div className="border-t border-brand-200 pt-4 flex flex-col gap-2">
+            <a
+              href="/admin"
+              onClick={(e) => {
+                if (typeof window !== 'undefined' && window.history?.pushState) {
+                  e.preventDefault();
+                  window.history.pushState({}, '', '/admin');
+                  window.dispatchEvent(new PopStateEvent('popstate'));
+                }
+              }}
+              className="flex items-center justify-center gap-2 rounded-xl bg-brand-100 p-2.5 text-xs font-bold text-brand-900 hover:bg-brand-200 transition border border-brand-200"
+            >
+              ← Volver a Radar Local
+            </a>
           </div>
+        </aside>
 
-          {/* Card 2: Sucursales activas en la red. */}
-          <div className="flex flex-col rounded-2xl bg-white p-5 shadow-soft border border-brand-200">
-            <span className="text-xs font-bold text-brand-800/60 uppercase tracking-wider">Sucursales Activas</span>
-            <span className="text-2xl font-extrabold text-brand-900 mt-1">{branches.length} locales</span>
-            <span className="text-[11px] text-brand-800/60 mt-1">Santiago, Chile</span>
-          </div>
+        {/* ÁREA PRINCIPAL DE CONTENIDO */}
+        <div className="flex-1 flex flex-col gap-6 min-w-0">
+          {/* Cabecera Corporativa */}
+          <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-brand-200 pb-4 bg-white p-4 rounded-2xl border shadow-soft">
+            <div>
+              <div className="flex items-center gap-3">
+                <h1 className="text-2xl font-bold text-brand-900">Panel Corporativo Multi-Local</h1>
+                <span className="rounded-full bg-brand-500/10 px-3 py-0.5 text-xs font-bold text-brand-500 border border-brand-500/20">
+                  Super Admin
+                </span>
+              </div>
+              <p className="text-xs text-brand-800/70">Supervisión ejecutiva de red de restaurantes y franquicias</p>
+            </div>
 
-          {/* Card 3: Mesas activas en la red. */}
-          <div className="flex flex-col rounded-2xl bg-white p-5 shadow-soft border border-brand-200">
-            <span className="text-xs font-bold text-brand-800/60 uppercase tracking-wider">Mesas Ocupadas Red</span>
-            <span className="text-2xl font-extrabold text-brand-500 mt-1">{totalActiveTables} mesas</span>
-            <span className="text-[11px] text-brand-800/60 mt-1">En tiempo real</span>
-          </div>
+            <a
+              href="/admin"
+              onClick={(e) => {
+                if (typeof window !== 'undefined' && window.history?.pushState) {
+                  e.preventDefault();
+                  window.history.pushState({}, '', '/admin');
+                  window.dispatchEvent(new PopStateEvent('popstate'));
+                }
+              }}
+              className="inline-flex items-center gap-2 rounded-xl bg-brand-900 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-brand-800 active:scale-95 shadow-soft"
+            >
+              ← Volver a Radar Local
+            </a>
+          </header>
 
-          {/* Card 4: Personal total de servicio en turno. */}
-          <div className="flex flex-col rounded-2xl bg-white p-5 shadow-soft border border-brand-200">
-            <span className="text-xs font-bold text-brand-800/60 uppercase tracking-wider">Personal en Turno</span>
-            <span className="text-2xl font-extrabold text-brand-900 mt-1">{totalStaff} mozos/caja</span>
-            <span className="text-[11px] text-emerald-600 font-semibold mt-1">Ley 40h Vigente</span>
-          </div>
-        </section>
+          {/* RENDERS DE SECCIÓN SEGÚN SELECCIÓN DEL SIDEBAR */}
 
-        {/* Tarjeta de métrica de Costo Primario corporativo (costo-primario). */}
-        <CostoPrimarioCard />
+          {/* TAB ALL: Render completo e integrado */}
+          {activeTab === 'all' && (
+            <div className="flex flex-col gap-6">
+              <section aria-label="Resumen de KPIs Corporativos" className="grid grid-cols-1 gap-4 sm:grid-cols-4">
+                <div className="flex flex-col rounded-2xl bg-white p-5 shadow-soft border border-brand-200">
+                  <span className="text-xs font-bold text-brand-800/60 uppercase tracking-wider">Ventas Franquicia</span>
+                  <span className="text-2xl font-extrabold text-brand-900 mt-1">{formatCurrency(totalSales)}</span>
+                  <span className="text-[11px] text-emerald-600 font-semibold mt-1">↑ +14.2% vs ayer</span>
+                </div>
 
-        {/* Grilla de tarjetas de salud operacional por sucursal. */}
-        <section aria-label="Estado por Sucursal" className="flex flex-col gap-3">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-brand-800/70">
-            Salud Operacional por Sucursal ({branches.length})
-          </h2>
+                <div className="flex flex-col rounded-2xl bg-white p-5 shadow-soft border border-brand-200">
+                  <span className="text-xs font-bold text-brand-800/60 uppercase tracking-wider">Sucursales Activas</span>
+                  <span className="text-2xl font-extrabold text-brand-900 mt-1">{branches.length} locales</span>
+                  <span className="text-[11px] text-brand-800/60 mt-1">Santiago, Chile</span>
+                </div>
 
-          {loading ? (
-            <p className="py-8 text-center text-xs text-brand-800/60">Cargando métricas de sucursales…</p>
-          ) : (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {branches.map((branch) => (
-                <BranchHealthCard key={branch.id} branch={branch} />
-              ))}
+                <div className="flex flex-col rounded-2xl bg-white p-5 shadow-soft border border-brand-200">
+                  <span className="text-xs font-bold text-brand-800/60 uppercase tracking-wider">Mesas Ocupadas Red</span>
+                  <span className="text-2xl font-extrabold text-brand-500 mt-1">{totalActiveTables} mesas</span>
+                  <span className="text-[11px] text-brand-800/60 mt-1">En tiempo real</span>
+                </div>
+
+                <div className="flex flex-col rounded-2xl bg-white p-5 shadow-soft border border-brand-200">
+                  <span className="text-xs font-bold text-brand-800/60 uppercase tracking-wider">Personal en Turno</span>
+                  <span className="text-2xl font-extrabold text-brand-900 mt-1">{totalStaff} mozos/caja</span>
+                  <span className="text-[11px] text-emerald-600 font-semibold mt-1">Ley 40h Vigente</span>
+                </div>
+              </section>
+
+              <CostoPrimarioCard />
+
+              <section aria-label="Estado por Sucursal" className="flex flex-col gap-3">
+                <h2 className="text-xs font-bold uppercase tracking-wider text-brand-800/70">
+                  Salud Operacional por Sucursal ({branches.length})
+                </h2>
+
+                {loading ? (
+                  <p className="py-8 text-center text-xs text-brand-800/60">Cargando métricas de sucursales…</p>
+                ) : (
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    {branches.map((branch) => (
+                      <BranchHealthCard key={branch.id} branch={branch} />
+                    ))}
+                  </div>
+                )}
+              </section>
+
+              <GlobalConfigToggles featureToggles={featureToggles} onToggleFeature={toggleFeature} />
+              <ComplianceSiiPanel />
+              <WhatIfSimulator />
+              <MenuEngineeringMatrix />
+              <FranchiseEventStream franchiseEvents={franchiseEvents} />
             </div>
           )}
-        </section>
 
-        {/* Módulo de conmutadores globales de configuración de la franquicia. */}
-        <GlobalConfigToggles
-          featureToggles={featureToggles}
-          onToggleFeature={toggleFeature}
-        />
+          {/* TAB KPIS: KPIs y Salud por Sucursal */}
+          {activeTab === 'kpis' && (
+            <div className="flex flex-col gap-6">
+              <section aria-label="Resumen de KPIs Corporativos" className="grid grid-cols-1 gap-4 sm:grid-cols-4">
+                <div className="flex flex-col rounded-2xl bg-white p-5 shadow-soft border border-brand-200">
+                  <span className="text-xs font-bold text-brand-800/60 uppercase tracking-wider">Ventas Franquicia</span>
+                  <span className="text-2xl font-extrabold text-brand-900 mt-1">{formatCurrency(totalSales)}</span>
+                  <span className="text-[11px] text-emerald-600 font-semibold mt-1">↑ +14.2% vs ayer</span>
+                </div>
 
-        {/* Panel de Compliance SII (Super Admin read-only). */}
-        <ComplianceSiiPanel />
+                <div className="flex flex-col rounded-2xl bg-white p-5 shadow-soft border border-brand-200">
+                  <span className="text-xs font-bold text-brand-800/60 uppercase tracking-wider">Sucursales Activas</span>
+                  <span className="text-2xl font-extrabold text-brand-900 mt-1">{branches.length} locales</span>
+                  <span className="text-[11px] text-brand-800/60 mt-1">Santiago, Chile</span>
+                </div>
 
-        {/* Simulador What-If de Precios (corporate-what-if). */}
-        <WhatIfSimulator />
+                <div className="flex flex-col rounded-2xl bg-white p-5 shadow-soft border border-brand-200">
+                  <span className="text-xs font-bold text-brand-800/60 uppercase tracking-wider">Mesas Ocupadas Red</span>
+                  <span className="text-2xl font-extrabold text-brand-500 mt-1">{totalActiveTables} mesas</span>
+                  <span className="text-[11px] text-brand-800/60 mt-1">En tiempo real</span>
+                </div>
 
-        {/* Matriz de Ingeniería de Menú (corporate-menu-engineering). */}
-        <MenuEngineeringMatrix />
+                <div className="flex flex-col rounded-2xl bg-white p-5 shadow-soft border border-brand-200">
+                  <span className="text-xs font-bold text-brand-800/60 uppercase tracking-wider">Personal en Turno</span>
+                  <span className="text-2xl font-extrabold text-brand-900 mt-1">{totalStaff} mozos/caja</span>
+                  <span className="text-[11px] text-emerald-600 font-semibold mt-1">Ley 40h Vigente</span>
+                </div>
+              </section>
 
-        {/* Flujo de eventos corporativos cross-branch en tiempo real. */}
-        <FranchiseEventStream franchiseEvents={franchiseEvents} />
+              <section aria-label="Estado por Sucursal" className="flex flex-col gap-3">
+                <h2 className="text-xs font-bold uppercase tracking-wider text-brand-800/70">
+                  Salud Operacional por Sucursal ({branches.length})
+                </h2>
+
+                {loading ? (
+                  <p className="py-8 text-center text-xs text-brand-800/60">Cargando métricas de sucursales…</p>
+                ) : (
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    {branches.map((branch) => (
+                      <BranchHealthCard key={branch.id} branch={branch} />
+                    ))}
+                  </div>
+                )}
+              </section>
+            </div>
+          )}
+
+          {/* TAB RULES: Reglas, Costo Primario y SII */}
+          {activeTab === 'rules' && (
+            <div className="flex flex-col gap-6">
+              <CostoPrimarioCard />
+              <GlobalConfigToggles featureToggles={featureToggles} onToggleFeature={toggleFeature} />
+              <ComplianceSiiPanel />
+            </div>
+          )}
+
+          {/* TAB WHATIF: Simulador de Precios */}
+          {activeTab === 'whatif' && (
+            <div className="w-full">
+              <WhatIfSimulator />
+            </div>
+          )}
+
+          {/* TAB MATRIX: Matriz de Ingeniería de Menú */}
+          {activeTab === 'matrix' && (
+            <div className="w-full">
+              <MenuEngineeringMatrix />
+            </div>
+          )}
+
+          {/* TAB EVENTS: Flujo de Eventos Franquicia */}
+          {activeTab === 'events' && (
+            <div className="w-full">
+              <FranchiseEventStream franchiseEvents={franchiseEvents} />
+            </div>
+          )}
+        </div>
       </div>
     </main>
   );
