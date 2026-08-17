@@ -15,10 +15,10 @@ const bus = createRealtimeBus('mesasplit');
 
 // Fixture canónico inicial de sucursales de la franquicia.
 const INITIAL_BRANCHES = [
-  { id: 'b-lc', name: 'Salón Las Condes', salesTotal: 620000, activeTables: 6, totalTables: 8, activeStaff: 5, avgTicket: 34500, healthStatus: 'optimal' },
-  { id: 'b-pr', name: 'Terraza Providencia', salesTotal: 480000, activeTables: 8, totalTables: 10, activeStaff: 6, avgTicket: 28900, healthStatus: 'peak' },
-  { id: 'b-vt', name: 'Barra Vitacura', salesTotal: 510000, activeTables: 4, totalTables: 6, activeStaff: 4, avgTicket: 42000, healthStatus: 'optimal' },
-  { id: 'b-sc', name: 'Express Santiago Centro', salesTotal: 240000, activeTables: 5, totalTables: 8, activeStaff: 3, avgTicket: 19500, healthStatus: 'alert' },
+  { id: 'b-lc', name: 'Salón Las Condes', salesTotal: 620000, foodCost: 186000, activeTables: 6, totalTables: 8, activeStaff: 5, avgTicket: 34500, healthStatus: 'optimal' },
+  { id: 'b-pr', name: 'Terraza Providencia', salesTotal: 480000, foodCost: 144000, activeTables: 8, totalTables: 10, activeStaff: 6, avgTicket: 28900, healthStatus: 'peak' },
+  { id: 'b-vt', name: 'Barra Vitacura', salesTotal: 510000, foodCost: 153000, activeTables: 4, totalTables: 6, activeStaff: 4, avgTicket: 42000, healthStatus: 'optimal' },
+  { id: 'b-sc', name: 'Express Santiago Centro', salesTotal: 240000, foodCost: 72000, activeTables: 5, totalTables: 8, activeStaff: 3, avgTicket: 19500, healthStatus: 'alert' },
 ];
 
 // Fixture inicial de eventos corporativos.
@@ -108,3 +108,17 @@ export const useCorporateStore = create((set, get) => ({
   // Restablece el slice a su estado inicial.
   resetDemo: () => set(initialState),
 }));
+
+// Selector puro: calcula el porcentaje de Costo Primario (Σ foodCost / Σ salesTotal * 100).
+export const selectCostoPrimario = (state) => {
+  const branches = state?.branches ?? [];
+  const sumSalesTotal = branches.reduce((acc, b) => acc + (b.salesTotal ?? 0), 0);
+  const sumFoodCost = branches.reduce((acc, b) => acc + (b.foodCost ?? 0), 0);
+
+  if (sumSalesTotal === 0) {
+    return { percentage: 0.0, sumFoodCost: 0, sumSalesTotal: 0 };
+  }
+
+  const percentage = Number(((sumFoodCost / sumSalesTotal) * 100).toFixed(1));
+  return { percentage, sumFoodCost, sumSalesTotal };
+};

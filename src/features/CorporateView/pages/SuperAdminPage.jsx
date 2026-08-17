@@ -16,6 +16,7 @@ import { useCorporateStore } from '../store/useCorporateStore.js';
 import BranchHealthCard from '../components/BranchHealthCard.jsx';
 import GlobalConfigToggles from '../components/GlobalConfigToggles.jsx';
 import FranchiseEventStream from '../components/FranchiseEventStream.jsx';
+import CostoPrimarioCard from '../components/CostoPrimarioCard.jsx';
 
 // Componente principal de la página de Super Admin Corporativo.
 export default function SuperAdminPage() {
@@ -98,6 +99,9 @@ export default function SuperAdminPage() {
             <span className="text-[11px] text-emerald-600 font-semibold mt-1">Ley 40h Vigente</span>
           </div>
         </section>
+
+        {/* Tarjeta de métrica de Costo Primario corporativo (costo-primario). */}
+        <CostoPrimarioCard />
 
         {/* Grilla de tarjetas de salud operacional por sucursal. */}
         <section aria-label="Estado por Sucursal" className="flex flex-col gap-3">
