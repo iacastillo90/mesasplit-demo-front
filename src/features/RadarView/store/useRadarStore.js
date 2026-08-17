@@ -1,33 +1,15 @@
 // src/features/RadarView/store/useRadarStore.js — store del radar local (task 2.8)
 // Slice de estado del Local Admin (patrón FSD docs/03): mesas del salón para el
 // mapa topológico + excepciones del turno para el feed. Zustand v5 (design D6).
-// NOTA PR3 → PR4: los fixtures viven acá (seed inline) porque src/mocks llega en
-// el task 3.1 (PR 4), donde el store raíz useDemoStore los siembra con persist.
+// PR 4 (tasks 3.1/3.3): las mesas ya NO viven acá; el store raíz useDemoStore
+// las siembra desde src/mocks/tables.json (persist + reseteo coordinado) y
+// loadTables las lee de ese store (design: "demo store → radar"). El seed de
+// excepciones queda en el slice: no tiene fixture dedicado en los mocks.
 
 // create: fábrica de store de Zustand v5 (hooks de React directos).
 import { create } from 'zustand';
-
-// Mesas demo del salón para el mapa topológico.
-// Cada mesa: id, número, capacidad, estado (TABLE_STATUS) y posición x,y
-// NORMALIZADA 0–100 (topológica: relación espacial, no coordenadas reales).
-const SEED_TABLES = [
-  // Mesa 1: ocupada, al noroeste del plano.
-  { id: 't1', number: 1, seats: 4, status: 'occupied', x: 12, y: 18 },
-  // Mesa 2: cobrando, al noreste (semántica de cuenta en curso).
-  { id: 't2', number: 2, seats: 6, status: 'billing', x: 82, y: 15 },
-  // Mesa 3: libre, junto a la barra.
-  { id: 't3', number: 3, seats: 2, status: 'free', x: 25, y: 55 },
-  // Mesa 4: en limpieza, al sureste (semántica de advertencia media).
-  { id: 't4', number: 4, seats: 4, status: 'cleaning', x: 78, y: 60 },
-  // Mesa 5: ocupada, centro del plano.
-  { id: 't5', number: 5, seats: 8, status: 'occupied', x: 48, y: 42 },
-  // Mesa 6: libre, al oeste.
-  { id: 't6', number: 6, seats: 2, status: 'free', x: 8, y: 78 },
-  // Mesa 7: ocupada, al este.
-  { id: 't7', number: 7, seats: 4, status: 'occupied', x: 62, y: 80 },
-  // Mesa 8: libre, al sur (recibe comensales pronto).
-  { id: 't8', number: 8, seats: 4, status: 'free', x: 35, y: 88 },
-];
+// Store raíz de la demo: fuente de las mesas seed (persist + mocks de tables).
+import { useDemoStore } from '../../../store/useDemoStore.js';
 
 // Excepciones demo del turno para el feed.
 // Cada una: id, nivel (warning/urgent/danger), mensaje y mesa asociada.
@@ -41,10 +23,10 @@ const SEED_EXCEPTIONS = [
   { id: 'e3', level: 'warning', message: 'Stock bajo de papas fritas', table: null },
 ];
 
-// Estado inicial del slice (se reinicia con resetDemo en PR 4).
+// Estado inicial del slice (las mesas llegan del store raíz en loadTables).
 const initialState = {
-  // Mesas del salón para el mapa topológico.
-  tables: SEED_TABLES,
+  // Mesas del salón para el mapa topológico (vacías hasta loadTables).
+  tables: [],
   // Excepciones del turno para el feed lateral.
   exceptions: SEED_EXCEPTIONS,
   // Flag de carga: simula la preparación de datos al montar la vista.
@@ -53,17 +35,15 @@ const initialState = {
 
 // Store del radar: estado + acciones que mutan ese estado.
 export const useRadarStore = create((set) => ({
-  // Estado inicial del slice (seed semilla del demo).
+  // Estado inicial del slice.
   ...initialState,
 
-  // Simula la carga de mesas/excepciones (sin servicio: seed local en PR 3).
-  // PR 4 reemplaza el cuerpo por la siembra desde mocks (task 3.1/3.3).
+  // Carga las mesas del salón desde el STORE RAÍZ (seed de tables.json).
   loadTables: () => {
-    // Programa la "resolución" tras 300ms con los datos del seed.
-    window.setTimeout(() => {
-      // Apaga el flag de carga dejando las mesas/excepciones ya seedeadas.
-      set({ loading: false });
-    }, 300);
+    // Lee las mesas seed del store raíz (useDemoStore las sembró de los mocks).
+    const { tables } = useDemoStore.getState();
+    // Setea las mesas del salón y apaga el flag de carga al instante.
+    set({ tables, loading: false });
   },
 
   // Cambia el estado de una mesa (lo consumirá el bus realtime en PR 4).
