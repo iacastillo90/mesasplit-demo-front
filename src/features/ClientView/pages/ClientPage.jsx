@@ -42,6 +42,8 @@ import ClientReservationAssistant from '../components/ClientReservationAssistant
 import RewardsBadgeWidget from '../components/RewardsBadgeWidget.jsx';
 // Modal de reseñas y feedback granular por plato.
 import ItemReviewModal from '../components/ItemReviewModal.jsx';
+// Hero promocional ultra-premium para la Mesa Virtual.
+import ClientPageHero from '../components/ClientPageHero.jsx';
 
 
 // ClientPage: pantalla principal de la Mesa Virtual del comensal.
@@ -217,6 +219,13 @@ export default function ClientPage() {
             {tableContext?.guests ?? 0} comensales · Cuenta abierta
           </p>
         </header>
+
+        {/* Hero Promocional Ultra-Premium para la Mesa Virtual */}
+        <ClientPageHero
+          onSelectStarDish={() =>
+            handleAddToCartAttempt({ id: 'm1', name: 'Lomo Lo Ovalle & Pisco Sour', price: 18900, category: 'Fuego', isAlcohol: false })
+          }
+        />
 
         {/* Widget de lealtad y puntos de fidelización MesaSplit Rewards. */}
         <RewardsBadgeWidget />
