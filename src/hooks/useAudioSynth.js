@@ -3,7 +3,7 @@
 // Cumple estrictamente con las reglas obligatorias de AGENTS.md (comentarios en español por cada línea de código).
 
 // useState y useEffect de React.
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 // Estado global estático de silencio para compartir entre instancias del hook.
 let globalIsMuted = false;
@@ -14,6 +14,12 @@ const listeners = new Set();
 export function useAudioSynth() {
   // Estado local sincronizado con el estado global de silencio.
   const [muted, setMuted] = useState(globalIsMuted);
+
+  // Suscribe el componente a los cambios de silencio global.
+  useEffect(() => {
+    listeners.add(setMuted);
+    return () => listeners.delete(setMuted);
+  }, []);
 
   // Cambia el estado de silencio global.
   const toggleMute = useCallback(() => {

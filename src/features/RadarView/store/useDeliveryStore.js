@@ -36,7 +36,7 @@ export const INITIAL_DELIVERY_ORDERS = [
 ];
 
 // Store Zustand `useDeliveryStore`.
-export const useDeliveryStore = create((set, get) => ({
+export const useDeliveryStore = create((set) => ({
   // Lista de pedidos de delivery.
   deliveries: INITIAL_DELIVERY_ORDERS,
   // Pedido seleccionado actualmente para ver el mapa de live tracking.
