@@ -1,8 +1,8 @@
-// src/features/RadarView/pages/RadarPage.jsx — Local Admin / Radar de Turno (local-admin-radar + interactive-table-reservation + modo-hora-punta)
+// src/features/RadarView/pages/RadarPage.jsx — Local Admin / Radar de Turno (local-admin-radar + interactive-table-reservation + modo-hora-punta + radar-inventory)
 // Vista "/admin" del spec local-admin-radar: plano topológico del salón por zonas,
 // tarjetas del canal Delivery Omnicanal, cajón de auditoría (alert.fraud),
-// Modo Hora Punta con filtrado de mesas críticas, mermas, pánico y reservas.
-// Utiliza AdminLayout con Sidebar Fijo a la izquierda (sm:flex), Header/Footer fijos y main scrollable.
+// módulo de inventario y recetas, Modo Hora Punta con filtrado de mesas críticas, mermas, pánico y reservas.
+// Utiliza AdminLayout colapsable con Sidebar Fijo a la izquierda (sm:flex), Header/Footer fijos y main scrollable.
 // Cumple con todas las normas de AGENTS.md (comentarios en español por cada línea).
 
 import { useEffect, useState } from 'react';
@@ -13,6 +13,7 @@ import ExceptionFeedDrawer from '../components/ExceptionFeedDrawer.jsx';
 import MermaBar from '../components/MermaBar.jsx';
 import ReservationModal from '../components/ReservationModal.jsx';
 import StaffLeaderboard from '../components/StaffLeaderboard.jsx';
+import InventoryMenuManager from '../components/InventoryMenuManager.jsx';
 import { AdminLayout } from '../../../shared/ui/index.js';
 
 export default function RadarPage() {
@@ -47,6 +48,7 @@ export default function RadarPage() {
   const navTabs = [
     { id: 'all', label: '🌐 Vista Completa', subtitle: 'Todas las secciones integradas' },
     { id: 'overview', label: '🗺️ Salón & Mesas', subtitle: 'Plano topológico por zonas' },
+    { id: 'inventory', label: '📦 Inventario & Menú', subtitle: 'Recetas, precios y stock' },
     { id: 'delivery', label: '🛵 Canal Delivery', subtitle: 'Pedidos de Uber, Rappi, PYa' },
     { id: 'gamification', label: '🏆 Gamificación Staff', subtitle: 'Ranking y puntaje en vivo' },
     { id: 'merma', label: '⚠️ Control de Mermas', subtitle: 'Registro rápido de insumos' },
@@ -101,7 +103,7 @@ export default function RadarPage() {
             <button
               type="button"
               onClick={() => setReservationOpen(true)}
-              className="rounded-xl bg-brand-900 border border-brand-800 px-3 py-2 text-xs font-bold text-brand-50/80 hover:bg-brand-800 transition active:scale-95"
+              className="rounded-xl bg-brand-900 border border-brand-800 px-3 py-2 text-xs font-bold text-brand-50/80 hover:bg-brand-800 transition active:scale-95 cursor-pointer"
             >
               📅 Reservas y Lista
             </button>
@@ -110,7 +112,7 @@ export default function RadarPage() {
           <button
             type="button"
             onClick={toggleFocusMode}
-            className={`rounded-xl px-4 py-2 text-xs font-extrabold transition active:scale-95 border ${
+            className={`rounded-xl px-4 py-2 text-xs font-extrabold transition active:scale-95 border cursor-pointer ${
               focusMode
                 ? 'bg-semantic-urgent text-white border-semantic-urgent shadow-lg animate-pulse'
                 : 'bg-brand-900 text-brand-50/80 border-brand-800 hover:bg-brand-800'
@@ -122,7 +124,7 @@ export default function RadarPage() {
           <button
             type="button"
             onClick={() => setExceptionDrawerOpen(true)}
-            className="relative rounded-xl bg-brand-900 border border-brand-800 px-3 py-2 text-xs font-bold text-brand-50/80 hover:bg-brand-800 transition active:scale-95"
+            className="relative rounded-xl bg-brand-900 border border-brand-800 px-3 py-2 text-xs font-bold text-brand-50/80 hover:bg-brand-800 transition active:scale-95 cursor-pointer"
           >
             📋 Auditoría
             {exceptionLogs.length > 0 && (
@@ -135,7 +137,7 @@ export default function RadarPage() {
           <button
             type="button"
             onClick={triggerPanic}
-            className="rounded-xl bg-semantic-danger/20 border border-semantic-danger/40 px-3 py-2 text-xs font-bold text-semantic-danger hover:bg-semantic-danger hover:text-white transition active:scale-95 shadow-soft"
+            className="rounded-xl bg-semantic-danger/20 border border-semantic-danger/40 px-3 py-2 text-xs font-bold text-semantic-danger hover:bg-semantic-danger hover:text-white transition active:scale-95 shadow-soft cursor-pointer"
           >
             🚨 Pánico
           </button>
@@ -160,6 +162,7 @@ export default function RadarPage() {
                 </div>
                 <DeliveryColumn orders={deliveryOrders} focusMode={focusMode} />
               </div>
+              <InventoryMenuManager />
               {!focusMode && <StaffLeaderboard />}
               <MermaBar mermaLogs={mermaLogs} onAddMerma={addMerma} />
             </div>
@@ -176,6 +179,12 @@ export default function RadarPage() {
                 />
               </div>
               <DeliveryColumn orders={deliveryOrders} focusMode={focusMode} />
+            </div>
+          )}
+
+          {activeTab === 'inventory' && (
+            <div className="w-full">
+              <InventoryMenuManager />
             </div>
           )}
 
