@@ -30,6 +30,8 @@ import InvoiceRequestModal from '../components/InvoiceRequestModal.jsx';
 import OrderTrackingBanner from '../components/OrderTrackingBanner.jsx';
 // Modal de verificación de mayoría de edad (client-alcohol-verification).
 import AgeVerificationModal from '../components/AgeVerificationModal.jsx';
+// Banner de reconexión de sesión (client-session-reconnect).
+import ReconnectBanner from '../components/ReconnectBanner.jsx';
 
 // ClientPage: pantalla principal de la Mesa Virtual del comensal.
 export default function ClientPage() {
@@ -143,6 +145,9 @@ export default function ClientPage() {
     <main className="min-h-screen bg-brand-50 px-6 pb-32 pt-6">
       {/* Contenido centrado con ancho máximo de lectura cómoda. */}
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
+        {/* Banner de reconexión de sesión de la Mesa Virtual (client-session-reconnect). */}
+        <ReconnectBanner />
+
         {/* Banner de contexto de mesa: identidad de la sesión del comensal. */}
         <header className="rounded-2xl bg-white p-5 shadow-soft">
           {/* Fila superior del banner: número de mesa y badge de sesión. */}
