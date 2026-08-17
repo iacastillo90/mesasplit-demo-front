@@ -14,6 +14,7 @@ import { createRealtimeBus } from '../../../hooks/useRealtimeBus.js';
 import { selectWaiterPerformance } from '../services/performanceService.js';
 import WaiterPerformanceCard from '../components/WaiterPerformanceCard.jsx';
 import { useDemoStore } from '../../../store/useDemoStore.js';
+import QuickSplitCalculatorModal from '../components/QuickSplitCalculatorModal.jsx';
 
 const bus = createRealtimeBus('mesasplit');
 
@@ -41,6 +42,7 @@ export default function WaiterPage({ bus: busProp }) {
   const [pinInput, setPinInput] = useState('');
   const [pinError, setPinError] = useState('');
   const [sosAlert, setSosAlert] = useState(null);
+  const [calcOpen, setCalcOpen] = useState(false);
 
   useEffect(() => {
     if (shiftStatus === 'clocked_in') {
@@ -124,7 +126,16 @@ export default function WaiterPage({ bus: busProp }) {
               <h1 className="text-2xl font-bold text-brand-900">Garzón</h1>
               <p className="text-sm text-brand-800/60">Turno tarde · Salón principal</p>
             </div>
-            <Badge variant="brand">{waiterName}</Badge>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setCalcOpen(true)}
+                className="rounded-full bg-emerald-500/10 px-3.5 py-1.5 text-xs font-bold text-emerald-700 hover:bg-emerald-500/20 border border-emerald-300 transition active:scale-95 flex items-center gap-1"
+              >
+                🧮 Cobro Rápido
+              </button>
+              <Badge variant="brand">{waiterName}</Badge>
+            </div>
           </header>
 
           {sosAlert && (
@@ -172,6 +183,13 @@ export default function WaiterPage({ bus: busProp }) {
             onMarchFondo={fireCourse}
             onVoidItem={voidItemWithPin}
             onReleaseTable={releaseTable}
+          />
+
+          {/* Modal de calculadora de cobro rápido al paso en mesa */}
+          <QuickSplitCalculatorModal
+            open={calcOpen}
+            onClose={() => setCalcOpen(false)}
+            tableNumber={activeTable?.number ?? '04'}
           />
         </div>
       </main>
