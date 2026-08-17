@@ -5,9 +5,9 @@
 // Todos los tests cumplen con las reglas obligatorias de AGENTS.md (comentarios en español por cada línea).
 
 // API de Vitest importada explícitamente para evitar advertencias de ESLint.
-import { beforeEach, describe, expect, it } from 'vitest';
-// Testing Library: renderizado de componentes de React y eventos de simulación.
-import { fireEvent, render, screen } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+// Testing Library: renderizado de componentes de React, eventos y actualizaciones de estado.
+import { act, fireEvent, render, screen } from '@testing-library/react';
 // Store de Zustand del garzón.
 import { useWaiterStore } from './store/useWaiterStore.js';
 // Componente principal de la PWA del Garzón.
@@ -127,5 +127,83 @@ describe('waiter-pwa: Anulación Protegida con PIN y Liberación de Mesa', () =>
     fireEvent.click(deleteBtn);
     // Verifica que aparezca el modal de autorización por PIN.
     expect(screen.getByText(/Autorización de Anulación — PIN de Admin/i)).toBeInTheDocument();
+  });
+});
+
+describe('sos-waiter-call: Badge de Alerta S.O.S. del Cliente (REQ-03) — waiter-pwa', () => {
+  // Helper: crea un bus falso inyectable que captura los handlers suscritos por tópico.
+  const createFakeBus = () => {
+    // Registro de handlers: tópico → handler (para disparar eventos desde el test).
+    const handlers = {};
+    // Devuelve el bus falso con subscribe/publish espía y el registro capturado.
+    return {
+      handlers,
+      bus: {
+        // Suscribe el handler en el registro y devuelve un noop de limpieza.
+        subscribe: vi.fn((topic, handler) => {
+          handlers[topic] = handler;
+          return () => {};
+        }),
+        // Espía del publish: no se usa en estos tests pero mantiene la API del bus.
+        publish: vi.fn(),
+      },
+    };
+  };
+
+  beforeEach(() => {
+    // Restablece el store antes de cada test.
+    useWaiterStore.getState().resetDemo();
+  });
+
+  it('muestra el banner de alerta con mesa y motivo al recibir el evento call.waiter', async () => {
+    // Bus falso inyectado por prop para observar la suscripción de WaiterPage.
+    const { handlers, bus } = createFakeBus();
+    // Renderiza la PWA del garzón con el bus inyectado.
+    render(<WaiterPage bus={bus} />);
+    // Espera la vista activa del garzón con sus mesas asignadas.
+    await screen.findByText(/Mis mesas/i, {}, { timeout: 3000 });
+    // Sin evento recibido aún: el banner NO debe existir (estado inicial).
+    expect(screen.queryByTestId('sos-alert-banner')).not.toBeInTheDocument();
+    // Dispara el evento call.waiter como si llegara del bus real del cliente.
+    act(() => {
+      handlers['call.waiter']({
+        tableId: 'table-05',
+        reason: 'Falta cubierto',
+        customerName: 'Cliente',
+        timestamp: Date.now(),
+      });
+    });
+    // El banner de alerta S.O.S. debe aparecer en el DOM.
+    const banner = screen.getByTestId('sos-alert-banner');
+    expect(banner).toBeInTheDocument();
+    // Debe mostrar la mesa que llamó al mozo.
+    expect(banner).toHaveTextContent(/table-05/);
+    // Debe mostrar el motivo de la llamada del comensal.
+    expect(banner).toHaveTextContent(/Falta cubierto/);
+  });
+
+  it('descarta el banner al presionar "Atendido" tras recibir una nueva llamada', async () => {
+    // Bus falso inyectado para una segunda llamada con datos distintos (triangulación).
+    const { handlers, bus } = createFakeBus();
+    // Renderiza la PWA del garzón con el bus inyectado.
+    render(<WaiterPage bus={bus} />);
+    // Espera la vista activa del garzón.
+    await screen.findByText(/Mis mesas/i, {}, { timeout: 3000 });
+    // Recibe una llamada con otra mesa y otro motivo.
+    act(() => {
+      handlers['call.waiter']({
+        tableId: 'table-09',
+        reason: 'Ayuda general',
+        customerName: 'Cliente',
+        timestamp: Date.now(),
+      });
+    });
+    // Verifica que el banner refleja los datos de la nueva llamada.
+    expect(screen.getByTestId('sos-alert-banner')).toHaveTextContent(/table-09/);
+    expect(screen.getByTestId('sos-alert-banner')).toHaveTextContent(/Ayuda general/);
+    // Presiona el botón de descarte de la alerta.
+    fireEvent.click(screen.getByRole('button', { name: /Atendido/i }));
+    // El banner desaparece tras descartar la alerta S.O.S.
+    expect(screen.queryByTestId('sos-alert-banner')).not.toBeInTheDocument();
   });
 });

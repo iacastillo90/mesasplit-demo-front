@@ -22,7 +22,11 @@ const REASONS = [
 ];
 
 // Componente SosModal: modal de llamada urgente al mozo desde la Mesa Virtual.
-export default function SosModal({ open, onClose, tableId = 'table-01' }) {
+// Acepta una prop opcional `bus` (inyección de dependencia) para que los tests
+// puedan capturar el payload emitido sin cambiar el comportamiento en el browser.
+export default function SosModal({ open, onClose, tableId = 'table-01', bus: busProp }) {
+  // Bus real: usa el inyectado por el test (busProp) o la instancia del módulo por defecto.
+  const realtimeBus = busProp ?? bus;
   // Estado del motivo actualmente seleccionado por el comensal.
   const [selectedReason, setSelectedReason] = useState(REASONS[0].label);
   // Estado de confirmación: true tras enviar la llamada (muestra "Mozo en camino").
@@ -31,7 +35,7 @@ export default function SosModal({ open, onClose, tableId = 'table-01' }) {
   // Maneja el envío de la llamada S.O.S. al bus en tiempo real.
   const handleCall = () => {
     // Emite el evento call.waiter con el payload del contrato WebSocket.
-    bus.publish('call.waiter', {
+    realtimeBus.publish('call.waiter', {
       tableId,
       reason: selectedReason,
       customerName: 'Cliente',

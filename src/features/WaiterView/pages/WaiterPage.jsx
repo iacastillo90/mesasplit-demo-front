@@ -22,7 +22,9 @@ import { createRealtimeBus } from '../../../hooks/useRealtimeBus.js';
 const bus = createRealtimeBus('mesasplit');
 
 // Componente principal WaiterPage.
-export default function WaiterPage() {
+// Acepta una prop opcional `bus` (inyección de dependencia) para permitir que los
+// tests capten la suscripción al tópico call.waiter sin alterar el comportamiento real.
+export default function WaiterPage({ bus: busProp }) {
   // Suscripción a las propiedades del store de garzón.
   const shiftStatus = useWaiterStore((s) => s.shiftStatus);
   const waiterName = useWaiterStore((s) => s.waiterName);
@@ -65,12 +67,13 @@ export default function WaiterPage() {
       setSosAlert(payload);
     };
 
-    // Se suscribe al evento call.waiter del bus compartido.
-    const unsub = bus.subscribe('call.waiter', handleSos);
+    // Se suscribe al evento call.waiter del bus inyectado (tests) o del bus compartido.
+    const unsub = (busProp ?? bus).subscribe('call.waiter', handleSos);
 
     // Retorna la función de limpieza para desuscribirse al desmontar.
+    // busProp como dependencia: si el test inyecta un bus, se re-suscribe al cambiarlo.
     return () => unsub?.();
-  }, []);
+  }, [busProp]);
 
   // Manejador del marcaje de turno (Ley 40 Horas).
   const handleClockIn = (e) => {
