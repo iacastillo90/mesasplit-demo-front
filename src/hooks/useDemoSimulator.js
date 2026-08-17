@@ -20,10 +20,9 @@ export function useDemoSimulator() {
   const [lastAction, setLastAction] = useState(null);
 
   // Acciones de la vista cliente y KDS.
-  const addToCart = useClientStore((s) => s.addToCart);
   const loadMenu = useClientStore((s) => s.loadMenu);
   const openSplit = useSplitStore((s) => s.openSplit);
-  const addTicket = useKdsStore((s) => s.tickets);
+
 
   // 1. Simular pedido de Mesa 4 (Cliente -> Cocina).
   const simulateOrderMesa4 = useCallback(() => {
