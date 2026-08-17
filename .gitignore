@@ -4,3 +4,28 @@
 # Internal team workflow (not for client)
 openspec/
 AGENTS.md
+
+# Dependencies — instaladas vía `npm ci` desde el lockfile commiteado
+node_modules/
+
+# Build output de Vite
+dist/
+
+# Coverage de Vitest
+coverage/
+
+# Variables de entorno locales (nunca commiteadas; usar .env.example)
+.env
+.env.local
+.env.*.local
+
+# Logs y archivos temporales de npm
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# Editor y sistema operativo
+.DS_Store
+.idea/
+.vscode/

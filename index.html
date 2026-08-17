@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <!-- Charset UTF-8: soporta tildes y caracteres del menú en español. -->
+    <meta charset="UTF-8" />
+    <!-- Viewport móvil-first: escala correcta en celulares de clientes/mozos. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Título visible en pestaña del navegador, usado en la demo split-screen. -->
+    <title>MesaSplit — Demo</title>
+    <!-- Preconnect a Google Fonts: acelera la carga de la fuente Inter. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Fuente Inter: tipografía de cuerpo definida en tailwind.config.js. -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!-- Nodo raíz donde React monta la app (ver src/app/main.jsx). -->
+    <div id="root"></div>
+    <!-- Entry point de Vite: arranca el bundle del frontend. -->
+    <script type="module" src="/src/app/main.jsx"></script>
+  </body>
+</html>

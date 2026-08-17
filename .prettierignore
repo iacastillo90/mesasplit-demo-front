@@ -1,0 +1,11 @@
+# Archivos del equipo técnico local: Prettier no debe tocarlos.
+# Son internos del flujo SDD y no se commitean al cliente.
+openspec/
+.atl/
+AGENTS.md
+MesaSplit.md
+
+# Dependencias y build (nunca formatear código generado o de terceros).
+node_modules/
+dist/
+coverage/

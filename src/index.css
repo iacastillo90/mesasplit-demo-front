@@ -1,0 +1,22 @@
+/* src/index.css — hoja de estilos global de MesaSplit (entrada de Tailwind) */
+
+/* Inyecta reset y estilos base de Tailwind (Preflight). */
+@tailwind base;
+
+/* Inyecta las clases de componentes registradas por plugins (vacío hoy). */
+@tailwind components;
+
+/* Inyecta las utilidades (bg-brand-500, text-semantic-danger, etc.). */
+@tailwind utilities;
+
+/* Base de tipografía: Inter para todo el cuerpo, ya definida en tailwind.config. */
+@layer base {
+  html {
+    /* Inter es la fuente del sistema de diseño (spec design-tokens). */
+    @apply font-sans antialiased;
+  }
+  body {
+    /* Fondo por defecto en modo claro: brand-50 (docs/04). */
+    @apply bg-brand-50 text-brand-900;
+  }
+}
