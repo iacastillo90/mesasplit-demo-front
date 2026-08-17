@@ -38,8 +38,8 @@ describe('OrderPad upsell (waiter-upsell: chip explícito)', () => {
       { id: 'linea-1', productId: 'm1', name: 'Hamburguesa Clásica', price: 12500, qty: 1, allergens: [], course: 'entrada', sentToKitchen: false },
     ];
     render(<OrderPad {...baseProps({ orderDraft: draft })} />);
-    // El chip de sugerencia debe renderizarse con el producto sugerido.
-    const chip = screen.getByRole('button', { name: /Sugerencia/i });
+    // El chip de sugerencia del mozo debe renderizarse con el producto sugerido.
+    const chip = screen.getByRole('button', { name: /Sugerencia del mozo/i });
     expect(chip).toBeInTheDocument();
     // El chip menciona el producto sugerido (papas fritas) de forma explícita.
     expect(chip).toHaveTextContent(/Papas fritas/i);
@@ -52,8 +52,8 @@ describe('OrderPad upsell (waiter-upsell: chip explícito)', () => {
     ];
     const onAddToCart = vi.fn();
     render(<OrderPad {...baseProps({ orderDraft: draft, onAddToCart })} />);
-    // El chip se renderiza (sugerencia visible)…
-    expect(screen.getByRole('button', { name: /Sugerencia/i })).toBeInTheDocument();
+    // El chip se renderiza (sugerencia del mozo visible)…
+    expect(screen.getByRole('button', { name: /Sugerencia del mozo/i })).toBeInTheDocument();
     // …pero onAddToCart jamás se invocó por el simple hecho de agregar la hamburguesa.
     expect(onAddToCart).not.toHaveBeenCalled();
     // El borrador (entrada del test) contiene SOLO la hamburguesa: ninguna línea extra.
@@ -68,21 +68,21 @@ describe('OrderPad upsell (waiter-upsell: chip explícito)', () => {
     ];
     const onAddToCart = vi.fn();
     render(<OrderPad {...baseProps({ orderDraft: draft, onAddToCart })} />);
-    // Toca el chip de sugerencia explícito.
-    fireEvent.click(screen.getByRole('button', { name: /Sugerencia/i }));
+    // Toca el chip de sugerencia explícito del mozo.
+    fireEvent.click(screen.getByRole('button', { name: /Sugerencia del mozo/i }));
     // Se agregó exactamente UNA invocación al flujo normal de agregado.
     expect(onAddToCart).toHaveBeenCalledTimes(1);
     // El ítem agregado es el producto sugerido por la regla (papas fritas, m2).
     expect(onAddToCart).toHaveBeenCalledWith(expect.objectContaining({ id: 'm2', name: 'Papas fritas' }));
   });
 
-  it('S4: sin regla para el ítem, el chip no se renderiza', () => {
+  it('S4: sin regla para el ítem, el chip del mozo no se renderiza', () => {
     // Borrador con ensalada (m5, sin regla en el mapa demo).
     const draft = [
       { id: 'linea-9', productId: 'm5', name: 'Ensalada César', price: 7400, qty: 1, allergens: [], course: 'entrada', sentToKitchen: false },
     ];
     render(<OrderPad {...baseProps({ orderDraft: draft })} />);
-    // No debe existir ningún chip de sugerencia en pantalla.
-    expect(screen.queryByRole('button', { name: /Sugerencia/i })).not.toBeInTheDocument();
+    // No debe existir el chip de sugerencia del mozo en pantalla.
+    expect(screen.queryByRole('button', { name: /Sugerencia del mozo/i })).not.toBeInTheDocument();
   });
 });
