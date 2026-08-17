@@ -9,8 +9,6 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
 // Store de ClientView.
 import { useClientStore } from '../store/useClientStore.js';
-// Componente de verificación de edad.
-import AgeVerificationModal from './AgeVerificationModal.jsx';
 // Página principal de ClientView para prueba de flujo completo.
 import ClientPage from '../pages/ClientPage.jsx';
 
