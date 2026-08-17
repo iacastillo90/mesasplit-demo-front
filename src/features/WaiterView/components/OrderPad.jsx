@@ -12,6 +12,8 @@ import { formatCurrency } from '../../../shared/utils/index.js';
 import CourseControlPicker from './CourseControlPicker.jsx';
 // Modal de autorización por PIN.
 import PinAuthModal from './PinAuthModal.jsx';
+// Modal de unir y ceder mesa (waiter-table-transfer).
+import TransferModal from './TransferModal.jsx';
 // Selector puro de sugerencia de upsell (waiter-upsell).
 import { suggestUpsell } from '../services/upsellService.js';
 
@@ -41,6 +43,8 @@ export default function OrderPad({
   const [pinModalOpen, setPinModalOpen] = useState(false);
   // Guardado del ítem seleccionado para anular con PIN.
   const [targetVoidItem, setTargetVoidItem] = useState(null);
+  // Estado para controlar la apertura del modal de unión/cesión de mesa.
+  const [transferModal, setTransferModal] = useState({ open: false, mode: 'merge' });
 
   // Calcula el total general de la comanda en borrador.
   const totalAmount = orderDraft.reduce((acc, line) => acc + line.price * line.qty, 0);
@@ -79,15 +83,31 @@ export default function OrderPad({
         <h2 className="text-sm font-bold uppercase tracking-widest text-brand-500">
           Comanda Mesa {table ? table.number : '—'}
         </h2>
-        {/* Botón para cerrar y liberar la mesa activa. */}
+        {/* Botones de acciones de la mesa activa: Unir cuenta, Ceder mesa y Liberar mesa. */}
         {table && (
-          <button
-            type="button"
-            onClick={() => onReleaseTable(table.id)}
-            className="rounded-xl bg-semantic-danger/10 border border-semantic-danger px-3 py-1 text-xs font-bold text-semantic-danger transition hover:bg-semantic-danger/20 active:scale-95"
-          >
-            Cerrar y Liberar Mesa
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setTransferModal({ open: true, mode: 'merge' })}
+              className="rounded-xl border border-brand-300 bg-brand-50 px-3 py-1 text-xs font-bold text-brand-800 transition hover:bg-brand-100 active:scale-95"
+            >
+              Unir cuenta
+            </button>
+            <button
+              type="button"
+              onClick={() => setTransferModal({ open: true, mode: 'transfer' })}
+              className="rounded-xl border border-brand-300 bg-brand-50 px-3 py-1 text-xs font-bold text-brand-800 transition hover:bg-brand-100 active:scale-95"
+            >
+              Ceder mesa
+            </button>
+            <button
+              type="button"
+              onClick={() => onReleaseTable(table.id)}
+              className="rounded-xl bg-semantic-danger/10 border border-semantic-danger px-3 py-1 text-xs font-bold text-semantic-danger transition hover:bg-semantic-danger/20 active:scale-95"
+            >
+              Cerrar y Liberar Mesa
+            </button>
+          </div>
         )}
       </div>
 
@@ -254,11 +274,20 @@ export default function OrderPad({
         </div>
       )}
 
-      {/* Modal de autorización con PIN de Admin para anulaciones enviadas. */}
+      {/* Modal de autorización por PIN para anulación de comanda. */}
       <PinAuthModal
         open={pinModalOpen}
+        item={targetVoidItem}
+        onConfirm={handleConfirmVoid}
         onClose={() => setPinModalOpen(false)}
-        onConfirmVoid={handleConfirmVoid}
+      />
+
+      {/* Modal de unión y cesión de mesa (waiter-table-transfer). */}
+      <TransferModal
+        open={transferModal.open}
+        mode={transferModal.mode}
+        originTable={table}
+        onClose={() => setTransferModal({ open: false, mode: 'merge' })}
       />
     </section>
   );

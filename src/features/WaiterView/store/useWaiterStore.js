@@ -9,9 +9,16 @@ import { create } from 'zustand';
 import { fetchAssignedTables } from '../services/waiterService.js';
 // Instancia del bus en tiempo real de la aplicación (no hook para uso dentro de Zustand).
 import { createRealtimeBus } from '../../../hooks/useRealtimeBus.js';
+// Invariante de conservación de integridad de cuentas (Decisiones 4): reusado por mergeBills.
+import { checkConservation } from '../../ClientView/services/splitService.js';
 
 // Instancia única del bus para las acciones del garzón.
 const bus = createRealtimeBus('mesasplit');
+
+// Identificador demo del garzón en sesión (asignación origen en tables.json).
+export const CURRENT_WAITER_ID = 'pedro-soto';
+// Garzones destino válidos para ceder mesa (demo): u3 = Camila Torres (rol waiter en users.json).
+export const DEMO_WAITERS = ['u3'];
 
 // Estado inicial del store de garzón (shiftStatus por defecto 'clocked_in' para navegación fluida).
 const initialState = {
@@ -31,6 +38,8 @@ const initialState = {
   loading: true,
   // Toast o notificación de confirmación activa.
   toastMessage: null,
+  // Registro demo de cesiones de mesa (destino: garzón que recibió la mesa).
+  transferredTables: [],
 };
 
 // Store de Zustand para el slice de WaiterView.
@@ -208,6 +217,130 @@ export const useWaiterStore = create((set, get) => ({
       status: 'free',
       timestamp: Date.now(),
     });
+  },
+
+  // Une la cuenta de la mesa origen sobre la mesa destino (waiter-table-transfer).
+  // Preserva TODAS las líneas con qty/price intactos y valida el invariante de
+  // conservación (checkConservation) antes de mutar; destino inválido → bloqueado.
+  mergeBills: (originId, targetId) => {
+    // Lee el estado actual de las mesas.
+    const tables = get().tables;
+    // Normaliza los ids de las cuentas a cadenas.
+    const originIdClean = String(originId ?? '');
+    const targetIdClean = String(targetId ?? '');
+
+    // Busca la mesa origen (debe existir y tener cuenta con líneas).
+    const origin = tables.find((t) => t.id === originIdClean);
+    // Busca la mesa destino (debe existir).
+    const target = tables.find((t) => t.id === targetIdClean);
+    // Valida la operación: origen y destino distintos, ambos existen y el origen tiene cuenta.
+    const invalid =
+      !origin || !target || originIdClean === targetIdClean || !origin.order || origin.order.items.length === 0;
+    // Destino inválido: bloquea sin mutar (spec S5).
+    if (invalid) return { ok: false, error: 'Destino inválido' };
+
+    // Total de la cuenta origen (Σ price×qty).
+    const originTotal = origin.order.items.reduce((sum, i) => sum + i.price * i.qty, 0);
+    // Total de la cuenta destino (Σ price×qty).
+    const targetTotal = target.order.items.reduce((sum, i) => sum + i.price * i.qty, 0);
+
+    // Fusiona TODAS las líneas preservando qty/price intactos (spec: sin pérdidas ni duplicados).
+    const mergedItems = [...origin.order.items, ...target.order.items];
+    // Total de la cuenta unida (Σ price×qty).
+    const mergedTotal = mergedItems.reduce((sum, i) => sum + i.price * i.qty, 0);
+
+    // Invariante de conservación reusado: partials {origen, destino} === total unido.
+    const conserved = checkConservation({ origin: originTotal, target: targetTotal }, mergedTotal);
+    // Si el invariante falla, no muta (integridad de la cuenta primero).
+    if (!conserved) return { ok: false, error: 'Invariante de conservación violado' };
+
+    // Aplica la unión: destino con las líneas fusionadas; origen liberado sin cuenta.
+    const updatedTables = tables.map((t) => {
+      if (t.id === targetIdClean) return { ...t, order: { items: mergedItems } };
+      if (t.id === originIdClean) return { ...t, status: 'free', order: null };
+      return t;
+    });
+
+    // Sincroniza el borrador si la mesa destino es la seleccionada (demo coherente);
+    // si se liberó la mesa seleccionada, limpia el borrador.
+    const draft =
+      targetIdClean === get().selectedTableId
+        ? mergedItems.map((item, idx) => ({
+            // Línea reconstruida con la forma del borrador (id estable por índice).
+            id: `merged-${idx}`,
+            productId: String(item.id),
+            name: String(item.name),
+            price: Number(item.price),
+            qty: Number(item.qty),
+            allergens: [],
+            // Los ítems fusionados entran por defecto en el primer tiempo.
+            course: 'entrada',
+            sentToKitchen: false,
+          }))
+        : originIdClean === get().selectedTableId
+          ? []
+          : get().orderDraft;
+
+    // Persiste la unión y el borrador sincronizado.
+    set({ tables: updatedTables, orderDraft: draft });
+
+    // Emite el evento de unión de cuentas por el bus.
+    bus.publish('table.bills_merged', {
+      originId: originIdClean,
+      targetId: targetIdClean,
+      total: mergedTotal,
+      timestamp: Date.now(),
+    });
+
+    // Confirma con el total unido (invariante verificado).
+    return { ok: true, total: mergedTotal };
+  },
+
+  // Cede la mesa a otro garzón (waiter-table-transfer): la mesa deja la grilla del
+  // origen y el destino la recibe; la cesión requiere confirmación explícita previa.
+  transferTable: (tableId, waiterId) => {
+    // Lee el estado actual de las mesas.
+    const tables = get().tables;
+    // Normaliza los ids.
+    const tableIdClean = String(tableId ?? '');
+    const waiterIdClean = String(waiterId ?? '');
+
+    // Busca la mesa a ceder (debe existir en la grilla del origen).
+    const table = tables.find((t) => t.id === tableIdClean);
+    // Valida el destino: mesa existente, garzón destino válido y distinto del origen.
+    const invalid =
+      !table || waiterIdClean === CURRENT_WAITER_ID || !DEMO_WAITERS.includes(waiterIdClean);
+    // Destino inválido (mismo garzón o inexistente): bloquea sin mutar (spec S5).
+    if (invalid) return { ok: false, error: 'Destino inválido' };
+
+    // Quita la mesa de la grilla del garzón origen.
+    const updatedTables = tables.filter((t) => t.id !== tableIdClean);
+    // Registra la cesión en el estado destino (asignación demo, no muta el fixture).
+    const transferredTables = [
+      ...get().transferredTables,
+      {
+        // Datos de la mesa cedida.
+        id: table.id,
+        number: table.number,
+        // Garzón destino de la cesión.
+        waiterId: waiterIdClean,
+        // Marca temporal de la cesión confirmada.
+        transferredAt: Date.now(),
+      },
+    ];
+
+    // Aplica la salida de la grilla del origen y el registro del destino.
+    set({ tables: updatedTables, transferredTables });
+
+    // Emite el evento de cesión de mesa por el bus en tiempo real.
+    bus.publish('table.waiter_changed', {
+      tableId: tableIdClean,
+      waiterId: waiterIdClean,
+      timestamp: Date.now(),
+    });
+
+    // Confirma la cesión.
+    return { ok: true };
   },
 
   // Restablece el slice a su estado inicial.
