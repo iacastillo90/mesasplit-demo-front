@@ -2,6 +2,9 @@
 // Componente de pie de página para vistas operacionales y administrativas de MesaSplit.
 // Cumple con las reglas obligatorias de AGENTS.md (comentarios en español por cada línea).
 
+// Importa el widget de soporte 24/7 chileno.
+import ChileanSupportWidget from './ChileanSupportWidget.jsx';
+
 export default function AppFooter({ theme = 'light' }) {
   const isDark = theme === 'dark';
 
@@ -11,6 +14,8 @@ export default function AppFooter({ theme = 'light' }) {
         isDark ? 'bg-brand-950 border-brand-800 text-brand-50/60' : 'bg-white border-brand-200 text-brand-800/60'
       }`}
     >
+      {/* Monta el widget flotante de soporte 24/7. */}
+      <ChileanSupportWidget />
       <div className="mx-auto flex w-full max-w-5xl flex-col sm:flex-row items-center justify-between gap-3 text-xs">
         <div className="flex items-center gap-2">
           <span className="font-bold text-brand-500">MesaSplit Gastronomía</span>

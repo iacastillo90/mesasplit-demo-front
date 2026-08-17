@@ -16,6 +16,7 @@ import WhatIfSimulator from '../components/WhatIfSimulator.jsx';
 import MenuEngineeringMatrix from '../components/MenuEngineeringMatrix.jsx';
 import RealtimeSalesChart from '../components/RealtimeSalesChart.jsx';
 import FranchiseComparisonWidget from '../components/FranchiseComparisonWidget.jsx';
+import RrhhManagementModal from '../components/RrhhManagementModal.jsx';
 import { exportToCsv } from '../../../shared/utils/exportToCsv.js';
 import { AdminLayout } from '../../../shared/ui/index.js';
 
@@ -26,6 +27,8 @@ export default function SuperAdminPage() {
   const loading = useCorporateStore((s) => s.loading);
 
   const [activeTab, setActiveTab] = useState('all');
+  // Estado para controlar la visibilidad del modal de RRHH & Previred.
+  const [rrhhModalOpen, setRrhhModalOpen] = useState(false);
 
   const loadCorporateData = useCorporateStore((s) => s.loadCorporateData);
   const toggleFeature = useCorporateStore((s) => s.toggleFeature);
@@ -74,6 +77,15 @@ export default function SuperAdminPage() {
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Botón para abrir el Módulo de RRHH Completo y Previred. */}
+          <button
+            type="button"
+            onClick={() => setRrhhModalOpen(true)}
+            className="inline-flex items-center gap-1.5 rounded-xl bg-sky-600 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-sky-700 active:scale-95 shadow-soft"
+          >
+            👥 Gestión RRHH & Previred 🆕
+          </button>
+
           <button
             type="button"
             onClick={() => exportToCsv('reporte_franquicias_superadmin', branches.map((b) => ({ Sucursal: b.name, VentasCLP: b.salesTotal || 0, Mesas: b.activeTables || 0, Personal: b.activeStaff || 0 })))}
@@ -238,6 +250,12 @@ export default function SuperAdminPage() {
           <FranchiseEventStream franchiseEvents={franchiseEvents} />
         </div>
       )}
+
+      {/* Modal de Gestión RRHH, Asistencia & Previred. */}
+      <RrhhManagementModal
+        open={rrhhModalOpen}
+        onClose={() => setRrhhModalOpen(false)}
+      />
     </AdminLayout>
   );
 }

@@ -21,4 +21,7 @@ export { default as AdminLayout } from './AdminLayout.jsx';
 export { default as DemoControlBar } from './DemoControlBar.jsx';
 // Re-exporta el visualizador de plano de mesas 3D isométrico.
 export { default as IsometricTableGrid3D } from './IsometricTableGrid3D.jsx';
-
+// Re-exporta el modal de impresoras térmicas cloud ESC/POS.
+export { default as ThermalPrinterConfigModal } from './ThermalPrinterConfigModal.jsx';
+// Re-exporta el widget flotante de soporte 24/7 chileno.
+export { default as ChileanSupportWidget } from './ChileanSupportWidget.jsx';

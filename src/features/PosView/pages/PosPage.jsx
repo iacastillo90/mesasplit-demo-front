@@ -15,6 +15,8 @@ import DteModal from '../components/DteModal.jsx';
 import BlindCloseModal from '../components/BlindCloseModal.jsx';
 import CashShiftModal from '../components/CashShiftModal.jsx';
 import ExecutiveReportModal from '../components/ExecutiveReportModal.jsx';
+// ThermalPrinterConfigModal compartido.
+import ThermalPrinterConfigModal from '../../../shared/ui/ThermalPrinterConfigModal.jsx';
 // AdminLayout compartido.
 import { AdminLayout } from '../../../shared/ui/index.js';
 
@@ -28,6 +30,8 @@ export default function PosPage() {
   const [shiftClosedNotice, setShiftClosedNotice] = useState('');
   // Estado local para abrir el reporte ejecutivo SII.
   const [execReportOpen, setExecReportOpen] = useState(false);
+  // Estado local para abrir el modal de impresoras térmicas ESC/POS.
+  const [thermalPrinterModalOpen, setThermalPrinterModalOpen] = useState(false);
 
   // Suscripción al store de Zustand de POS.
   const cashierUnlocked = usePosStore((s) => s.cashierUnlocked);
@@ -171,6 +175,16 @@ export default function PosPage() {
             >
               🔒 Cierre Ciego
             </button>
+            {/* Botón de configuración de impresoras térmicas ESC/POS. */}
+            <button
+              type="button"
+              onClick={() => setThermalPrinterModalOpen(true)}
+              className="rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-900 hover:bg-amber-100 transition active:scale-95 shadow-soft flex items-center gap-1"
+            >
+              <span>🖨️</span>
+              <span>Impresoras Cloud</span>
+            </button>
+
             <button
               type="button"
               onClick={lockCashier}
@@ -309,6 +323,12 @@ export default function PosPage() {
         <ExecutiveReportModal
           open={execReportOpen}
           onClose={() => setExecReportOpen(false)}
+        />
+
+        {/* Modal de Impresoras Térmicas Cloud ESC/POS. */}
+        <ThermalPrinterConfigModal
+          open={thermalPrinterModalOpen}
+          onClose={() => setThermalPrinterModalOpen(false)}
         />
       </div>
     </AdminLayout>
