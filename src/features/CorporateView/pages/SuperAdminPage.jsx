@@ -20,6 +20,8 @@ import CostoPrimarioCard from '../components/CostoPrimarioCard.jsx';
 import ComplianceSiiPanel from '../components/ComplianceSiiPanel.jsx';
 // Simulador What-If de precios de menú (corporate-what-if).
 import WhatIfSimulator from '../components/WhatIfSimulator.jsx';
+// Matriz de ingeniería de menú (corporate-menu-engineering).
+import MenuEngineeringMatrix from '../components/MenuEngineeringMatrix.jsx';
 
 // Componente principal de la página de Super Admin Corporativo.
 export default function SuperAdminPage() {
@@ -134,6 +136,9 @@ export default function SuperAdminPage() {
 
         {/* Simulador What-If de Precios (corporate-what-if). */}
         <WhatIfSimulator />
+
+        {/* Matriz de Ingeniería de Menú (corporate-menu-engineering). */}
+        <MenuEngineeringMatrix />
 
         {/* Flujo de eventos corporativos cross-branch en tiempo real. */}
         <FranchiseEventStream franchiseEvents={franchiseEvents} />
