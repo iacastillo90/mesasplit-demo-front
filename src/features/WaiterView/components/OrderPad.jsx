@@ -16,6 +16,7 @@ import PinAuthModal from './PinAuthModal.jsx';
 import TransferModal from './TransferModal.jsx';
 // Selector puro de sugerencia de upsell (waiter-upsell).
 import { suggestUpsell } from '../services/upsellService.js';
+import SmartUpsellWidget from './SmartUpsellWidget.jsx';
 
 // Menú de productos mock del catálogo del garzón.
 const MENU_CATALOG = [
@@ -196,6 +197,9 @@ export default function OrderPad({
               </span>
             </button>
           )}
+
+          {/* Widget de Venta Cruzada IA (Smart Upsell Assistant). */}
+          <SmartUpsellWidget orderDraft={orderDraft} onAddToCart={onAddToCart} />
 
           {/* Resumen de líneas agregadas a la comanda actual. */}
           <div className="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-soft">
