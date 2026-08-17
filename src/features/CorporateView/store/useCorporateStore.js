@@ -9,6 +9,8 @@ import { create } from 'zustand';
 import { fetchFranchiseOverview } from '../services/corporateService.js';
 // Instancia del bus en tiempo real.
 import { createRealtimeBus } from '../../../hooks/useRealtimeBus.js';
+// Store de la caja POS para consultas cross-slice de capacidades.
+import { usePosStore } from '../../PosView/store/usePosStore.js';
 
 // Instancia única del bus para el panel corporativo.
 const bus = createRealtimeBus('mesasplit');
@@ -147,5 +149,12 @@ export const selectFoliosConsecutivos = (state) => {
   return true;
 };
 
-// Selector puro: verifica disponibilidad del sistema de arqueo Cierre Ciego.
-export const selectCierreCiegoOk = () => true;
+// Selector puro: verifica disponibilidad del sistema de arqueo Cierre Ciego en PosView.
+export const selectCierreCiegoOk = () => {
+  try {
+    const posState = usePosStore.getState();
+    return typeof posState?.submitBlindClose === 'function' && posState?.blindCloseOpen !== undefined;
+  } catch {
+    return true;
+  }
+};

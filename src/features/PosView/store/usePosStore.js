@@ -14,7 +14,8 @@ import { fetchOpenBills } from '../services/posService.js';
 import { createRealtimeBus } from '../../../hooks/useRealtimeBus.js';
 
 // Instancia única del bus para la Caja POS.
-const bus = createRealtimeBus('mesasplit');
+export const posBus = createRealtimeBus('mesasplit');
+const bus = posBus;
 
 // Fixture canónico inicial de cuentas abiertas para cobro.
 const INITIAL_BILLS = [

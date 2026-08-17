@@ -1,14 +1,12 @@
 // src/features/PosView/CashShift.test.jsx — suite de tests de turno de caja (cash-shift)
 // Cubre el spec cash-shift: apertura de turno, cierre con resumen, persistencia en localStorage
-// y verificación de que closeCashShift no emite shift.closed ni altera blindCloseOpen.
-// Cumple con las reglas obligatorias de AGENTS.md (comentarios en español por cada línea).
+// (clave mesasplit-cash-shift sin bills transitorios) y verificación de que closeCashShift no emite shift.closed ni altera blindCloseOpen.
+// Cumple estrictamente con las reglas de AGENTS.md (comentarios en español por cada línea).
 
 // API de Vitest importada explícitamente.
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-// Store de POS que gestiona el estado del turno de caja.
-import { usePosStore } from './store/usePosStore.js';
-// Bus en tiempo real para verificar que no se emiten eventos no autorizados.
-import { createRealtimeBus } from '../../hooks/useRealtimeBus.js';
+// Store de POS y bus exportado posBus.
+import { posBus, usePosStore } from './store/usePosStore.js';
 
 describe('cash-shift: Turno de caja operativo en PosView', () => {
   beforeEach(() => {
@@ -42,9 +40,27 @@ describe('cash-shift: Turno de caja operativo en PosView', () => {
     expect(state.summary?.totalVendido).toBe(185000);
   });
 
+  it('Scenario 3: Persistencia del turno en localStorage bajo mesasplit-cash-shift sin bills transitorios', () => {
+    // Abre el turno de caja con fondo inicial.
+    usePosStore.getState().openCashShift({ initialAmount: 75000 });
+
+    // Lee el contenido de localStorage guardado por la clave de persistencia del store.
+    const rawStorage = window.localStorage.getItem('mesasplit-cash-shift');
+    expect(rawStorage).not.toBeNull();
+
+    const parsed = JSON.parse(rawStorage ?? '{}');
+    // Verifica que el estado persistido contiene la estructura de cashShift.
+    expect(parsed.state?.cashShift?.status).toBe('open');
+    expect(parsed.state?.cashShift?.initialAmount).toBe(75000);
+
+    // Verifica que los atributos transitorios (openBills, activeBill, etc.) NO están persistidos.
+    expect(parsed.state?.openBills).toBeUndefined();
+    expect(parsed.state?.activeBill).toBeUndefined();
+  });
+
   it('Scenario 4: closeCashShift no publica shift.closed ni altera blindCloseOpen', () => {
-    const bus = createRealtimeBus('mesasplit');
-    const publishSpy = vi.spyOn(bus, 'publish');
+    // Espía la instancia real del bus de POS.
+    const publishSpy = vi.spyOn(posBus, 'publish');
 
     // Abre el turno.
     usePosStore.getState().openCashShift({ initialAmount: 20000 });

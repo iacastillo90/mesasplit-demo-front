@@ -1,6 +1,6 @@
 // src/features/CorporateView/ComplianceSiiPanel.test.jsx — suite de tests del panel de compliance SII (compliance-sii)
 // Cubre el spec compliance-sii: verificación de los 3 checks (DTE Boleta, folios consecutivos SII, Cierre Ciego),
-// detección de quiebre en secuencia de folios y verificación de que el panel es 100% read-only.
+// detección de quiebre en secuencia de folios con aserciones visuales en UI (OK / Riesgo) y verificación read-only.
 // Cumple estrictamente con las reglas de AGENTS.md (comentarios por cada línea).
 
 // API de Vitest importada explícitamente.
@@ -22,7 +22,7 @@ describe('compliance-sii: Panel de Compliance SII read-only (Super Admin)', () =
     useCorporateStore.getState().resetDemo();
   });
 
-  it('Scenario 1: Los tres checks en OK cuando hay folios consecutivos y Cierre Ciego disponible', () => {
+  it('Scenario 1: Los tres checks muestran estado OK en UI cuando hay folios consecutivos (1041, 1042, 1043)', async () => {
     useCorporateStore.setState({
       franchiseEvents: [
         { id: 'e1', type: 'payment', dteFolio: 1041, timestamp: 1000 },
@@ -34,9 +34,16 @@ describe('compliance-sii: Panel de Compliance SII read-only (Super Admin)', () =
     const state = useCorporateStore.getState();
     expect(selectHasDteBoleta(state)).toBe(true);
     expect(selectFoliosConsecutivos(state)).toBe(true);
+
+    // Renderiza el panel de compliance en UI.
+    render(<ComplianceSiiPanel />);
+
+    // Verifica las aserciones de renderizado en DOM para los tres badges OK.
+    const okBadges = await screen.findAllByText(/✅ OK/i);
+    expect(okBadges.length).toBe(3);
   });
 
-  it('Scenario 2: Quiebre de folios detectado cuando faltan folios intermedios (ej. 1041 y 1043)', () => {
+  it('Scenario 2: Quiebre de folios detectado en UI (badge Riesgo) cuando faltan folios intermedios (ej. 1041 y 1043)', async () => {
     useCorporateStore.setState({
       franchiseEvents: [
         { id: 'e1', type: 'payment', dteFolio: 1041, timestamp: 1000 },
@@ -46,11 +53,17 @@ describe('compliance-sii: Panel de Compliance SII read-only (Super Admin)', () =
 
     const state = useCorporateStore.getState();
     expect(selectHasDteBoleta(state)).toBe(true);
-    // 1041 -> 1043 no es consecutivo (+2 en lugar de +1) -> debe ser false (Riesgo).
+    // 1041 -> 1043 no es consecutivo (+2 en lugar de +1) -> debe ser false.
     expect(selectFoliosConsecutivos(state)).toBe(false);
+
+    // Renderiza el panel en UI.
+    render(<ComplianceSiiPanel />);
+
+    // Aserta la presencia del indicador visual de Riesgo en la pantalla.
+    expect(await screen.findByText(/🚨 Riesgo/i)).toBeInTheDocument();
   });
 
-  it('Scenario 3: ComplianceSiiPanel renderiza los 3 indicadores sin mutar el store', async () => {
+  it('Scenario 3: ComplianceSiiPanel renderiza los 3 indicadores sin mutar los stores', async () => {
     useCorporateStore.setState({
       franchiseEvents: [
         { id: 'e1', type: 'payment', dteFolio: 1041, timestamp: 1000 },
