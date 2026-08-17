@@ -1,34 +1,34 @@
-// src/routes/views.jsx — registro de vistas de la tabla de rutas (task 2.2)
-// MECANISMO PR2 → PR3 (documentado): la tabla de rutas (index.jsx) referencia
-// SOLO estos nombres. Las páginas reales viven en src/features/* y se crean
-// en PR 3; hoy cada vista es un placeholder lazy con el nombre del slice.
-// PR 3 edita UNICAMENTE este archivo (la cadena de import de cada lazy),
-// sin tocar ni un path de la tabla de rutas.
+// src/routes/views.jsx — registro de vistas de la tabla de rutas (tasks 2.2 + 2.4–2.8)
+// MECANISMO PR2 → PR3 (completado): la tabla de rutas (index.jsx) referencia
+// SOLO estos nombres exportados. PR 3 reemplazó la factory de placeholders por
+// los lazy imports de los slices FSD reales (src/features/*). Ningún path de la
+// tabla de rutas cambió: el corte fue UNICAMENTE acá (mecanismo documentado).
 
 // lazy: el componente se resuelve recién cuando la ruta se monta (code split).
 import { lazy } from 'react';
-// NOTA: PlaceholderView NO se importa estático aquí; se carga por el import
-// dinámico de la factory (import('./PlaceholderView.jsx')) para que PR 3
-// reemplace solo esa cadena por el slice real.
 
-// Factory: devuelve un lazy que renderiza el placeholder con el nombre dado.
-// PR 3 reemplaza el cuerpo de esta factory o cada vista individual por
-// lazy(() => import('../features/<Slice>/pages/<Page>.jsx')).
-const placeholderView = (viewName) =>
-  // Import dinámico del placeholder; PR 3 cambia esta cadena por el slice.
-  lazy(() =>
-    // El módulo default del placeholder se envuelve con el nombre de la vista.
-    import('./PlaceholderView.jsx').then((mod) => ({
-      // Devuelve el componente con la prop viewName ya fijada.
-      default: () => <mod.default viewName={viewName} />,
-    })),
-  );
+// Vista del hub Portal ("/"): tarjetas lanzadoras de todas las vistas.
+// Slice: src/features/Portal (task 2.4).
+export const PortalView = lazy(() => import('../features/Portal/pages/PortalPage.jsx'));
 
-// Vistas exportadas: los nombres que la tabla de rutas importa y usa.
-// PR 3 mantiene estos mismos nombres (export) y solo cambia sus imports.
-export const PortalView = placeholderView('Portal Hub');
-export const ClientView = placeholderView('Mesa Virtual (Cliente)');
-export const WaiterView = placeholderView('Waiter (Garzón)');
-export const KdsView = placeholderView('KDS Cocina');
-export const RadarView = placeholderView('Local Admin Radar');
-export const SuperAdminView = placeholderView('Super Admin');
+// Mesa Virtual del cliente ("/cliente"): menú, carrito y banner de mesa.
+// Slice: src/features/ClientView (task 2.5).
+export const ClientView = lazy(() => import('../features/ClientView/pages/ClientPage.jsx'));
+
+// Vista del garzón ("/garzon"): grilla de mesas y pad de comanda.
+// Slice: src/features/WaiterView (task 2.6).
+export const WaiterView = lazy(() => import('../features/WaiterView/pages/WaiterPage.jsx'));
+
+// Cocina KDS ("/cocina"): tickets en modo oscuro estricto (brand-950).
+// Slice: src/features/KdsView (task 2.7).
+export const KdsView = lazy(() => import('../features/KdsView/pages/KdsPage.jsx'));
+
+// Local Admin Radar ("/admin"): mapa topológico de mesas + feed.
+// Slice: src/features/RadarView (task 2.8).
+export const RadarView = lazy(() => import('../features/RadarView/pages/RadarPage.jsx'));
+
+// Super Admin ("/admin/super"): placeholder explícito no implementado.
+// Slice: src/features/CorporateView (task 2.8).
+export const SuperAdminView = lazy(
+  () => import('../features/CorporateView/pages/SuperAdminPage.jsx'),
+);
