@@ -9,10 +9,15 @@ import { useRewardsStore, REWARDS_CATALOG, calculateTier } from '../store/useRew
 // Modal base reutilizable.
 import { Modal } from '../../../shared/ui/index.js';
 
+// Store y acciones del cliente.
+import { useClientStore } from '../store/useClientStore.js';
+
 // Componente RewardsBadgeWidget.
 export default function RewardsBadgeWidget() {
   // Puntos acumulados y acciones del store.
   const { points, redeemedRewards, redeemReward } = useRewardsStore();
+  // Acción para aplicar descuento en CLP al carrito.
+  const applyRewardDiscount = useClientStore((s) => s.applyRewardDiscount);
   // Estado local para abrir o cerrar el modal de catálogo de beneficios.
   const [modalOpen, setModalOpen] = useState(false);
   // Estado para notificar éxito tras un canje.
@@ -28,8 +33,10 @@ export default function RewardsBadgeWidget() {
     // Invoca la acción de canje del store.
     const success = redeemReward(rewardId);
     if (success) {
+      // Aplica un descuento automático de $5.000 CLP en la boleta del cliente.
+      applyRewardDiscount(5000);
       // Muestra un mensaje temporal de confirmación.
-      setToastMessage('¡Beneficio canjeado con éxito! Muestra el código a tu garzón.');
+      setToastMessage('¡Beneficio canjeado con éxito! Se aplicó un descuento de $5.000 en tu boleta.');
       setTimeout(() => setToastMessage(null), 3000);
     }
   };

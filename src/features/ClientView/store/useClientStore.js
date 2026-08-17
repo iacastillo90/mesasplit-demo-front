@@ -14,9 +14,9 @@ import { getMenu, getTableContext } from '../services/clientService.js';
 export const selectCartCount = (cart = []) =>
   cart.reduce((total, item) => total + item.qty, 0);
 
-// Selector puro: total en CLP del carrito.
-export const selectCartTotal = (cart = []) =>
-  cart.reduce((total, item) => total + item.price * item.qty, 0);
+// Selector puro: total en CLP del carrito descontando recompensas de lealtad.
+export const selectCartTotal = (cart = [], discountAmount = 0) =>
+  Math.max(0, cart.reduce((total, item) => total + item.price * item.qty, 0) - discountAmount);
 
 // Estado inicial del slice.
 const initialState = {
@@ -26,6 +26,8 @@ const initialState = {
   tableContext: null,
   // Carrito: arreglo de {id, name, price, qty} agregados por el cliente.
   cart: [],
+  // Descuento activo en CLP derivado de recompensas de lealtad.
+  activeDiscountAmount: 0,
   // Flag de carga de la primera llamada al servicio.
   loading: true,
   // Controla la visibilidad del drawer del carrito compartido.
@@ -77,6 +79,9 @@ export const useClientStore = create(
 
       // Abre o cierra el drawer del carrito compartido.
       setCartOpen: (cartOpen) => set({ cartOpen }),
+
+      // Aplica un descuento de recompensa en CLP sobre el total del carrito.
+      applyRewardDiscount: (amount) => set({ activeDiscountAmount: amount }),
 
       // Reinicia el slice a su estado inicial y limpia localStorage.
       resetDemo: () => {
