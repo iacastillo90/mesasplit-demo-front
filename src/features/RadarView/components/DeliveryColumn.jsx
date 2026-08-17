@@ -13,7 +13,7 @@ const PLATFORMS = {
 };
 
 // Componente de la sección Delivery Omnicanal.
-export default function DeliveryColumn({ deliveryOrders }) {
+export default function DeliveryColumn({ deliveryOrders = [] }) {
   return (
     // Sección contenedora con accesibilidad.
     <section aria-label="Delivery Omnicanal" className="flex flex-col gap-3">

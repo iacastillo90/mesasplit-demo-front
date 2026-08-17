@@ -6,7 +6,7 @@
 import { Modal } from '../../../shared/ui/index.js';
 
 // Componente del drawer de excepciones.
-export default function ExceptionFeedDrawer({ open, onClose, exceptionLogs }) {
+export default function ExceptionFeedDrawer({ open, onClose, exceptionLogs = [] }) {
   return (
     // Modal de diálogo envolvente para la auditoría de fraudes y excepciones.
     <Modal
