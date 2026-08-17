@@ -5,7 +5,8 @@
     "description": "Pan brioche, carne 180g, cheddar y salsa de la casa.",
     "price": 8900,
     "category": "Hamburguesas",
-    "allergens": []
+    "allergens": [],
+    "alcoholic": false
   },
   {
     "id": "m2",
@@ -13,7 +14,8 @@
     "description": "Bacon crocante, cebolla crispy y salsa BBQ ahumada.",
     "price": 10400,
     "category": "Hamburguesas",
-    "allergens": ["gluten"]
+    "allergens": ["gluten"],
+    "alcoholic": false
   },
   {
     "id": "m3",
@@ -21,7 +23,8 @@
     "description": "Mozzarella fresca, tomate y albahaca sobre masa artesanal.",
     "price": 10900,
     "category": "Pizzas",
-    "allergens": ["lácteos", "gluten"]
+    "allergens": ["lácteos", "gluten"],
+    "alcoholic": false
   },
   {
     "id": "m4",
@@ -29,7 +32,8 @@
     "description": "Pasta fresca, panceta, yema y queso pecorino.",
     "price": 9800,
     "category": "Pasta",
-    "allergens": ["huevo", "lácteos", "gluten"]
+    "allergens": ["huevo", "lácteos", "gluten"],
+    "alcoholic": false
   },
   {
     "id": "m5",
@@ -37,7 +41,8 @@
     "description": "Lechuga romana, pollo grillado, parmesano y croutons.",
     "price": 7400,
     "category": "Ensaladas",
-    "allergens": ["lácteos", "gluten"]
+    "allergens": ["lácteos", "gluten"],
+    "alcoholic": false
   },
   {
     "id": "m6",
@@ -45,6 +50,16 @@
     "description": "Limonada natural con menta fresca y hielo.",
     "price": 2900,
     "category": "Bebidas",
-    "allergens": []
+    "allergens": [],
+    "alcoholic": false
+  },
+  {
+    "id": "m7",
+    "name": "Cerveza Artesanal IPA",
+    "description": "Cerveza rubia artesanal 330cc (5.8% ABV).",
+    "price": 4500,
+    "category": "Bebidas",
+    "allergens": ["gluten"],
+    "alcoholic": true
   }
 ]

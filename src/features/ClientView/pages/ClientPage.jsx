@@ -28,6 +28,8 @@ import WelcomeModal from '../components/WelcomeModal.jsx';
 import InvoiceRequestModal from '../components/InvoiceRequestModal.jsx';
 // Banner de seguimiento de pedido en tiempo real (client-order-tracking).
 import OrderTrackingBanner from '../components/OrderTrackingBanner.jsx';
+// Modal de verificación de mayoría de edad (client-alcohol-verification).
+import AgeVerificationModal from '../components/AgeVerificationModal.jsx';
 
 // ClientPage: pantalla principal de la Mesa Virtual del comensal.
 export default function ClientPage() {
@@ -69,6 +71,8 @@ export default function ClientPage() {
   });
   // Estado local para el modal de solicitud de factura (client-factura).
   const [invoiceOpen, setInvoiceOpen] = useState(false);
+  // Estado local para el ítem alcohólico pendiente de verificación de edad (client-alcohol-verification).
+  const [pendingAlcoholItem, setPendingAlcoholItem] = useState(null);
 
   // Store de división de cuenta (account-split).
   const splitOpen = useSplitStore((s) => s.open);
@@ -105,12 +109,27 @@ export default function ClientPage() {
 
   // Handler de agregado: suma al carrito y muestra el toast informativo.
   const handleAdd = (item) => {
+    // Si el ítem es alcohólico, requiere confirmación previa de mayoría de edad.
+    if (item?.alcoholic) {
+      setPendingAlcoholItem(item);
+      return;
+    }
     // Delega en la acción del store (suma o incrementa la línea).
     addToCart(item);
     // Enciende el toast de confirmación.
     setToastVisible(true);
     // Programa su ocultamiento a los 1.8s (auto-cierre del demo).
     window.setTimeout(() => setToastVisible(false), 1800);
+  };
+
+  // Handler de confirmación de mayoría de edad para ítem alcohólico.
+  const handleConfirmAlcohol = () => {
+    if (pendingAlcoholItem) {
+      addToCart(pendingAlcoholItem);
+      setToastVisible(true);
+      window.setTimeout(() => setToastVisible(false), 1800);
+    }
+    setPendingAlcoholItem(null);
   };
 
   // Handler para gatillar la división de cuenta desde el carrito.
@@ -197,7 +216,7 @@ export default function ClientPage() {
                         {/* Descripción corta del plato (segunda línea). */}
                         <p className="text-sm text-brand-800/60">{item.description}</p>
                         {/* Chips de alergias: solo si el plato declara alguna. */}
-                        {item.allergens.length > 0 && (
+                        {(item.allergens ?? []).length > 0 && (
                           // Fila de chips de alergia del plato.
                           <div className="mt-2 flex flex-wrap gap-1">
                             {/* Renderiza un chip por alergia declarada. */}
@@ -281,6 +300,14 @@ export default function ClientPage() {
           open={invoiceOpen}
           totalAmount={cartTotal}
           onClose={() => setInvoiceOpen(false)}
+        />
+
+        {/* Modal de verificación de mayoría de edad para ítems alcohólicos (client-alcohol-verification). */}
+        <AgeVerificationModal
+          open={Boolean(pendingAlcoholItem)}
+          item={pendingAlcoholItem}
+          onConfirm={handleConfirmAlcohol}
+          onClose={() => setPendingAlcoholItem(null)}
         />
 
         {/* Toast de confirmación al agregar un plato (base shared/ui). */}
