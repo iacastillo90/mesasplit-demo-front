@@ -17,6 +17,7 @@ import BranchHealthCard from '../components/BranchHealthCard.jsx';
 import GlobalConfigToggles from '../components/GlobalConfigToggles.jsx';
 import FranchiseEventStream from '../components/FranchiseEventStream.jsx';
 import CostoPrimarioCard from '../components/CostoPrimarioCard.jsx';
+import ComplianceSiiPanel from '../components/ComplianceSiiPanel.jsx';
 
 // Componente principal de la página de Super Admin Corporativo.
 export default function SuperAdminPage() {
@@ -125,6 +126,9 @@ export default function SuperAdminPage() {
           featureToggles={featureToggles}
           onToggleFeature={toggleFeature}
         />
+
+        {/* Panel de compliance fiscal SII (compliance-sii). */}
+        <ComplianceSiiPanel />
 
         {/* Flujo de eventos corporativos cross-branch en tiempo real. */}
         <FranchiseEventStream franchiseEvents={franchiseEvents} />
