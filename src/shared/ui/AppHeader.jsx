@@ -69,8 +69,8 @@ export default function AppHeader({ title = 'MesaSplit', subtitle, currentRoute 
           title={isMuted ? 'Activar sonido' : 'Silenciar sonido'}
           className={`flex h-8 w-8 items-center justify-center rounded-xl border text-xs transition active:scale-95 cursor-pointer ${
             isMuted
-              ? 'bg-rose-50 text-rose-600 border-rose-200'
-              : 'bg-emerald-50 text-emerald-600 border-emerald-200'
+              ? isDark ? 'bg-rose-950/40 text-rose-400 border-rose-800' : 'bg-rose-50 text-rose-600 border-rose-200'
+              : isDark ? 'bg-emerald-950/40 text-emerald-400 border-emerald-800' : 'bg-emerald-50 text-emerald-600 border-emerald-200'
           }`}
         >
           {isMuted ? '🔇' : '🔊'}
