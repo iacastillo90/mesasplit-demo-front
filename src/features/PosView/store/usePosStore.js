@@ -12,6 +12,8 @@ import { persist } from 'zustand/middleware';
 import { fetchOpenBills } from '../services/posService.js';
 // Instancia del bus en tiempo real.
 import { createRealtimeBus } from '../../../hooks/useRealtimeBus.js';
+// Validación de RUT chileno.
+import { validateRut } from '../../../shared/utils/index.js';
 
 // Instancia única del bus para la Caja POS.
 export const posBus = createRealtimeBus('mesasplit');
@@ -57,6 +59,8 @@ const initialState = {
   cashShiftModalOpen: false,
   // Registro de notas de crédito emitidas (pos-credit-note).
   creditNotes: [],
+  // Comprobantes CFD emitidos (pos-cfd).
+  cfdReceipts: [],
 };
 
 // Store de Zustand para PosView con persistencia del turno de caja.
@@ -212,6 +216,26 @@ export const usePosStore = create(
         }
 
         return { ok: true, creditNote: newNote };
+      },
+
+      // Emite un comprobante CFD demo con RUT validado (pos-cfd).
+      issueCfd: (billId, rut, razonSocial) => {
+        if (!billId) return { ok: false, error: 'Sin venta seleccionada' };
+        if (!rut || !validateRut(rut)) return { ok: false, error: 'RUT del cliente inválido' };
+
+        const folioNumber = (get().cfdReceipts ?? []).length + 5001;
+
+        const newReceipt = {
+          id: `cfd-${Date.now()}`,
+          billId: String(billId),
+          folio: `CFD-${folioNumber}`,
+          rut: String(rut),
+          razonSocial: String(razonSocial ?? 'Cliente General'),
+          timestamp: Date.now(),
+        };
+
+        set((state) => ({ cfdReceipts: [newReceipt, ...(state.cfdReceipts ?? [])] }));
+        return { ok: true, receipt: newReceipt };
       },
 
       // Restablece el slice a su estado inicial para tests (limpiando persistencia).
