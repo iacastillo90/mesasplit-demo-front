@@ -6,5 +6,6 @@
 
 // Re-exporta los tokens de color (escala brand + semánticos + mapa plano).
 export { BRAND, SEMANTIC, TOKEN_MAP } from './colors.js';
-// Re-exporta los enums de estado del dominio (mesa, ticket, orden).
-export { ORDER_STATUS, TABLE_STATUS, TICKET_STATUS } from './statusEnums.js';
+// Re-exporta los enums de estado del dominio (mesa, ticket, curso, pago y split).
+// ORDER_STATUS fue reemplazado por TABLE_STATUS/TICKET_STATUS en fases previas.
+export { COURSE_TYPE, GUEST_PAYMENT_STATUS, PAYMENT_METHOD, SPLIT_TYPE, TABLE_STATUS, TICKET_STATUS } from './statusEnums.js';
