@@ -45,7 +45,7 @@ export function buildGuests(count) {
   const safeCount = Math.max(0, count);
   return Array.from({ length: safeCount }, (_, index) => ({
     id: `guest-${index + 1}`,
-    label: DEMO_GUEST_NAMES[index] ?? `Comensal ${index + 1}`,
+    label: `Comensal ${index + 1}`,
     name: DEMO_GUEST_NAMES[index] ?? `Comensal ${index + 1}`,
     status: 'pending',
   }));

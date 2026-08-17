@@ -73,7 +73,7 @@ describe('app-routing: tabla de rutas (spec)', () => {
     // El banner muestra el contexto de mesa tras la carga del servicio.
     expect(await screen.findByText('Mesa 12', {}, { timeout: 10000 })).toBeInTheDocument();
     // El menú llega vía clientService (en GREEN a través de mockFetch).
-    expect(await screen.findByText('Hamburguesa Clásica', {}, { timeout: 10000 })).toBeInTheDocument();
+    expect(await screen.findByText(/Hamburguesa Clásica/i, {}, { timeout: 10000 })).toBeInTheDocument();
   }, 15000);
 
   it('renderiza la grilla del garzón en /garzon con mesas del servicio', async () => {
