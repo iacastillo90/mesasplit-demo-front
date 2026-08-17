@@ -212,8 +212,16 @@ export default function ClientPage() {
                 {items.map((item) => (
                   // Tarjeta de plato: datos del ítem + acción de agregar.
                   <article key={item.id} className="rounded-2xl bg-white p-4 shadow-soft">
-                    {/* Fila del plato: info a la izquierda, acción a la derecha. */}
-                    <div className="flex items-start gap-3">
+                    {/* Fila del plato: foto apetitosa a la izquierda, info al centro, acción a la derecha. */}
+                    <div className="flex items-center gap-4">
+                      {/* Fotografía de alta calidad con tonos cálidos/rojos para estimular el apetito. */}
+                      {item.image && (
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="h-20 w-20 shrink-0 rounded-xl object-cover shadow-sm border border-brand-100"
+                        />
+                      )}
                       {/* Bloque de nombre, descripción y alergias del plato. */}
                       <div className="min-w-0 flex-1">
                         {/* Nombre del plato con truncado para títulos largos. */}

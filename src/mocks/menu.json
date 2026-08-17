@@ -7,7 +7,8 @@
     "category": "Hamburguesas",
     "allergens": [],
     "alcoholic": false,
-    "cost": 4600
+    "cost": 4600,
+    "image": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=400&q=80"
   },
   {
     "id": "m2",
@@ -19,7 +20,8 @@
       "gluten"
     ],
     "alcoholic": false,
-    "cost": 5400
+    "cost": 5400,
+    "image": "https://images.unsplash.com/photo-1586190848861-99aa4a171e90?auto=format&fit=crop&w=400&q=80"
   },
   {
     "id": "m3",
@@ -32,7 +34,8 @@
       "gluten"
     ],
     "alcoholic": false,
-    "cost": 5600
+    "cost": 5600,
+    "image": "https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?auto=format&fit=crop&w=400&q=80"
   },
   {
     "id": "m4",
@@ -46,7 +49,8 @@
       "gluten"
     ],
     "alcoholic": false,
-    "cost": 5000
+    "cost": 5000,
+    "image": "https://images.unsplash.com/photo-1612874742237-6526221588e3?auto=format&fit=crop&w=400&q=80"
   },
   {
     "id": "m5",
@@ -59,7 +63,8 @@
       "gluten"
     ],
     "alcoholic": false,
-    "cost": 3400
+    "cost": 3400,
+    "image": "https://images.unsplash.com/photo-1550304943-4f24f54ddde9?auto=format&fit=crop&w=400&q=80"
   },
   {
     "id": "m6",
@@ -69,7 +74,8 @@
     "category": "Bebidas",
     "allergens": [],
     "alcoholic": false,
-    "cost": 900
+    "cost": 900,
+    "image": "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=400&q=80"
   },
   {
     "id": "m7",
@@ -81,6 +87,7 @@
       "gluten"
     ],
     "alcoholic": true,
-    "cost": 2100
+    "cost": 2100,
+    "image": "https://images.unsplash.com/photo-1608270586620-248524c67de9?auto=format&fit=crop&w=400&q=80"
   }
 ]
