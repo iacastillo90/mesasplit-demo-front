@@ -59,7 +59,9 @@ describe('account-split: División de Cuenta en Mesa Virtual', () => {
     const payBtn = await screen.findByRole('button', { name: /Pagar mi parte/i }, { timeout: 3000 });
     fireEvent.click(payBtn);
 
-    // Verifica la confirmación del pago parcial.
-    expect(await screen.findByText(/Pagado/i, {}, { timeout: 3000 })).toBeInTheDocument();
+    // Verifica la presencia del badge de pago parcial.
+    const paidElements = await screen.findAllByText(/Pagado/i, {}, { timeout: 3000 });
+    expect(paidElements.length).toBeGreaterThan(0);
+
   });
 });

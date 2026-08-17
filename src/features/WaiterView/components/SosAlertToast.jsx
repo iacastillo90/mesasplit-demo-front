@@ -1,9 +1,8 @@
 // src/features/WaiterView/components/SosAlertToast.jsx — componente de alerta emergente de llamado S.O.S. (sos-waiter-call)
 // Muestra una barra/modal flotante animada en rojo brillante (#EF4444) con pulso de atención cuando una mesa solicita ayuda urgente del garzón.
 
-import { useEffect } from 'react';
-
 export default function SosAlertToast({ alert, onDismiss, onAttend }) {
+
   // Si no existe alerta activa, no renderiza nada.
   if (!alert) return null;
 

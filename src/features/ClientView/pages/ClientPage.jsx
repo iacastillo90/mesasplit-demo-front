@@ -32,6 +32,11 @@ import OrderTrackingBanner from '../components/OrderTrackingBanner.jsx';
 import AgeVerificationModal from '../components/AgeVerificationModal.jsx';
 // Banner de reconexión de sesión (client-session-reconnect).
 import ReconnectBanner from '../components/ReconnectBanner.jsx';
+// Filtros por dieta en la carta digital.
+import MenuFilterPills from '../components/MenuFilterPills.jsx';
+// Modal de personalización de opciones del plato.
+import ItemCustomizerModal from '../components/ItemCustomizerModal.jsx';
+
 
 // ClientPage: pantalla principal de la Mesa Virtual del comensal.
 export default function ClientPage() {
@@ -75,6 +80,11 @@ export default function ClientPage() {
   const [invoiceOpen, setInvoiceOpen] = useState(false);
   // Estado local para el ítem alcohólico pendiente de verificación de edad (client-alcohol-verification).
   const [pendingAlcoholItem, setPendingAlcoholItem] = useState(null);
+  // Estado local para el filtro de dieta seleccionado en la carta.
+  const [activeDietFilter, setActiveDietFilter] = useState('all');
+  // Estado local para el plato actualmente en proceso de personalización.
+  const [customizingItem, setCustomizingItem] = useState(null);
+
 
   // Store de división de cuenta (account-split).
   const splitOpen = useSplitStore((s) => s.open);
@@ -192,6 +202,10 @@ export default function ClientPage() {
 
         {/* Banner de seguimiento de pedido en tiempo real (client-order-tracking). */}
         <OrderTrackingBanner hasActiveOrder={cart.length > 0} />
+
+        {/* Chips de filtro rápido por dieta en la carta digital */}
+        <MenuFilterPills activeFilter={activeDietFilter} onSelectFilter={setActiveDietFilter} />
+
 
         {/* Sección de menú: itera las categorías agrupadas del useMemo. */}
         {loading ? (
@@ -323,9 +337,21 @@ export default function ClientPage() {
           onClose={() => setPendingAlcoholItem(null)}
         />
 
+        {/* Modal de personalización de opciones del plato */}
+        <ItemCustomizerModal
+          item={customizingItem}
+          open={Boolean(customizingItem)}
+          onClose={() => setCustomizingItem(null)}
+          onConfirm={(customizedItem) => {
+            handleAdd(customizedItem);
+            setCustomizingItem(null);
+          }}
+        />
+
         {/* Toast de confirmación al agregar un plato (base shared/ui). */}
         {toastVisible && <Toast variant="success" message="Plato agregado al carrito" />}
       </div>
+
 
       {/* CTA flotante del carrito: affordance SIEMPRE visible (spec). */}
       <div className="fixed inset-x-0 bottom-6 z-40 flex justify-center px-6">
