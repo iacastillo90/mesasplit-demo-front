@@ -32,6 +32,8 @@ const initialState = {
   isOnline: true,
   // Cola local de eventos encolados en modo offline (FIFO).
   offlineQueue: [],
+  // Modo exhibición fullscreen Expo View.
+  expoMode: false,
   // Estado de carga inicial.
   loading: true,
 };
@@ -174,6 +176,9 @@ export const useKdsStore = create((set, get) => ({
     });
     set({ tickets: updatedTickets });
   },
+
+  // Alterna el modo exhibición fullscreen Expo View.
+  toggleExpoMode: () => set((state) => ({ expoMode: !state.expoMode })),
 
   // Restablece el slice a su estado inicial.
   resetDemo: () => set(initialState),

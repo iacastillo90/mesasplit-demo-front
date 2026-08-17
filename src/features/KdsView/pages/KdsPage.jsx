@@ -1,6 +1,6 @@
-// src/features/KdsView/pages/KdsPage.jsx — pantalla principal KDS de cocina (kds-kitchen)
+// src/features/KdsView/pages/KdsPage.jsx — pantalla principal KDS de cocina (kds-kitchen + kds-expo-view)
 // Orquesta la vista en modo oscuro estricto (`#011623`), filtrado por estaciones, comanda activa,
-// modales de Recall y Lista 86, y suscripciones en tiempo real a useRealtimeBus (eventos course.fire).
+// modales de Recall y Lista 86, modo exhibición Expo View y suscripciones en tiempo real.
 // Cumple con las reglas obligatorias de AGENTS.md (comentarios en español por cada línea).
 
 // Hooks de React para estado local y efectos secundarios.
@@ -23,6 +23,8 @@ import Lista86Modal from '../components/Lista86Modal.jsx';
 import OfflineBanner from '../components/OfflineBanner.jsx';
 // Adaptador de conectividad de red.
 import { createConnectivityAdapter } from '../services/connectivityService.js';
+// Componente de exhibición fullscreen Expo View.
+import ExpoDisplay from '../components/ExpoDisplay.jsx';
 
 // Componente principal de la página KDS de cocina.
 export default function KdsPage() {
@@ -33,6 +35,7 @@ export default function KdsPage() {
   const activeStation = useKdsStore((s) => s.activeStation);
   const isOnline = useKdsStore((s) => s.isOnline);
   const offlineQueue = useKdsStore((s) => s.offlineQueue);
+  const expoMode = useKdsStore((s) => s.expoMode);
   const loading = useKdsStore((s) => s.loading);
 
   // Acciones extraídas del store.
@@ -44,6 +47,7 @@ export default function KdsPage() {
   const toggleItemPrepared = useKdsStore((s) => s.toggleItemPrepared);
   const fireCourse = useKdsStore((s) => s.fireCourse);
   const setOnlineState = useKdsStore((s) => s.setOnlineState);
+  const toggleExpoMode = useKdsStore((s) => s.toggleExpoMode);
 
   // Estado del bus en tiempo real.
   const bus = useRealtimeBus('mesasplit');
@@ -90,55 +94,63 @@ export default function KdsPage() {
   return (
     // Contenedor principal en MODO OSCURO ESTRICTO (#011623).
     <main className="min-h-screen bg-brand-950 text-brand-50">
-      {/* Cabecera superior KDS con indicador de tickets activos y lanzadores de modales. */}
-      <KdsHeader
-        activeCount={visibleTickets.length}
-        recallCount={recallStack.length}
-        onOpenRecall={() => setIsRecallOpen(true)}
-        onOpenLista86={() => setIsLista86Open(true)}
-      />
+      {/* Componente exhibición fullscreen Expo View (kds-expo-view). */}
+      {expoMode ? (
+        <ExpoDisplay tickets={visibleTickets} onClose={toggleExpoMode} />
+      ) : (
+        <>
+          {/* Cabecera superior KDS con indicador de tickets activos y lanzadores de modales. */}
+          <KdsHeader
+            activeCount={visibleTickets.length}
+            recallCount={recallStack.length}
+            onOpenRecall={() => setIsRecallOpen(true)}
+            onOpenLista86={() => setIsLista86Open(true)}
+            onToggleExpo={toggleExpoMode}
+          />
 
-      {/* Barra deslizable de estaciones de cocina. */}
-      <StationFilterTabs stations={stations} activeStation={activeStation} onChange={setStation} />
+          {/* Barra deslizable de estaciones de cocina. */}
+          <StationFilterTabs stations={stations} activeStation={activeStation} onChange={setStation} />
 
-      {/* Indicador visual de modo offline si se perdió la conexión a internet. */}
-      {!isOnline && <OfflineBanner pendingCount={offlineQueue.length} />}
+          {/* Indicador visual de modo offline si se perdió la conexión a internet. */}
+          {!isOnline && <OfflineBanner pendingCount={offlineQueue.length} />}
 
-      {/* Área principal con grilla responsiva de tarjetas de comanda. */}
-      <div className="px-6 pb-10">
-        {loading ? (
-          <p className="py-16 text-center text-brand-50/60">Cargando tickets de cocina…</p>
-        ) : visibleTickets.length === 0 ? (
-          <p className="py-16 text-center text-brand-50/60">No hay tickets activos en esta estación.</p>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-            {visibleTickets.map((ticket) => (
-              <TicketCard
-                key={ticket.id}
-                ticket={ticket}
-                onComplete={completeTicket}
-                onTogglePrepared={toggleItemPrepared}
-              />
-            ))}
+          {/* Área principal con grilla responsiva de tarjetas de comanda. */}
+          <div className="px-6 pb-10">
+            {loading ? (
+              <p className="py-16 text-center text-brand-50/60">Cargando tickets de cocina…</p>
+            ) : visibleTickets.length === 0 ? (
+              <p className="py-16 text-center text-brand-50/60">No hay tickets activos en esta estación.</p>
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+                {visibleTickets.map((ticket) => (
+                  <TicketCard
+                    key={ticket.id}
+                    ticket={ticket}
+                    onComplete={completeTicket}
+                    onTogglePrepared={toggleItemPrepared}
+                  />
+                ))}
+              </div>
+            )}
           </div>
-        )}
-      </div>
 
-      {/* Modal de Recall de comandas despachadas. */}
-      <RecallModal
-        isOpen={isRecallOpen}
-        onClose={() => setIsRecallOpen(false)}
-        recallStack={recallStack}
-        onRestore={restoreTicket}
-      />
+          {/* Modal de Recall de comandas despachadas. */}
+          <RecallModal
+            isOpen={isRecallOpen}
+            onClose={() => setIsRecallOpen(false)}
+            recallStack={recallStack}
+            onRestore={restoreTicket}
+          />
 
-      {/* Modal de gestión de Lista 86 (Agotados). */}
-      <Lista86Modal
-        isOpen={isLista86Open}
-        onClose={() => setIsLista86Open(false)}
-        stock86={stock86}
-        onToggle86={toggleStock86}
-      />
+          {/* Modal de Lista 86 (gestión de quiebres de stock). */}
+          <Lista86Modal
+            isOpen={isLista86Open}
+            onClose={() => setIsLista86Open(false)}
+            stock86={stock86}
+            onToggle86={toggleStock86}
+          />
+        </>
+      )}
     </main>
   );
 }
