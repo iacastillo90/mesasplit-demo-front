@@ -1,91 +1,147 @@
-// src/features/WaiterView/pages/WaiterPage.jsx — vista del garzón (task 2.6)
-// Ruta "/garzon" del spec feature-views: grilla de mesas asignadas (sourced
-// desde la capa de servicios) + pad de comanda de la mesa seleccionada
-// (escenario "waiter screen shows tables"). Modo claro (docs/04).
-// Orquesta servicio (datos) y store (estado) del slice WaiterView.
+// src/features/WaiterView/pages/WaiterPage.jsx — PWA del Garzón / Mozo (waiter-pwa)
+// Pantalla principal del mozo: marcaje de turno e inicio de sesión (Ley 40h), grilla de mesas
+// asignadas con semáforos de estado, toma de pedido con una mano y badges de cantidad,
+// Escudo de Alergias (#EF4444), Course Control (course.fire), anulación por PIN (alert.fraud)
+// y liberación de mesa (table.status_changed).
+// Cumple estrictamente con las reglas de AGENTS.md (comentarios en español por línea).
 
-// useEffect: dispara la carga de mesas al montar la vista.
-import { useEffect, useMemo } from 'react';
-// Badge base: identidad del garzón en la cabecera.
-import { Badge } from '../../../shared/ui/index.js';
-// Store del slice: mesas, selección y acciones del garzón.
+// useEffect y useState de React para manejar el marcaje de turno inicial.
+import { useEffect, useState } from 'react';
+// Badge y Button compartilhados de UI.
+import { Badge, Button } from '../../../shared/ui/index.js';
+// Store de estado del garzón.
 import { useWaiterStore } from '../store/useWaiterStore.js';
-// Grilla de mesas asignadas (presentacional, recibe datos por props).
+// Componente de la grilla de mesas asignadas.
 import TableGrid from '../components/TableGrid.jsx';
-// Pad de comanda de la mesa seleccionada (shell, recibe la mesa por props).
+// Componente del panel de comanda y catálogo táctil.
 import OrderPad from '../components/OrderPad.jsx';
 
-// WaiterPage: pantalla principal del garzón con grilla y pad de comanda.
+// Componente principal WaiterPage.
 export default function WaiterPage() {
-  // Suscripción al store: mesas asignadas al garzón.
+  // Suscripción a las propiedades del store de garzón.
+  const shiftStatus = useWaiterStore((s) => s.shiftStatus);
+  const waiterName = useWaiterStore((s) => s.waiterName);
   const tables = useWaiterStore((s) => s.tables);
-  // Id de la mesa seleccionada para la comanda (null = sin selección).
   const selectedTableId = useWaiterStore((s) => s.selectedTableId);
-  // Flag de carga de la primera llamada al servicio.
-  const loading = useWaiterStore((s) => s.loading);
-  // Acción de carga inicial de mesas (se dispara una vez abajo).
+  const orderDraft = useWaiterStore((s) => s.orderDraft);
+  const selectedCourse = useWaiterStore((s) => s.selectedCourse);
+  const toastMessage = useWaiterStore((s) => s.toastMessage);
+
+  // Acciones expuestas por el store.
+  const clockIn = useWaiterStore((s) => s.clockIn);
   const loadTables = useWaiterStore((s) => s.loadTables);
-  // Acción de seleccionar/limpiar la mesa activa del pad.
   const selectTable = useWaiterStore((s) => s.selectTable);
+  const addToDraft = useWaiterStore((s) => s.addToDraft);
+  const toggleAllergyFlag = useWaiterStore((s) => s.toggleAllergyFlag);
+  const setCourse = useWaiterStore((s) => s.setCourse);
+  const fireCourse = useWaiterStore((s) => s.fireCourse);
+  const voidItemWithPin = useWaiterStore((s) => s.voidItemWithPin);
+  const releaseTable = useWaiterStore((s) => s.releaseTable);
 
-  // Carga las mesas asignadas UNA vez al montar la vista.
+  // Estado local para el formulario de marcaje de turno con PIN.
+  const [pinInput, setPinInput] = useState('');
+  // Mensaje de error al fallar el PIN de marcaje.
+  const [pinError, setPinError] = useState('');
+
+  // Carga inicial de mesas si el turno ya estuviera activo.
   useEffect(() => {
-    // Invoca la acción del store que resuelve las mesas del servicio.
-    loadTables();
-    // Sin deps: solo al montar (los datos del demo no cambian en sesión).
-  }, [loadTables]);
+    if (shiftStatus === 'clocked_in') {
+      loadTables();
+    }
+  }, [shiftStatus, loadTables]);
 
-  // Resuelve el objeto de la mesa seleccionada para el pad (o null).
-  const selectedTable = useMemo(
-    // Busca en la lista la mesa cuyo id coincide con la selección.
-    () => tables.find((table) => table.id === selectedTableId) ?? null,
-    // Recalcula solo si cambian las mesas o la selección.
-    [tables, selectedTableId],
-  );
+  // Manejador del marcaje de turno (Ley 40 Horas).
+  const handleClockIn = (e) => {
+    e.preventDefault();
+    const success = clockIn(pinInput);
+    if (!success) {
+      setPinError('PIN de garzón inválido. Usa 1234 para demo.');
+    } else {
+      setPinError('');
+    }
+  };
 
+  // Obtiene el objeto de la mesa seleccionada actualmente.
+  const activeTable = tables.find((t) => t.id === selectedTableId) ?? null;
+
+  // Si el turno no está activo, muestra la pantalla de marcaje (Ley 40 Horas).
+  if (shiftStatus === 'clocked_out') {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-brand-950 px-6 py-12 text-brand-50">
+        {/* Tarjeta modal del control de asistencia y marcaje de turno. */}
+        <div className="w-full max-w-md rounded-2xl bg-brand-900 p-6 shadow-2xl border border-brand-800 flex flex-col gap-6">
+          {/* Cabecera del control de asistencia. */}
+          <div className="flex flex-col gap-1 text-center">
+            <span className="text-3xl">⏱️</span>
+            <h1 className="text-xl font-bold text-brand-50">Control de Turno — Ley 40 Horas</h1>
+            <p className="text-xs text-brand-50/70">
+              Ingresa tu PIN de mozo para registrar el marcaje de entrada y desbloquear tus mesas.
+            </p>
+          </div>
+
+          {/* Formulario de marcaje. */}
+          <form onSubmit={handleClockIn} className="flex flex-col gap-4">
+            <div>
+              <label htmlFor="garzon-pin" className="block text-xs font-bold text-brand-50/80 mb-1">
+                PIN de Garzón (Demo: 1234)
+              </label>
+              <input
+                id="garzon-pin"
+                type="password"
+                maxLength={4}
+                value={pinInput}
+                onChange={(e) => setPinInput(e.target.value)}
+                placeholder="Ingresa tu PIN"
+                className="w-full rounded-xl bg-brand-800 p-3 text-center text-2xl font-bold tracking-widest text-brand-50 border border-brand-800 focus:border-brand-500 focus:outline-none"
+              />
+            </div>
+
+            {/* Mensaje de error si la validación falla. */}
+            {pinError && <p className="text-xs font-bold text-semantic-danger text-center">{pinError}</p>}
+
+            {/* Botón de marcaje de entrada. */}
+            <Button variant="primary" type="submit" className="w-full">
+              Iniciar Turno
+            </Button>
+          </form>
+        </div>
+      </main>
+    );
+  }
+
+  // Vista activa de la PWA del garzón una vez iniciado el turno.
   return (
-    // Contenedor claro de la vista del garzón (docs/04: fondo brand-50).
     <main className="min-h-screen bg-brand-50 px-6 py-6">
-      {/* Contenido centrado con ancho máximo de lectura cómoda. */}
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
-        {/* Cabecera de la vista: identidad del garzón y su turno. */}
+        {/* Cabecera de la vista con identidad del garzón y turno. */}
         <header className="flex items-center justify-between">
-          {/* Bloque del título del perfil de garzón. */}
           <div>
-            {/* Título grande de la vista. */}
             <h1 className="text-2xl font-bold text-brand-900">Garzón</h1>
-            {/* Subtítulo: turno actual del demo. */}
             <p className="text-sm text-brand-800/60">Turno tarde · Salón principal</p>
           </div>
-          {/* Badge de identidad del garzón logueado (demo). */}
-          <Badge variant="brand">Pedro Soto</Badge>
+          <Badge variant="brand">{waiterName}</Badge>
         </header>
 
-        {/* Sección de mesas asignadas: título con el total en el salón. */}
-        <section aria-label="Mesas asignadas">
-          {/* Título de la sección con la cantidad de mesas a cargo. */}
-          <h2 className="mb-3 text-sm font-bold uppercase tracking-widest text-brand-500">
-            Mis mesas ({tables.length})
-          </h2>
-          {/* Grilla de mesas o estado de carga mientras resuelve el servicio. */}
-          {loading ? (
-            // Mensaje de carga mientras llegan las mesas del servicio.
-            <p className="py-10 text-center text-brand-800/60">Cargando mesas…</p>
-          ) : (
-            // Grilla presentacional con mesas, selección y handler de click.
-            <TableGrid tables={tables} selectedTableId={selectedTableId} onSelect={selectTable} />
-          )}
-        </section>
+        {/* Grilla de mesas asignadas con semáforos de estado. */}
+        <TableGrid
+          tables={tables}
+          selectedTableId={selectedTableId}
+          onSelectTable={selectTable}
+        />
 
-        {/* Pad de comanda: muestra la mesa seleccionada y su comanda. */}
-        <section aria-label="Comanda de la mesa seleccionada">
-          {/* Título de la sección del pad de comanda. */}
-          <h2 className="mb-3 text-sm font-bold uppercase tracking-widest text-brand-500">
-            Comanda
-          </h2>
-          {/* Pad: mesa seleccionada y cierre (limpia la selección en el store). */}
-          <OrderPad table={selectedTable} onClose={() => selectTable(null)} />
-        </section>
+        {/* Panel de la comanda y catálogo táctil de la mesa seleccionada. */}
+        <OrderPad
+          table={activeTable}
+          orderDraft={orderDraft}
+          selectedCourse={selectedCourse}
+          toastMessage={toastMessage}
+          onAddToCart={addToDraft}
+          onToggleAllergy={toggleAllergyFlag}
+          onSelectCourse={setCourse}
+          onMarchFondo={fireCourse}
+          onVoidItem={voidItemWithPin}
+          onReleaseTable={releaseTable}
+        />
       </div>
     </main>
   );
