@@ -1,8 +1,7 @@
 // src/features/ClientView/components/SharedCartDrawer.jsx — carrito compartido (task 2.5)
 // Drawer bottom-sheet del carrito de la mesa: lista las líneas agregadas con
-// controles de cantidad y el total. Reutiliza el Modal base de shared/ui
-// (regla del proyecto: componentes base NO se duplican, solo se componen).
-// "Compartido": el carrito es único por mesa y lo ven todos los comensales.
+// controles de cantidad, el total y el botón "Dividir cuenta" (account-split).
+// Reutiliza el Modal base de shared/ui (componentes base NO se duplican, solo se componen).
 
 // Modal base: shell bottom-sheet con overlay (task 2.3, shared/ui).
 import { Modal } from '../../../shared/ui/index.js';
@@ -20,6 +19,7 @@ export default function SharedCartDrawer({
   onIncrease,
   onDecrease,
   onRemove,
+  onOpenSplit,
 }) {
   // Calcula el total en CLP con el selector puro del slice.
   const total = selectCartTotal(cart);
@@ -82,14 +82,28 @@ export default function SharedCartDrawer({
               </div>
             </div>
           ))}
-          {/* Pie del drawer: total acumulado y acción de cierre. */}
-          <div className="mt-2 flex items-center justify-between border-t border-brand-100 pt-4">
-            {/* Etiqueta del total con la cantidad de unidades. */}
-            <p className="font-semibold text-brand-900">
-              Total {count > 0 && <span className="text-brand-800/60">({count} ítems)</span>}
-            </p>
-            {/* Monto total del carrito en CLP con la marca de CTA. */}
-            <p className="text-xl font-bold text-brand-500">{formatCurrency(total)}</p>
+
+          {/* Pie del drawer: total acumulado y acción de división de cuenta. */}
+          <div className="mt-2 flex flex-col gap-3 border-t border-brand-100 pt-4">
+            <div className="flex items-center justify-between">
+              {/* Etiqueta del total con la cantidad de unidades. */}
+              <p className="font-semibold text-brand-900">
+                Total {count > 0 && <span className="text-brand-800/60">({count} ítems)</span>}
+              </p>
+              {/* Monto total del carrito en CLP con la marca de CTA. */}
+              <p className="text-xl font-bold text-brand-500">{formatCurrency(total)}</p>
+            </div>
+
+            {/* Botón CTA para abrir el modal de división de cuenta (account-split). */}
+            <button
+              type="button"
+              onClick={() => {
+                if (onOpenSplit) onOpenSplit(total);
+              }}
+              className="w-full rounded-2xl bg-brand-900 py-3 text-xs font-bold text-white transition hover:bg-brand-800 active:scale-95 shadow-soft"
+            >
+              ✂️ Dividir cuenta
+            </button>
           </div>
         </div>
       )}

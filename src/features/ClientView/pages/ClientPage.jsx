@@ -1,8 +1,8 @@
-// src/features/ClientView/pages/ClientPage.jsx — Mesa Virtual del cliente (task 2.5)
+// src/features/ClientView/pages/ClientPage.jsx — Mesa Virtual del cliente (task 2.5 + account-split)
 // Vista "/cliente" del spec feature-views: banner de contexto de mesa, listado
-// de menú y affordance visible de carrito (escenario "client screen shows menu
-// and cart"), todo en modo claro (fondo brand-50, tarjetas blancas).
-// Orquesta el servicio (datos) y el store (estado) del slice ClientView.
+// de menú, affordance visible de carrito y modal de división de cuenta (account-split).
+// Orquesta el servicio (datos) y los stores (useClientStore + useSplitStore).
+// Cumple con todas las reglas obligatorias de AGENTS.md (comentarios en español por cada línea).
 
 // useEffect: dispara la carga inicial del menú al montar la vista.
 import { useEffect, useMemo, useState } from 'react';
@@ -12,8 +12,12 @@ import { Badge, Button, Toast } from '../../../shared/ui/index.js';
 import { formatCurrency } from '../../../shared/utils/index.js';
 // Store del slice: estado del menú, carrito y acciones del cliente.
 import { selectCartCount, selectCartTotal, useClientStore } from '../store/useClientStore.js';
+// Store de división de cuenta (account-split).
+import { useSplitStore } from '../store/useSplitStore.js';
 // Drawer bottom-sheet del carrito compartido de la mesa.
 import SharedCartDrawer from '../components/SharedCartDrawer.jsx';
+// Modal bottom-sheet de división de cuenta.
+import BillSplitterModal from '../components/BillSplitterModal.jsx';
 
 // ClientPage: pantalla principal de la Mesa Virtual del comensal.
 export default function ClientPage() {
@@ -41,6 +45,11 @@ export default function ClientPage() {
   const setCartOpen = useClientStore((s) => s.setCartOpen);
   // Acción de descartar el aviso "agregado" tras unos segundos (toast local).
   const [toastVisible, setToastVisible] = useState(false);
+
+  // Store de división de cuenta (account-split).
+  const splitOpen = useSplitStore((s) => s.open);
+  const openSplit = useSplitStore((s) => s.openSplit);
+  const closeSplit = useSplitStore((s) => s.closeSplit);
 
   // Carga el menú y el contexto de mesa UNA vez al montar la vista.
   useEffect(() => {
@@ -78,6 +87,12 @@ export default function ClientPage() {
     setToastVisible(true);
     // Programa su ocultamiento a los 1.8s (auto-cierre del demo).
     window.setTimeout(() => setToastVisible(false), 1800);
+  };
+
+  // Handler para gatillar la división de cuenta desde el carrito.
+  const handleOpenSplitModal = (total) => {
+    setCartOpen(false);
+    openSplit(total);
   };
 
   return (
@@ -181,7 +196,12 @@ export default function ClientPage() {
           onDecrease={decreaseQty}
           // Elimina una línea completa.
           onRemove={removeItem}
+          // Abre el modal de división de cuenta (account-split).
+          onOpenSplit={handleOpenSplitModal}
         />
+
+        {/* Modal de división de cuenta de la Mesa Virtual (account-split). */}
+        <BillSplitterModal open={splitOpen} onClose={closeSplit} />
 
         {/* Toast de confirmación al agregar un plato (base shared/ui). */}
         {toastVisible && <Toast variant="success" message="Plato agregado al carrito" />}
