@@ -22,6 +22,8 @@ import BillSplitterModal from '../components/BillSplitterModal.jsx';
 import CustomerSurveyModal from '../components/CustomerSurveyModal.jsx';
 // Modal S.O.S. de llamada urgente al mozo (sos-waiter-call).
 import SosModal from '../components/SosModal.jsx';
+// Modal de bienvenida para onboarding de primera visita (client-onboarding).
+import WelcomeModal from '../components/WelcomeModal.jsx';
 
 // ClientPage: pantalla principal de la Mesa Virtual del comensal.
 export default function ClientPage() {
@@ -53,6 +55,14 @@ export default function ClientPage() {
   const [surveyOpen, setSurveyOpen] = useState(false);
   // Estado local para abrir el modal S.O.S. de llamada al mozo.
   const [sosOpen, setSosOpen] = useState(false);
+  // Estado local para controlar el modal de bienvenida de primera visita (client-onboarding).
+  const [welcomeOpen, setWelcomeOpen] = useState(() => {
+    try {
+      return !window.localStorage.getItem('mesasplit-onboarding');
+    } catch {
+      return true;
+    }
+  });
 
   // Store de división de cuenta (account-split).
   const splitOpen = useSplitStore((s) => s.open);
@@ -241,6 +251,12 @@ export default function ClientPage() {
           open={sosOpen}
           onClose={() => setSosOpen(false)}
           tableId={tableContext?.id ?? 'table-01'}
+        />
+
+        {/* Modal de bienvenida de primera visita (client-onboarding). */}
+        <WelcomeModal
+          open={welcomeOpen}
+          onClose={() => setWelcomeOpen(false)}
         />
 
         {/* Toast de confirmación al agregar un plato (base shared/ui). */}
