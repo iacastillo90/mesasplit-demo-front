@@ -17,8 +17,8 @@ export default function BranchHealthCard({ branch }) {
   const status = HEALTH_SEMAPHORES[branch.healthStatus] ?? HEALTH_SEMAPHORES.optimal;
 
   return (
-    // Tarjeta contenedora de la sucursal de la franquicia.
-    <div className="flex flex-col justify-between rounded-2xl bg-white p-5 shadow-soft border border-brand-200 text-brand-900 transition hover:shadow-lg">
+    // Tarjeta contenedora de la sucursal de la franquicia con borde resplandeciente en hover.
+    <div className="flex flex-col justify-between rounded-2xl bg-white p-5 shadow-soft border border-brand-200 text-brand-900 transition-all duration-300 hover:-translate-y-1 hover:border-sky-300 hover:shadow-[0_0_25px_rgba(56,189,248,0.2)]">
       {/* Encabezado con nombre del local y semáforo de salud. */}
       <div className="flex items-center justify-between">
         <h3 className="font-bold text-base text-brand-900">{branch.name}</h3>

@@ -44,11 +44,13 @@ export default function TicketCard({ ticket, onComplete, onTogglePrepared }) {
   const onHoldItems = ticket.items.filter((item) => item.onHold);
 
   return (
-    // Contenedor principal de la tarjeta: usa borde en Rojo Puro #EF4444 si hay alergias.
+    // Contenedor principal de la tarjeta: usa borde superior acentuado y resplandor de alta visibilidad.
     <article
       data-has-allergy={hasAllergies ? 'true' : 'false'}
-      className={`flex flex-col gap-3 rounded-2xl bg-brand-800 p-4 shadow-dark-glow transition-all ${
-        hasAllergies ? 'border-2 border-semantic-danger shadow-danger-glow' : 'border border-brand-800/80'
+      className={`flex flex-col gap-3 rounded-2xl bg-slate-900 p-4 transition-all border-t-4 ${
+        hasAllergies
+          ? 'border-t-rose-500 border-x border-b border-rose-500/50 shadow-[0_0_25px_rgba(239,68,68,0.35)]'
+          : 'border-t-sky-500 border-x border-b border-slate-800 shadow-2xl hover:border-sky-500/50'
       }`}
     >
       {/* Cabecera del ticket: número de mesa, tiempo transcurrido y badge semáforo. */}
