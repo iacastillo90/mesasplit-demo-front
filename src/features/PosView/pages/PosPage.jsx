@@ -119,10 +119,10 @@ export default function PosPage() {
     : 0;
 
   return (
-    <div className="flex flex-col min-h-screen bg-brand-50 text-brand-900">
+    <div className="flex flex-col h-screen overflow-hidden bg-brand-50 text-brand-900">
       <AppHeader title="Caja POS" subtitle="Punto de Venta" currentRoute="/admin/caja" theme="light" />
-      {/* Contenedor principal de la vista POS en tono claro de marca. */}
-      <main className="flex-1 px-6 py-6">
+      {/* Contenedor principal scrollable de la vista POS. */}
+      <main className="flex-1 h-full overflow-y-auto p-4 md:p-6">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
         {/* Banner de notificación cuando el turno de caja se cierra exitosamente. */}
         {shiftClosedNotice && (
