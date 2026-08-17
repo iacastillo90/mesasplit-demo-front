@@ -20,6 +20,12 @@ export default defineConfig({
   test: {
     // jsdom simula un navegador para que Testing Library y React rendericen.
     environment: 'jsdom',
+    // jsdom solo expone localStorage/Storage con un origin http(s) real: sin esta
+    // opción el environment cae a about:blank y el persist del store raíz no puede
+    // testear el contrato realtime-bus (spec "state survives reload").
+    environmentOptions: {
+      jsdom: { url: 'http://localhost:3000' },
+    },
     // Ejecuta setup global (matchers de jest-dom) antes de cada suite.
     setupFiles: './src/test/setup.js',
     // Expone describe/it/expect globales, al estilo de Jest.
