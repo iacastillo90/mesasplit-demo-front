@@ -15,6 +15,7 @@ import ComplianceSiiPanel from '../components/ComplianceSiiPanel.jsx';
 import WhatIfSimulator from '../components/WhatIfSimulator.jsx';
 import MenuEngineeringMatrix from '../components/MenuEngineeringMatrix.jsx';
 import RealtimeSalesChart from '../components/RealtimeSalesChart.jsx';
+import FranchiseComparisonWidget from '../components/FranchiseComparisonWidget.jsx';
 import { AdminLayout } from '../../../shared/ui/index.js';
 
 export default function SuperAdminPage() {
@@ -116,6 +117,7 @@ export default function SuperAdminPage() {
           </section>
 
           <RealtimeSalesChart branches={branches} />
+          <FranchiseComparisonWidget />
           <CostoPrimarioCard />
 
           <section aria-label="Estado por Sucursal" className="flex flex-col gap-3">
