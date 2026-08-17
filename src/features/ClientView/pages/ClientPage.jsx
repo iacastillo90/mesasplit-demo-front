@@ -26,6 +26,8 @@ import SosModal from '../components/SosModal.jsx';
 import WelcomeModal from '../components/WelcomeModal.jsx';
 // Modal de solicitud de factura demo (client-factura).
 import InvoiceRequestModal from '../components/InvoiceRequestModal.jsx';
+// Banner de seguimiento de pedido en tiempo real (client-order-tracking).
+import OrderTrackingBanner from '../components/OrderTrackingBanner.jsx';
 
 // ClientPage: pantalla principal de la Mesa Virtual del comensal.
 export default function ClientPage() {
@@ -163,6 +165,9 @@ export default function ClientPage() {
             {tableContext?.guests ?? 0} comensales · Cuenta abierta
           </p>
         </header>
+
+        {/* Banner de seguimiento de pedido en tiempo real (client-order-tracking). */}
+        <OrderTrackingBanner hasActiveOrder={cart.length > 0} />
 
         {/* Sección de menú: itera las categorías agrupadas del useMemo. */}
         {loading ? (
