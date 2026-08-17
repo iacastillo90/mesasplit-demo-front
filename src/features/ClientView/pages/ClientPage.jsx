@@ -1,6 +1,6 @@
-// src/features/ClientView/pages/ClientPage.jsx — Mesa Virtual del cliente (task 2.5 + account-split + customer-survey-ratings)
+// src/features/ClientView/pages/ClientPage.jsx — Mesa Virtual del cliente (task 2.5 + account-split + customer-survey-ratings + sos-waiter-call)
 // Vista "/cliente" del spec feature-views: banner de contexto de mesa, listado
-// de menú, affordance visible de carrito, modal de división de cuenta y encuesta de satisfacción post-pago.
+// de menú, affordance visible de carrito, modal de división de cuenta, encuesta de satisfacción post-pago y S.O.S. al mozo.
 // Orquesta el servicio (datos) y los stores (useClientStore + useSplitStore).
 // Cumple con todas las reglas obligatorias de AGENTS.md (comentarios en español por cada línea).
 
@@ -20,6 +20,8 @@ import SharedCartDrawer from '../components/SharedCartDrawer.jsx';
 import BillSplitterModal from '../components/BillSplitterModal.jsx';
 // Modal de encuesta de satisfacción y propina (customer-survey-ratings).
 import CustomerSurveyModal from '../components/CustomerSurveyModal.jsx';
+// Modal S.O.S. de llamada urgente al mozo (sos-waiter-call).
+import SosModal from '../components/SosModal.jsx';
 
 // ClientPage: pantalla principal de la Mesa Virtual del comensal.
 export default function ClientPage() {
@@ -49,6 +51,8 @@ export default function ClientPage() {
   const [toastVisible, setToastVisible] = useState(false);
   // Estado local para abrir la encuesta de experiencia post-pago.
   const [surveyOpen, setSurveyOpen] = useState(false);
+  // Estado local para abrir el modal S.O.S. de llamada al mozo.
+  const [sosOpen, setSosOpen] = useState(false);
 
   // Store de división de cuenta (account-split).
   const splitOpen = useSplitStore((s) => s.open);
@@ -111,6 +115,14 @@ export default function ClientPage() {
             {/* Título del banner con el número de mesa destacado. */}
             <h1 className="text-xl font-bold text-brand-900">Mesa {tableContext?.number ?? '—'}</h1>
             <div className="flex items-center gap-2">
+              {/* Botón S.O.S. de llamada urgente al mozo (spec: siempre visible, rojo puro #EF4444 por ser emergencia). */}
+              <button
+                type="button"
+                onClick={() => setSosOpen(true)}
+                className="relative rounded-full bg-semantic-danger/10 px-3 py-1 text-xs font-bold text-semantic-danger border border-semantic-danger/40 hover:bg-semantic-danger/20 transition active:scale-95 animate-pulse"
+              >
+                🆘 S.O.S.
+              </button>
               {/* Botón para abrir la encuesta de satisfacción. */}
               <button
                 type="button"
@@ -222,6 +234,13 @@ export default function ClientPage() {
           open={surveyOpen}
           onClose={() => setSurveyOpen(false)}
           totalBill={cartTotal > 0 ? cartTotal : 20000}
+        />
+
+        {/* Modal S.O.S. de llamada urgente al mozo (sos-waiter-call). */}
+        <SosModal
+          open={sosOpen}
+          onClose={() => setSosOpen(false)}
+          tableId={tableContext?.id ?? 'table-01'}
         />
 
         {/* Toast de confirmación al agregar un plato (base shared/ui). */}

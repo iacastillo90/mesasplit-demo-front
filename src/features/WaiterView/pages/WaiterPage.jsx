@@ -1,11 +1,11 @@
-// src/features/WaiterView/pages/WaiterPage.jsx — PWA del Garzón / Mozo (waiter-pwa)
+// src/features/WaiterView/pages/WaiterPage.jsx — PWA del Garzón / Mozo (waiter-pwa + sos-waiter-call)
 // Pantalla principal del mozo: marcaje de turno e inicio de sesión (Ley 40h), grilla de mesas
 // asignadas con semáforos de estado, toma de pedido con una mano y badges de cantidad,
-// Escudo de Alergias (#EF4444), Course Control (course.fire), anulación por PIN (alert.fraud)
-// y liberación de mesa (table.status_changed).
+// Escudo de Alergias (#EF4444), Course Control (course.fire), anulación por PIN (alert.fraud),
+// liberación de mesa (table.status_changed) y badge de alerta S.O.S. (call.waiter).
 // Cumple estrictamente con las reglas de AGENTS.md (comentarios en español por línea).
 
-// useEffect y useState de React para manejar el marcaje de turno inicial.
+// useEffect y useState de React para manejar el marcaje de turno inicial y las alertas S.O.S.
 import { useEffect, useState } from 'react';
 // Badge y Button compartilhados de UI.
 import { Badge, Button } from '../../../shared/ui/index.js';
@@ -15,6 +15,11 @@ import { useWaiterStore } from '../store/useWaiterStore.js';
 import TableGrid from '../components/TableGrid.jsx';
 // Componente del panel de comanda y catálogo táctil.
 import OrderPad from '../components/OrderPad.jsx';
+// Bus en tiempo real para suscribirse al evento call.waiter (S.O.S. de cliente).
+import { createRealtimeBus } from '../../../hooks/useRealtimeBus.js';
+
+// Instancia del bus de eventos para la vista del garzón.
+const bus = createRealtimeBus('mesasplit');
 
 // Componente principal WaiterPage.
 export default function WaiterPage() {
@@ -43,12 +48,29 @@ export default function WaiterPage() {
   // Mensaje de error al fallar el PIN de marcaje.
   const [pinError, setPinError] = useState('');
 
+  // Estado local para el badge de alerta S.O.S. recibido del cliente (call.waiter).
+  const [sosAlert, setSosAlert] = useState(null);
+
   // Carga inicial de mesas si el turno ya estuviera activo.
   useEffect(() => {
     if (shiftStatus === 'clocked_in') {
       loadTables();
     }
   }, [shiftStatus, loadTables]);
+
+  // Suscripción al evento call.waiter del bus en tiempo real (S.O.S. del cliente).
+  useEffect(() => {
+    // Manejador del evento: guarda la alerta S.O.S. en el estado local.
+    const handleSos = (payload) => {
+      setSosAlert(payload);
+    };
+
+    // Se suscribe al evento call.waiter del bus compartido.
+    const unsub = bus.subscribe('call.waiter', handleSos);
+
+    // Retorna la función de limpieza para desuscribirse al desmontar.
+    return () => unsub?.();
+  }, []);
 
   // Manejador del marcaje de turno (Ley 40 Horas).
   const handleClockIn = (e) => {
@@ -121,6 +143,35 @@ export default function WaiterPage() {
           </div>
           <Badge variant="brand">{waiterName}</Badge>
         </header>
+
+        {/* Banner de alerta S.O.S. del cliente (call.waiter): aparece cuando un comensal llama. */}
+        {sosAlert && (
+          <div
+            className="flex items-center justify-between rounded-2xl bg-semantic-danger/10 border border-semantic-danger/40 px-4 py-3 shadow-soft"
+            data-testid="sos-alert-banner"
+          >
+            <div className="flex items-center gap-3">
+              {/* Ícono de alerta S.O.S. */}
+              <span className="text-2xl animate-bounce">🆘</span>
+              <div>
+                {/* Título de la alerta S.O.S. */}
+                <p className="text-xs font-bold text-semantic-danger">
+                  S.O.S. — {sosAlert.tableId ?? 'Mesa'}
+                </p>
+                {/* Motivo de la llamada del comensal. */}
+                <p className="text-[11px] text-brand-800/70">{sosAlert.reason}</p>
+              </div>
+            </div>
+            {/* Botón para descartar la alerta S.O.S. */}
+            <button
+              type="button"
+              onClick={() => setSosAlert(null)}
+              className="rounded-xl bg-semantic-danger/10 px-3 py-1 text-xs font-bold text-semantic-danger hover:bg-semantic-danger/20"
+            >
+              Atendido
+            </button>
+          </div>
+        )}
 
         {/* Grilla de mesas asignadas con semáforos de estado. */}
         <TableGrid
