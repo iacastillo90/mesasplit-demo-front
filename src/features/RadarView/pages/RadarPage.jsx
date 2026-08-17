@@ -14,6 +14,7 @@ import MermaBar from '../components/MermaBar.jsx';
 import ReservationModal from '../components/ReservationModal.jsx';
 import StaffLeaderboard from '../components/StaffLeaderboard.jsx';
 import InventoryMenuManager from '../components/InventoryMenuManager.jsx';
+import { exportToCsv } from '../../../shared/utils/exportToCsv.js';
 import { AdminLayout } from '../../../shared/ui/index.js';
 
 export default function RadarPage() {
@@ -99,6 +100,13 @@ export default function RadarPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => exportToCsv('ventas_radar_local', tables.map((t) => ({ Mesa: t.number, Estado: t.status, Mozos: t.waiterName || 'Sin asignar', TotalCLP: t.totalAmount || 0 })))}
+            className="rounded-xl bg-emerald-600 hover:bg-emerald-700 px-3 py-2 text-xs font-bold text-white transition active:scale-95 cursor-pointer shadow-soft flex items-center gap-1"
+          >
+            📥 Exportar Excel (CSV)
+          </button>
           {!focusMode && (
             <button
               type="button"

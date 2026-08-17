@@ -16,6 +16,7 @@ import WhatIfSimulator from '../components/WhatIfSimulator.jsx';
 import MenuEngineeringMatrix from '../components/MenuEngineeringMatrix.jsx';
 import RealtimeSalesChart from '../components/RealtimeSalesChart.jsx';
 import FranchiseComparisonWidget from '../components/FranchiseComparisonWidget.jsx';
+import { exportToCsv } from '../../../shared/utils/exportToCsv.js';
 import { AdminLayout } from '../../../shared/ui/index.js';
 
 export default function SuperAdminPage() {
@@ -72,19 +73,29 @@ export default function SuperAdminPage() {
           <p className="text-xs text-brand-800/70">Supervisión ejecutiva de red de restaurantes y franquicias</p>
         </div>
 
-        <a
-          href="/admin"
-          onClick={(e) => {
-            if (typeof window !== 'undefined' && window.history?.pushState) {
-              e.preventDefault();
-              window.history.pushState({}, '', '/admin');
-              window.dispatchEvent(new PopStateEvent('popstate'));
-            }
-          }}
-          className="inline-flex items-center gap-2 rounded-xl bg-brand-900 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-brand-800 active:scale-95 shadow-soft"
-        >
-          ← Volver a Radar Local
-        </a>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => exportToCsv('reporte_franquicias_superadmin', branches.map((b) => ({ Sucursal: b.name, VentasCLP: b.salesTotal || 0, Mesas: b.activeTables || 0, Personal: b.activeStaff || 0 })))}
+            className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-emerald-700 active:scale-95 shadow-soft"
+          >
+            📥 Exportar Excel (CSV)
+          </button>
+
+          <a
+            href="/admin"
+            onClick={(e) => {
+              if (typeof window !== 'undefined' && window.history?.pushState) {
+                e.preventDefault();
+                window.history.pushState({}, '', '/admin');
+                window.dispatchEvent(new PopStateEvent('popstate'));
+              }
+            }}
+            className="inline-flex items-center gap-2 rounded-xl bg-brand-900 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-brand-800 active:scale-95 shadow-soft"
+          >
+            ← Volver a Radar Local
+          </a>
+        </div>
       </header>
 
       {/* TAB ALL */}
