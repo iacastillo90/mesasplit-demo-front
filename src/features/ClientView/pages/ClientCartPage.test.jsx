@@ -57,6 +57,6 @@ describe('ClientCartPage: Vista Dedicada del Carrito', () => {
 
     // Confirms el aviso del descuento.
     expect(screen.getByText(/Descuento MesaSplit Rewards:/i)).toBeInTheDocument();
-    expect(screen.getByText(/-$5.000/i)).toBeInTheDocument();
+    expect(screen.getByText(/\$5\.000/i)).toBeInTheDocument();
   });
 });
