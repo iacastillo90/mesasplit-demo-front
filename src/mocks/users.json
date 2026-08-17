@@ -1,0 +1,47 @@
+[
+  {
+    "id": "u1",
+    "pin": 1042,
+    "name": "Elena Ruiz",
+    "role": "super_admin",
+    "shiftStatus": "clocked_in",
+    "salesCountToday": 12,
+    "avgRating": 4.8
+  },
+  {
+    "id": "u2",
+    "pin": 2301,
+    "name": "Rodrigo Silva",
+    "role": "local_admin",
+    "shiftStatus": "clocked_in",
+    "salesCountToday": 8,
+    "avgRating": 4.6
+  },
+  {
+    "id": "u3",
+    "pin": 8715,
+    "name": "Camila Torres",
+    "role": "waiter",
+    "shiftStatus": "clocked_in",
+    "salesCountToday": 21,
+    "avgRating": 4.9
+  },
+  {
+    "id": "u4",
+    "pin": 5509,
+    "name": "Pedro Mena",
+    "role": "chef",
+    "shiftStatus": "clocked_in",
+    "salesCountToday": 15,
+    "avgRating": 4.7
+  },
+  {
+    "id": "u5",
+    "pin": 9034,
+    "name": "Lucía Godoy",
+    "role": "cashier",
+    "shiftStatus": "clocked_in",
+    "salesCountToday": 9,
+    "avgRating": 4.5
+  }
+]

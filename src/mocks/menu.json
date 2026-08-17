@@ -1,0 +1,50 @@
+[
+  {
+    "id": "m1",
+    "name": "Hamburguesa Clásica",
+    "description": "Pan brioche, carne 180g, cheddar y salsa de la casa.",
+    "price": 8900,
+    "category": "Hamburguesas",
+    "allergens": []
+  },
+  {
+    "id": "m2",
+    "name": "Hamburguesa BBQ Bacon",
+    "description": "Bacon crocante, cebolla crispy y salsa BBQ ahumada.",
+    "price": 10400,
+    "category": "Hamburguesas",
+    "allergens": ["gluten"]
+  },
+  {
+    "id": "m3",
+    "name": "Pizza Margherita",
+    "description": "Mozzarella fresca, tomate y albahaca sobre masa artesanal.",
+    "price": 10900,
+    "category": "Pizzas",
+    "allergens": ["lácteos", "gluten"]
+  },
+  {
+    "id": "m4",
+    "name": "Carbonara",
+    "description": "Pasta fresca, panceta, yema y queso pecorino.",
+    "price": 9800,
+    "category": "Pasta",
+    "allergens": ["huevo", "lácteos", "gluten"]
+  },
+  {
+    "id": "m5",
+    "name": "Ensalada César",
+    "description": "Lechuga romana, pollo grillado, parmesano y croutons.",
+    "price": 7400,
+    "category": "Ensaladas",
+    "allergens": ["lácteos", "gluten"]
+  },
+  {
+    "id": "m6",
+    "name": "Limonada Menta",
+    "description": "Limonada natural con menta fresca y hielo.",
+    "price": 2900,
+    "category": "Bebidas",
+    "allergens": []
+  }
+]

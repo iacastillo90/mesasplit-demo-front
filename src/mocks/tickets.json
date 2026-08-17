@@ -1,0 +1,55 @@
+[
+  {
+    "id": "k1",
+    "tableNumber": 1,
+    "station": "fuego",
+    "status": "cooking",
+    "elapsedSec": 300,
+    "budgetSec": 600,
+    "items": [
+      { "id": "i1", "name": "Hamburguesa Clásica", "qty": 2, "allergens": [] },
+      { "id": "i2", "name": "Papas fritas", "qty": 2, "allergens": [] }
+    ]
+  },
+  {
+    "id": "k2",
+    "tableNumber": 2,
+    "station": "plancha",
+    "status": "pending",
+    "elapsedSec": 0,
+    "budgetSec": 300,
+    "items": [{ "id": "i3", "name": "Sandwich de plancha", "qty": 1, "allergens": [] }]
+  },
+  {
+    "id": "k3",
+    "tableNumber": 5,
+    "station": "fuego",
+    "status": "cooking",
+    "elapsedSec": 700,
+    "budgetSec": 600,
+    "items": [{ "id": "i4", "name": "Carbonara", "qty": 3, "allergens": [] }]
+  },
+  {
+    "id": "k4",
+    "tableNumber": 3,
+    "station": "postres",
+    "status": "ready",
+    "elapsedSec": 120,
+    "budgetSec": 300,
+    "items": [
+      { "id": "i5", "name": "Brownie con maní", "qty": 2, "allergens": ["maní"] },
+      { "id": "i6", "name": "Limonada Menta", "qty": 2, "allergens": [] }
+    ]
+  },
+  {
+    "id": "k5",
+    "tableNumber": 6,
+    "station": "fuego",
+    "status": "cooking",
+    "elapsedSec": 420,
+    "budgetSec": 600,
+    "items": [
+      { "id": "i7", "name": "Pizza Margherita", "qty": 1, "allergens": ["lácteos", "gluten"] }
+    ]
+  }
+]
