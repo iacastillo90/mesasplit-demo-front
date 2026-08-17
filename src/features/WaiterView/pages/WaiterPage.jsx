@@ -15,6 +15,7 @@ import { selectWaiterPerformance } from '../services/performanceService.js';
 import WaiterPerformanceCard from '../components/WaiterPerformanceCard.jsx';
 import { useDemoStore } from '../../../store/useDemoStore.js';
 import QuickSplitCalculatorModal from '../components/QuickSplitCalculatorModal.jsx';
+import TapToPayModal from '../components/TapToPayModal.jsx';
 
 const bus = createRealtimeBus('mesasplit');
 
@@ -43,6 +44,7 @@ export default function WaiterPage({ bus: busProp }) {
   const [pinError, setPinError] = useState('');
   const [sosAlert, setSosAlert] = useState(null);
   const [calcOpen, setCalcOpen] = useState(false);
+  const [tapOpen, setTapOpen] = useState(false);
 
   useEffect(() => {
     if (shiftStatus === 'clocked_in') {
@@ -129,6 +131,13 @@ export default function WaiterPage({ bus: busProp }) {
             <div className="flex items-center gap-2">
               <button
                 type="button"
+                onClick={() => setTapOpen(true)}
+                className="rounded-full bg-sky-500/10 px-3.5 py-1.5 text-xs font-bold text-sky-700 hover:bg-sky-500/20 border border-sky-300 transition active:scale-95 flex items-center gap-1"
+              >
+                💳 Tap-to-Pay
+              </button>
+              <button
+                type="button"
                 onClick={() => setCalcOpen(true)}
                 className="rounded-full bg-emerald-500/10 px-3.5 py-1.5 text-xs font-bold text-emerald-700 hover:bg-emerald-500/20 border border-emerald-300 transition active:scale-95 flex items-center gap-1"
               >
@@ -189,6 +198,13 @@ export default function WaiterPage({ bus: busProp }) {
           <QuickSplitCalculatorModal
             open={calcOpen}
             onClose={() => setCalcOpen(false)}
+            tableNumber={activeTable?.number ?? '04'}
+          />
+
+          {/* Modal de cobro Tap-to-Pay NFC y billeteras digitales */}
+          <TapToPayModal
+            open={tapOpen}
+            onClose={() => setTapOpen(false)}
             tableNumber={activeTable?.number ?? '04'}
           />
         </div>
