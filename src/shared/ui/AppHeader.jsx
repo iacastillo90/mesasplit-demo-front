@@ -4,6 +4,7 @@
 
 import { useState } from 'react';
 import { useAudioSynth } from '../../hooks/useAudioSynth.js';
+import LanguageSelector from '../i18n/LanguageSelector.jsx';
 
 export default function AppHeader({ title = 'MesaSplit', subtitle, currentRoute = '/', theme = 'light' }) {
   // Estado local para abrir el menú hamburguesa desplegable.
@@ -58,6 +59,9 @@ export default function AppHeader({ title = 'MesaSplit', subtitle, currentRoute 
 
       {/* Lado Derecho: Conexión Realtime e Indicador de Estado */}
       <div className="flex items-center gap-2">
+        {/* Selector de idioma dinámico i18n */}
+        <LanguageSelector />
+
         {/* Botón Toggle de Silencio Auditivo Global */}
         <button
           type="button"
