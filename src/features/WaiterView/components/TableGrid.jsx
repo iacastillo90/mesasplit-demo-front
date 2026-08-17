@@ -4,6 +4,9 @@
 // Naranja (#FB923C) = cuenta pedida. El Rojo Puro (#EF4444) no se usa para estado de mesa.
 // Cumple con las reglas de AGENTS.md (comentarios en español por línea).
 
+import { useState } from 'react';
+import IsometricTableGrid3D from '../../../shared/ui/IsometricTableGrid3D.jsx';
+
 // Mapeo semántico de estados de mesa a colores de badges (docs/04).
 const STATUS_VARIANTS = {
   // Recién ocupada / disponible: verde esmeralda.
@@ -26,16 +29,47 @@ const STATUS_LABELS = {
 
 // Componente de la grilla de mesas asignadas.
 export default function TableGrid({ tables, selectedTableId, onSelectTable }) {
+  // Estado local para alternar la vista entre 2D y 3D isométrica.
+  const [viewMode, setViewMode] = useState('2d');
+
   return (
     // Sección contenedora con etiqueta de accesibilidad.
     <section aria-label="Mesas asignadas">
-      {/* Encabezado con conteo de mesas asignadas. */}
-      <h2 className="mb-3 text-sm font-bold uppercase tracking-widest text-brand-500">
-        Mis mesas ({tables.length})
-      </h2>
+      {/* Encabezado con conteo de mesas asignadas y conmutador de perspectiva. */}
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="text-sm font-bold uppercase tracking-widest text-brand-500">
+          Mis mesas ({tables.length})
+        </h2>
 
-      {/* Grilla responsiva de tarjetas de mesa. */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        {/* Conmutador 2D / 3D. */}
+        <div className="flex items-center gap-1 bg-brand-100 p-1 rounded-xl border border-brand-200">
+          <button
+            type="button"
+            onClick={() => setViewMode('2d')}
+            className={`rounded-lg px-2.5 py-1 text-xs font-bold transition ${
+              viewMode === '2d' ? 'bg-brand-500 text-white shadow-soft' : 'text-brand-800 hover:bg-brand-200'
+            }`}
+          >
+            📐 2D
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode('3d')}
+            className={`rounded-lg px-2.5 py-1 text-xs font-bold transition ${
+              viewMode === '3d' ? 'bg-brand-500 text-white shadow-soft' : 'text-brand-800 hover:bg-brand-200'
+            }`}
+          >
+            🧊 3D Isométrico
+          </button>
+        </div>
+      </div>
+
+      {/* Renderizado condicional según el modo de vista activo. */}
+      {viewMode === '3d' ? (
+        <IsometricTableGrid3D tables={tables} selectedTableId={selectedTableId} onSelectTable={onSelectTable} />
+      ) : (
+        /* Grilla responsiva de tarjetas de mesa 2D. */
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {tables.map((table) => {
           // Determina si esta mesa está seleccionada activamente.
           const isSelected = table.id === selectedTableId;
@@ -76,6 +110,7 @@ export default function TableGrid({ tables, selectedTableId, onSelectTable }) {
           );
         })}
       </div>
+      )}
     </section>
   );
 }

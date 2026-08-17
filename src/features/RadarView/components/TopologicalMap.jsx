@@ -3,6 +3,9 @@
 // capacidad de comensales, suscripción a eventos table.status_changed y filtrado de mesas críticas en Modo Hora Punta.
 // Cumple con las reglas obligatorias de AGENTS.md (comentarios en español por cada línea).
 
+import { useState } from 'react';
+import IsometricTableGrid3D from '../../../shared/ui/IsometricTableGrid3D.jsx';
+
 // Semáforos visuales de estado para el mapa del plano (docs/04).
 const SEMAPHORES = {
   free: 'border-semantic-success bg-semantic-success/10 text-semantic-success',
@@ -23,6 +26,9 @@ const isCritical = (status) =>
 
 // Componente del mapa topológico interactivo.
 export default function TopologicalMap({ tables, activeZone, onSelectZone, focusMode }) {
+  // Estado local para conmutar entre plano 2D y vista 3D isométrica.
+  const [viewMode, setViewMode] = useState('2d');
+
   // Filtra las mesas según la zona seleccionada en las pestañas superiores.
   const zoneFiltered = activeZone === 'todos'
     ? tables
@@ -37,31 +43,55 @@ export default function TopologicalMap({ tables, activeZone, onSelectZone, focus
   return (
     // Contenedor principal del plano de distribución.
     <section aria-label="Plano topológico del salón" className="flex flex-col gap-4">
-      {/* Selector de zonas del restaurante (Salón, Terraza, Barra). */}
-      <div className="flex items-center justify-between">
+      {/* Selector de zonas del restaurante (Salón, Terraza, Barra) y conmutador de perspectiva. */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <h2 className="text-sm font-bold uppercase tracking-widest text-brand-500">
           Plano del salón ({filteredTables.length} mesas)
         </h2>
 
-        {/* Oculta las pestañas de zona no esenciales en Modo Hora Punta para reducir fricción. */}
-        {!focusMode && (
+        <div className="flex items-center gap-2">
+          {/* Conmutador de perspectiva 2D / 3D. */}
           <div className="flex items-center gap-1 rounded-xl bg-brand-900 p-1 border border-brand-800">
-            {['todos', 'Salón', 'Terraza', 'Barra'].map((zone) => (
-              <button
-                key={zone}
-                type="button"
-                onClick={() => onSelectZone(zone)}
-                className={`rounded-lg px-3 py-1 text-xs font-bold transition active:scale-95 ${
-                  activeZone.toLowerCase() === zone.toLowerCase()
-                    ? 'bg-brand-500 text-white shadow-soft'
-                    : 'text-brand-50/60 hover:bg-brand-800 hover:text-brand-50'
-                }`}
-              >
-                {zone === 'todos' ? 'Todas' : zone}
-              </button>
-            ))}
+            <button
+              type="button"
+              onClick={() => setViewMode('2d')}
+              className={`rounded-lg px-2.5 py-1 text-xs font-bold transition ${
+                viewMode === '2d' ? 'bg-brand-500 text-white shadow-soft' : 'text-brand-50/60 hover:bg-brand-800'
+              }`}
+            >
+              📐 2D
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('3d')}
+              className={`rounded-lg px-2.5 py-1 text-xs font-bold transition ${
+                viewMode === '3d' ? 'bg-brand-500 text-white shadow-soft' : 'text-brand-50/60 hover:bg-brand-800'
+              }`}
+            >
+              🧊 3D Isométrico
+            </button>
           </div>
-        )}
+
+          {/* Oculta las pestañas de zona no esenciales en Modo Hora Punta para reducir fricción. */}
+          {!focusMode && (
+            <div className="flex items-center gap-1 rounded-xl bg-brand-900 p-1 border border-brand-800">
+              {['todos', 'Salón', 'Terraza', 'Barra'].map((zone) => (
+                <button
+                  key={zone}
+                  type="button"
+                  onClick={() => onSelectZone(zone)}
+                  className={`rounded-lg px-3 py-1 text-xs font-bold transition active:scale-95 ${
+                    activeZone.toLowerCase() === zone.toLowerCase()
+                      ? 'bg-brand-500 text-white shadow-soft'
+                      : 'text-brand-50/60 hover:bg-brand-800 hover:text-brand-50'
+                  }`}
+                >
+                  {zone === 'todos' ? 'Todas' : zone}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Banner de alerta en Modo Hora Punta con resumen de mesas críticas. */}
@@ -74,7 +104,11 @@ export default function TopologicalMap({ tables, activeZone, onSelectZone, focus
         </div>
       )}
 
-      {/* Plano espacial con fondo oscuro brand-950 y grilla sintética. */}
+      {/* Renderizado condicional según la perspectiva activa (2D o 3D). */}
+      {viewMode === '3d' ? (
+        <IsometricTableGrid3D tables={filteredTables} />
+      ) : (
+        /* Plano espacial con fondo oscuro brand-950 y grilla sintética. */
       <div
         className={`relative min-h-[360px] w-full rounded-2xl bg-brand-950 p-6 border transition-all ${
           focusMode ? 'border-semantic-urgent ring-2 ring-semantic-urgent/50 shadow-2xl' : 'border-brand-800 shadow-soft'
@@ -126,6 +160,7 @@ export default function TopologicalMap({ tables, activeZone, onSelectZone, focus
           </span>
         </div>
       </div>
+      )}
     </section>
   );
 }
