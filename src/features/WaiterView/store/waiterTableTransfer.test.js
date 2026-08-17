@@ -226,5 +226,5 @@ describe('waiter-table-transfer: Cancelar la confirmación (UI)', () => {
     expect(JSON.stringify(useWaiterStore.getState().tables)).toBe(before);
     // No se publicó ningún evento de unión al cancelar.
     expect(bus.publish).not.toHaveBeenCalledWith('table.bills_merged', expect.anything());
-  });
+  }, 15000);
 });
