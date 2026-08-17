@@ -15,6 +15,8 @@ import ExceptionFeedDrawer from '../components/ExceptionFeedDrawer.jsx';
 import MermaBar from '../components/MermaBar.jsx';
 // Modal de reservas y lista de espera (interactive-table-reservation).
 import ReservationModal from '../components/ReservationModal.jsx';
+// Panel de gamificación de staff (radar-gamification).
+import StaffLeaderboard from '../components/StaffLeaderboard.jsx';
 
 // Componente principal de la página del Radar Local Admin.
 export default function RadarPage() {
@@ -162,11 +164,13 @@ export default function RadarPage() {
             </div>
 
             {/* Columna del Canal Virtual Delivery Omnicanal (1 columna). */}
-            <div>
-              <DeliveryColumn deliveryOrders={deliveryOrders} focusMode={focusMode} />
-            </div>
+            {/* Columna de pedidos omnicanal Delivery. */}
+            <DeliveryColumn orders={deliveryOrders} focusMode={focusMode} />
           </div>
         )}
+
+        {/* Panel de Gamificación de Staff (radar-gamification). */}
+        {!focusMode && <StaffLeaderboard />}
 
         {/* Barra de comando de mermas e insumos vencidos. */}
         <MermaBar mermaLogs={mermaLogs} onAddMerma={addMerma} />
