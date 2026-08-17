@@ -18,6 +18,8 @@ import GlobalConfigToggles from '../components/GlobalConfigToggles.jsx';
 import FranchiseEventStream from '../components/FranchiseEventStream.jsx';
 import CostoPrimarioCard from '../components/CostoPrimarioCard.jsx';
 import ComplianceSiiPanel from '../components/ComplianceSiiPanel.jsx';
+// Simulador What-If de precios de menú (corporate-what-if).
+import WhatIfSimulator from '../components/WhatIfSimulator.jsx';
 
 // Componente principal de la página de Super Admin Corporativo.
 export default function SuperAdminPage() {
@@ -127,8 +129,11 @@ export default function SuperAdminPage() {
           onToggleFeature={toggleFeature}
         />
 
-        {/* Panel de compliance fiscal SII (compliance-sii). */}
+        {/* Panel de Compliance SII (Super Admin read-only). */}
         <ComplianceSiiPanel />
+
+        {/* Simulador What-If de Precios (corporate-what-if). */}
+        <WhatIfSimulator />
 
         {/* Flujo de eventos corporativos cross-branch en tiempo real. */}
         <FranchiseEventStream franchiseEvents={franchiseEvents} />
