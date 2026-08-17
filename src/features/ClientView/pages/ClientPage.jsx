@@ -38,6 +38,8 @@ import MenuFilterPills from '../components/MenuFilterPills.jsx';
 import ItemCustomizerModal from '../components/ItemCustomizerModal.jsx';
 // Asistente inteligente de reservas por local y fila virtual.
 import ClientReservationAssistant from '../components/ClientReservationAssistant.jsx';
+// Widget de lealtad y gamificación MesaSplit Rewards.
+import RewardsBadgeWidget from '../components/RewardsBadgeWidget.jsx';
 
 
 // ClientPage: pantalla principal de la Mesa Virtual del comensal.
@@ -211,6 +213,9 @@ export default function ClientPage() {
             {tableContext?.guests ?? 0} comensales · Cuenta abierta
           </p>
         </header>
+
+        {/* Widget de lealtad y puntos de fidelización MesaSplit Rewards. */}
+        <RewardsBadgeWidget />
 
         {/* Banner de seguimiento de pedido en tiempo real (client-order-tracking). */}
         <OrderTrackingBanner hasActiveOrder={cart.length > 0} />
