@@ -14,6 +14,7 @@ import PaymentMethodPicker from '../components/PaymentMethodPicker.jsx';
 import DteModal from '../components/DteModal.jsx';
 import BlindCloseModal from '../components/BlindCloseModal.jsx';
 import CashShiftModal from '../components/CashShiftModal.jsx';
+import ExecutiveReportModal from '../components/ExecutiveReportModal.jsx';
 // AdminLayout compartido.
 import { AdminLayout } from '../../../shared/ui/index.js';
 
@@ -25,6 +26,8 @@ export default function PosPage() {
   const [pinError, setPinError] = useState('');
   // Mensaje de notificación del Cierre Ciego de caja.
   const [shiftClosedNotice, setShiftClosedNotice] = useState('');
+  // Estado local para abrir el reporte ejecutivo SII.
+  const [execReportOpen, setExecReportOpen] = useState(false);
 
   // Suscripción al store de Zustand de POS.
   const cashierUnlocked = usePosStore((s) => s.cashierUnlocked);
@@ -154,6 +157,13 @@ export default function PosPage() {
               ⏱️ Turno: {cashShift?.status === 'open' ? 'Abierto' : 'Cerrado'}
             </button>
 
+            <button
+              type="button"
+              onClick={() => setExecReportOpen(true)}
+              className="rounded-xl bg-emerald-600 hover:bg-emerald-700 px-3.5 py-2 text-xs font-bold text-white transition active:scale-95 shadow-soft"
+            >
+              📊 Reporte Ejecutivo
+            </button>
             <button
               type="button"
               onClick={() => setBlindCloseOpen(true)}
@@ -293,6 +303,12 @@ export default function PosPage() {
         <CashShiftModal
           open={cashShiftModalOpen}
           onClose={() => setCashShiftModalOpen(false)}
+        />
+
+        {/* Modal de Reporte Ejecutivo y Arqueo Fiscal SII. */}
+        <ExecutiveReportModal
+          open={execReportOpen}
+          onClose={() => setExecReportOpen(false)}
         />
       </div>
     </AdminLayout>
