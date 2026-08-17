@@ -24,7 +24,7 @@ describe('kds-expo-view: Modo exhibición Expo View fullscreen en cocina KDS', (
     // Carga tickets de prueba en el store.
     useKdsStore.setState({
       tickets: [
-        { id: 't-1', tableNumber: 3, status: 'pending', items: [{ id: 'i-1', name: 'Pizza Margherita', qty: 2 }] },
+        { id: 't-1', tableNumber: 3, status: 'pending', items: [{ id: 'i-1', name: 'Hamburguesa Clásica', qty: 2 }] },
       ],
       expoMode: true,
       loading: false,
@@ -34,7 +34,7 @@ describe('kds-expo-view: Modo exhibición Expo View fullscreen en cocina KDS', (
 
     // Muestra el contenedor de Expo View.
     expect(await screen.findByText(/MODO EXHIBICIÓN/i)).toBeInTheDocument();
-    expect(screen.getByText(/Pizza Margherita/i)).toBeInTheDocument();
+    expect(screen.getByText(/Hamburguesa Clásica/i)).toBeInTheDocument();
 
     // Los botones sensibles de mutación (marcar listo / filtros de estación) NO deben estar presentes.
     expect(screen.queryByRole('button', { name: /Marcar listo/i })).not.toBeInTheDocument();
@@ -68,7 +68,7 @@ describe('kds-expo-view: Modo exhibición Expo View fullscreen en cocina KDS', (
   it('Scenario 3: Salida explícita por botón de control o tecla Esc desactiva el modo expo', async () => {
     useKdsStore.setState({
       tickets: [
-        { id: 't-1', tableNumber: 1, status: 'pending', items: [{ id: 'i-1', name: 'Pizza Margherita', qty: 1 }] },
+        { id: 't-1', tableNumber: 1, status: 'pending', items: [{ id: 'i-1', name: 'Hamburguesa Clásica', qty: 1 }] },
       ],
       expoMode: true,
       loading: false,

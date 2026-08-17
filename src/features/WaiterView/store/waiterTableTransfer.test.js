@@ -202,6 +202,8 @@ describe('waiter-table-transfer: Cancelar la confirmación (UI)', () => {
   });
 
   it('S3: cancelar el modal de confirmación de unir NO muta cuentas NI publica eventos', async () => {
+    // Garantiza que las mesas estén cargadas de forma síncrona en el store.
+    await useWaiterStore.getState().loadTables();
     // Bus falso inyectado por prop para observar (y negar) publicaciones al cancelar.
     const { bus } = createFakeBus();
     // Renderiza la PWA del garzón con el bus falso (createElement por ser archivo .js).
