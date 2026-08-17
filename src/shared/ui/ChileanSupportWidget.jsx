@@ -4,7 +4,7 @@
 // Cumple estrictamente con AGENTS.md: cada línea de código comentada en español.
 
 // React e hooks de estado.
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 // Componente de widget flotante de Soporte 24/7.
 export default function ChileanSupportWidget() {

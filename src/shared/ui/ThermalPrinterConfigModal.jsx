@@ -4,7 +4,7 @@
 // Cumple estrictamente con AGENTS.md: cada línea de código comentada en español.
 
 // React e hooks de estado.
-import React, { useState } from 'react';
+import { useState } from 'react';
 // Modal base reutilizable del sistema.
 import Modal from './Modal.jsx';
 

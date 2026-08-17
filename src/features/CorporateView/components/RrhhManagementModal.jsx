@@ -4,7 +4,7 @@
 // Cumple estrictamente con AGENTS.md: cada línea de código comentada en español.
 
 // React e hooks de estado.
-import React, { useState } from 'react';
+import { useState } from 'react';
 // Modal base del sistema.
 import Modal from '../../../shared/ui/Modal.jsx';
 // Utilidad de exportación a CSV/Excel.
