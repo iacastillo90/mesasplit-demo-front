@@ -14,6 +14,8 @@ import CostoPrimarioCard from '../components/CostoPrimarioCard.jsx';
 import ComplianceSiiPanel from '../components/ComplianceSiiPanel.jsx';
 import WhatIfSimulator from '../components/WhatIfSimulator.jsx';
 import MenuEngineeringMatrix from '../components/MenuEngineeringMatrix.jsx';
+// AppHeader y AppFooter compartidos.
+import { AppHeader, AppFooter } from '../../../shared/ui/index.js';
 
 export default function SuperAdminPage() {
   const branches = useCorporateStore((s) => s.branches);
@@ -49,7 +51,9 @@ export default function SuperAdminPage() {
   ];
 
   return (
-    <main className="min-h-screen bg-brand-50 px-4 py-4 text-brand-900">
+    <div className="flex flex-col min-h-screen bg-brand-50 text-brand-900">
+      <AppHeader title="Super Admin Corporativo" subtitle="Multi-Local" currentRoute="/admin/super" theme="light" />
+      <main className="flex-1 px-4 py-4">
       <div className="mx-auto flex w-full max-w-7xl flex-col lg:flex-row gap-6">
         {/* MENÚ LATERAL CORPORATIVO (SIDEBAR NAVIGATION) */}
         <aside className="w-full lg:w-64 shrink-0 rounded-2xl bg-white border border-brand-200 p-4 flex flex-col justify-between gap-6 shadow-soft">
@@ -273,5 +277,7 @@ export default function SuperAdminPage() {
         </div>
       </div>
     </main>
-  );
+    <AppFooter theme="light" />
+  </div>
+);
 }

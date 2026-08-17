@@ -11,3 +11,7 @@ export { default as Badge } from './Badge.jsx';
 export { default as Modal } from './Modal.jsx';
 // Re-exporta la notificación flotante (success/danger).
 export { default as Toast } from './Toast.jsx';
+// Re-exporta la cabecera universal con menú hamburguesa.
+export { default as AppHeader } from './AppHeader.jsx';
+// Re-exporta el pie de página universal.
+export { default as AppFooter } from './AppFooter.jsx';

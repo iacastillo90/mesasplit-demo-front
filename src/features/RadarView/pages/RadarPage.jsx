@@ -13,6 +13,8 @@ import ExceptionFeedDrawer from '../components/ExceptionFeedDrawer.jsx';
 import MermaBar from '../components/MermaBar.jsx';
 import ReservationModal from '../components/ReservationModal.jsx';
 import StaffLeaderboard from '../components/StaffLeaderboard.jsx';
+// AppHeader y AppFooter compartidos.
+import { AppHeader, AppFooter } from '../../../shared/ui/index.js';
 
 export default function RadarPage() {
   const tables = useRadarStore((s) => s.tables);
@@ -55,12 +57,14 @@ export default function RadarPage() {
   ];
 
   return (
-    <main
-      data-focus-mode={focusMode ? 'true' : 'false'}
-      className={`min-h-screen px-4 py-4 transition-colors ${
-        focusMode ? 'bg-brand-950 text-white ring-4 ring-semantic-urgent' : 'bg-brand-950 text-brand-50'
-      }`}
-    >
+    <div className="flex flex-col min-h-screen bg-brand-950 text-brand-50">
+      <AppHeader title="Local Admin" subtitle="Radar de Turno" currentRoute="/admin" theme="dark" />
+      <main
+        data-focus-mode={focusMode ? 'true' : 'false'}
+        className={`flex-1 px-4 py-4 transition-colors ${
+          focusMode ? 'bg-brand-950 text-white ring-4 ring-semantic-urgent' : 'bg-brand-950 text-brand-50'
+        }`}
+      >
       <div className="mx-auto flex w-full max-w-7xl flex-col lg:flex-row gap-6">
         {/* MENÚ LATERAL (SIDEBAR NAVIGATION) */}
         <aside className="w-full lg:w-64 shrink-0 rounded-2xl bg-brand-900/90 border border-brand-800 p-4 flex flex-col justify-between gap-6 shadow-xl">
@@ -280,5 +284,7 @@ export default function RadarPage() {
         </div>
       </div>
     </main>
-  );
+    <AppFooter theme="dark" />
+  </div>
+);
 }

@@ -11,7 +11,7 @@ import ViewLauncherCard from '../components/ViewLauncherCard.jsx';
 // Instancia del bus en tiempo real para el controlador de simulación.
 import { createRealtimeBus } from '../../../hooks/useRealtimeBus.js';
 // Toast de notificación de eventos simulados.
-import { Toast } from '../../../shared/ui/index.js';
+import { Toast, AppHeader, AppFooter } from '../../../shared/ui/index.js';
 
 // Instancia única del bus de eventos para disparar simulaciones.
 const bus = createRealtimeBus('mesasplit');
@@ -71,10 +71,12 @@ export default function PortalPage() {
   };
 
   return (
-    // Contenedor claro de marca, scroll vertical completo (docs/04 light).
-    <main className="min-h-screen bg-brand-50 px-6 py-10">
-      {/* Contenido centrado con ancho máximo de lectura. */}
-      <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
+    <div className="flex flex-col min-h-screen bg-brand-50 text-brand-900">
+      <AppHeader title="Hub Principal" subtitle="Lanzador de Vistas" currentRoute="/" theme="light" />
+      {/* Contenedor claro de marca, scroll vertical completo (docs/04 light). */}
+      <main className="flex-1 px-6 py-10">
+        {/* Contenido centrado con ancho máximo de lectura. */}
+        <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
         {/* Cabecera del hub: identidad + propuesta de la demo. */}
         <header className="flex flex-col gap-2">
           {/* Marca del demo en el CTA de marca. */}
@@ -168,14 +170,11 @@ export default function PortalPage() {
           ))}
         </section>
 
-        {/* Pie informativo del hub. */}
-        <footer className="border-t border-brand-100 pt-4 text-xs text-brand-800/60">
-          MesaSplit Gastronomía — Demo interactivo con sincronización real-time local vía BroadcastChannel.
-        </footer>
-
         {/* Toast flotante de simulación. */}
         {simulationToast && <Toast variant="success" message={simulationToast} />}
       </div>
     </main>
-  );
+    <AppFooter theme="light" />
+  </div>
+);
 }

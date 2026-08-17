@@ -14,6 +14,8 @@ import PaymentMethodPicker from '../components/PaymentMethodPicker.jsx';
 import DteModal from '../components/DteModal.jsx';
 import BlindCloseModal from '../components/BlindCloseModal.jsx';
 import CashShiftModal from '../components/CashShiftModal.jsx';
+// AppHeader y AppFooter compartidos.
+import { AppHeader, AppFooter } from '../../../shared/ui/index.js';
 
 // Componente principal de la página del POS.
 export default function PosPage() {
@@ -117,8 +119,10 @@ export default function PosPage() {
     : 0;
 
   return (
-    // Vista principal de Caja POS desbloqueada.
-    <main className="min-h-screen bg-brand-50 px-6 py-6 text-brand-900">
+    <div className="flex flex-col min-h-screen bg-brand-50 text-brand-900">
+      <AppHeader title="Caja POS" subtitle="Punto de Venta" currentRoute="/admin/caja" theme="light" />
+      {/* Contenedor principal de la vista POS en tono claro de marca. */}
+      <main className="flex-1 px-6 py-6">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
         {/* Banner de notificación cuando el turno de caja se cierra exitosamente. */}
         {shiftClosedNotice && (
@@ -290,5 +294,7 @@ export default function PosPage() {
         />
       </div>
     </main>
-  );
+    <AppFooter theme="light" />
+  </div>
+);
 }

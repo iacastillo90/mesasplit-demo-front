@@ -31,6 +31,8 @@ import BatchSummaryView from '../components/BatchSummaryView.jsx';
 import { selectActiveDelivery, useRadarStore } from '../../RadarView/store/useRadarStore.js';
 // Modal de checklist de empaque delivery (kds-delivery-checklist).
 import PackingChecklistModal from '../components/PackingChecklistModal.jsx';
+// AppHeader y AppFooter compartidos.
+import { AppHeader, AppFooter } from '../../../shared/ui/index.js';
 
 // Componente principal de la página KDS de cocina.
 export default function KdsPage() {
@@ -107,8 +109,10 @@ export default function KdsPage() {
   }, [tickets, activeStation]);
 
   return (
-    // Contenedor principal en MODO OSCURO ESTRICTO (#011623).
-    <main className="min-h-screen bg-brand-950 text-brand-50">
+    <div className="flex flex-col min-h-screen bg-brand-950 text-brand-50">
+      <AppHeader title="Cocina KDS" subtitle="Modo Oscuro Estricto" currentRoute="/cocina" theme="dark" />
+      {/* Contenedor principal en MODO OSCURO ESTRICTO (#011623). */}
+      <main className="flex-1 min-h-screen bg-brand-950 text-brand-50">
       {/* Componente exhibición fullscreen Expo View (kds-expo-view). */}
       {expoMode ? (
         <ExpoDisplay tickets={visibleTickets} onClose={toggleExpoMode} />
@@ -179,6 +183,8 @@ export default function KdsPage() {
           />
         </>
       )}
-    </main>
+      </main>
+      <AppFooter theme="dark" />
+    </div>
   );
 }
