@@ -1,6 +1,6 @@
-// src/features/ClientView/pages/ClientPage.jsx — Mesa Virtual del cliente (task 2.5 + account-split)
+// src/features/ClientView/pages/ClientPage.jsx — Mesa Virtual del cliente (task 2.5 + account-split + customer-survey-ratings)
 // Vista "/cliente" del spec feature-views: banner de contexto de mesa, listado
-// de menú, affordance visible de carrito y modal de división de cuenta (account-split).
+// de menú, affordance visible de carrito, modal de división de cuenta y encuesta de satisfacción post-pago.
 // Orquesta el servicio (datos) y los stores (useClientStore + useSplitStore).
 // Cumple con todas las reglas obligatorias de AGENTS.md (comentarios en español por cada línea).
 
@@ -18,6 +18,8 @@ import { useSplitStore } from '../store/useSplitStore.js';
 import SharedCartDrawer from '../components/SharedCartDrawer.jsx';
 // Modal bottom-sheet de división de cuenta.
 import BillSplitterModal from '../components/BillSplitterModal.jsx';
+// Modal de encuesta de satisfacción y propina (customer-survey-ratings).
+import CustomerSurveyModal from '../components/CustomerSurveyModal.jsx';
 
 // ClientPage: pantalla principal de la Mesa Virtual del comensal.
 export default function ClientPage() {
@@ -45,6 +47,8 @@ export default function ClientPage() {
   const setCartOpen = useClientStore((s) => s.setCartOpen);
   // Acción de descartar el aviso "agregado" tras unos segundos (toast local).
   const [toastVisible, setToastVisible] = useState(false);
+  // Estado local para abrir la encuesta de experiencia post-pago.
+  const [surveyOpen, setSurveyOpen] = useState(false);
 
   // Store de división de cuenta (account-split).
   const splitOpen = useSplitStore((s) => s.open);
@@ -106,8 +110,18 @@ export default function ClientPage() {
           <div className="flex items-center justify-between">
             {/* Título del banner con el número de mesa destacado. */}
             <h1 className="text-xl font-bold text-brand-900">Mesa {tableContext?.number ?? '—'}</h1>
-            {/* Badge con el código QR de la sesión (identidad de la mesa). */}
-            <Badge variant="brand">Código {tableContext?.code ?? '••••'}</Badge>
+            <div className="flex items-center gap-2">
+              {/* Botón para abrir la encuesta de satisfacción. */}
+              <button
+                type="button"
+                onClick={() => setSurveyOpen(true)}
+                className="rounded-full bg-amber-500/10 px-3 py-1 text-xs font-bold text-amber-700 hover:bg-amber-500/20 border border-amber-300"
+              >
+                ★ Calificar Servicio
+              </button>
+              {/* Badge con el código QR de la sesión (identidad de la mesa). */}
+              <Badge variant="brand">Código {tableContext?.code ?? '••••'}</Badge>
+            </div>
           </div>
           {/* Detalle de comensales y estado de la cuenta. */}
           <p className="mt-1 text-sm text-brand-800/70">
@@ -202,6 +216,13 @@ export default function ClientPage() {
 
         {/* Modal de división de cuenta de la Mesa Virtual (account-split). */}
         <BillSplitterModal open={splitOpen} onClose={closeSplit} />
+
+        {/* Modal de encuesta de satisfacción y propina digital (customer-survey-ratings). */}
+        <CustomerSurveyModal
+          open={surveyOpen}
+          onClose={() => setSurveyOpen(false)}
+          totalBill={cartTotal > 0 ? cartTotal : 20000}
+        />
 
         {/* Toast de confirmación al agregar un plato (base shared/ui). */}
         {toastVisible && <Toast variant="success" message="Plato agregado al carrito" />}
