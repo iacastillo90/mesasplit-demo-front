@@ -1,7 +1,8 @@
-// src/features/RadarView/store/useRadarStore.js — store del Radar Local Admin (local-admin-radar)
+// src/features/RadarView/store/useRadarStore.js — store del Radar Local Admin (local-admin-radar + modo-hora-punta)
 // Slice de estado de RadarView: mapa topológico, delivery omnicanal, registro de excepciones (alert.fraud),
 // Modo Hora Punta, control de mermas y botón de pánico.
 // Escucha y publica eventos en tiempo real a través de createRealtimeBus.
+// Cumple con las reglas obligatorias de AGENTS.md (comentarios en español por cada línea).
 
 // create: fábrica de store de Zustand v5.
 import { create } from 'zustand';
@@ -15,9 +16,9 @@ const bus = createRealtimeBus('mesasplit');
 
 // Fixture canónico inicial de comandas de delivery omnicanal.
 const INITIAL_DELIVERY = [
-  { id: 'del-1', platform: 'ubereats', customerName: 'Camila Rojas', itemsSummary: '2x Hamburguesa + Limonada', total: 15400, elapsedMinutes: 8, driverName: 'Juan P.' },
-  { id: 'del-2', platform: 'rappi', customerName: 'Ignacio Silva', itemsSummary: '1x Pizza Margherita', total: 10900, elapsedMinutes: 14, driverName: 'Rodrigo M.' },
-  { id: 'del-3', platform: 'pedidosya', customerName: 'Felipe Soto', itemsSummary: '3x Papas fritas + 2x Cerveza', total: 13500, elapsedMinutes: 22, driverName: 'Matías L.' },
+  { id: 'del-1', platform: 'ubereats', customerName: 'Camila Rojas', itemsSummary: '2x Hamburguesa + Limonada', total: 15400, elapsedMinutes: 8, driverName: 'Juan P.', status: 'pending' },
+  { id: 'del-2', platform: 'rappi', customerName: 'Ignacio Silva', itemsSummary: '1x Pizza Margherita', total: 10900, elapsedMinutes: 14, driverName: 'Rodrigo M.', status: 'in_prep' },
+  { id: 'del-3', platform: 'pedidosya', customerName: 'Felipe Soto', itemsSummary: '3x Papas fritas + 2x Cerveza', total: 13500, elapsedMinutes: 22, driverName: 'Matías L.', status: 'in_prep' },
 ];
 
 // Fixture canónico inicial de auditorías y excepciones registradas.
@@ -49,6 +50,19 @@ const initialState = {
   // Estado de carga inicial de datos.
   loading: true,
 };
+
+// Selector puro: filtra las mesas en estado crítico (esperando comida o cuenta pedida/pagando).
+export const selectCriticalTables = (tables = []) =>
+  tables.filter(
+    (t) =>
+      t.status === 'waiting_food' ||
+      t.status === 'bill_requested' ||
+      t.status === 'paying',
+  );
+
+// Selector puro: filtra los pedidos de delivery activos pendientes o en preparación.
+export const selectActiveDelivery = (orders = []) =>
+  orders.filter((o) => o.status !== 'completed' && o.status !== 'cancelled');
 
 // Store de Zustand para el slice de RadarView.
 export const useRadarStore = create((set, get) => ({

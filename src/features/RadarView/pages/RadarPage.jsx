@@ -1,7 +1,7 @@
-// src/features/RadarView/pages/RadarPage.jsx — Local Admin / Radar de Turno (local-admin-radar + interactive-table-reservation)
+// src/features/RadarView/pages/RadarPage.jsx — Local Admin / Radar de Turno (local-admin-radar + interactive-table-reservation + modo-hora-punta)
 // Vista "/admin" del spec local-admin-radar: plano topológico del salón por zonas,
 // tarjetas del canal Delivery Omnicanal (Uber Eats, Rappi, PedidosYa), cajón de auditoría (alert.fraud),
-// Modo Hora Punta, barra de comando de mermas e insumos vencidos, Botón de Pánico de emergencia y gestor de reservas.
+// Modo Hora Punta con filtrado de mesas críticas y delivery activo, barra de comando de mermas, Botón de Pánico y gestor de reservas.
 // Cumple con todas las normas de AGENTS.md (comentarios en español por cada línea).
 
 // useEffect de React para iniciar la carga de mesas y suscripciones real-time.
@@ -96,22 +96,24 @@ export default function RadarPage() {
 
           {/* Barra de botones de control directo del supervisor. */}
           <div className="flex flex-wrap items-center gap-2">
-            {/* Botón para abrir la gestión de reservas y lista de espera (interactive-table-reservation). */}
-            <button
-              type="button"
-              onClick={() => setReservationOpen(true)}
-              className="rounded-xl bg-brand-900 border border-brand-800 px-3 py-2 text-xs font-bold text-brand-50/80 hover:bg-brand-800 transition active:scale-95"
-            >
-              📅 Reservas y Lista
-            </button>
+            {/* Botón para abrir la gestión de reservas y lista de espera. */}
+            {!focusMode && (
+              <button
+                type="button"
+                onClick={() => setReservationOpen(true)}
+                className="rounded-xl bg-brand-900 border border-brand-800 px-3 py-2 text-xs font-bold text-brand-50/80 hover:bg-brand-800 transition active:scale-95"
+              >
+                📅 Reservas y Lista
+              </button>
+            )}
 
-            {/* Botón de conmutación de Modo Hora Punta (Focus Mode). */}
+            {/* Botón gigante de conmutación de Modo Hora Punta (Focus Mode). */}
             <button
               type="button"
               onClick={toggleFocusMode}
-              className={`rounded-xl px-3 py-2 text-xs font-bold transition active:scale-95 border ${
+              className={`rounded-xl px-4 py-2 text-xs font-extrabold transition active:scale-95 border ${
                 focusMode
-                  ? 'bg-semantic-urgent text-white border-semantic-urgent shadow-lg'
+                  ? 'bg-semantic-urgent text-white border-semantic-urgent shadow-lg animate-pulse'
                   : 'bg-brand-900 text-brand-50/80 border-brand-800 hover:bg-brand-800'
               }`}
             >
@@ -151,12 +153,17 @@ export default function RadarPage() {
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             {/* Contenedor del Plano Topológico de Mesas (2 columnas en desktop). */}
             <div className="lg:col-span-2">
-              <TopologicalMap tables={tables} activeZone={activeZone} onSelectZone={setZone} />
+              <TopologicalMap
+                tables={tables}
+                activeZone={activeZone}
+                onSelectZone={setZone}
+                focusMode={focusMode}
+              />
             </div>
 
             {/* Columna del Canal Virtual Delivery Omnicanal (1 columna). */}
             <div>
-              <DeliveryColumn orders={deliveryOrders} />
+              <DeliveryColumn deliveryOrders={deliveryOrders} focusMode={focusMode} />
             </div>
           </div>
         )}
