@@ -61,6 +61,10 @@ const initialState = {
   creditNotes: [],
   // Comprobantes CFD emitidos (pos-cfd).
   cfdReceipts: [],
+  // Estado de Modo Mostrador para venta rápida sin mesa (pos-counter-mode).
+  counterMode: false,
+  // Carrito de ítems de la venta de mostrador.
+  counterCart: [],
 };
 
 // Store de Zustand para PosView con persistencia del turno de caja.
@@ -236,6 +240,52 @@ export const usePosStore = create(
 
         set((state) => ({ cfdReceipts: [newReceipt, ...(state.cfdReceipts ?? [])] }));
         return { ok: true, receipt: newReceipt };
+      },
+
+      // Alterna o establece el modo mostrador (pos-counter-mode).
+      setCounterMode: (counterMode) => set({ counterMode: Boolean(counterMode) }),
+
+      // Agrega un ítem al carrito de venta rápida de mostrador.
+      addToCounterCart: (item) => {
+        const { counterCart } = get();
+        const existingIndex = counterCart.findIndex((i) => i.id === item.id);
+
+        if (existingIndex >= 0) {
+          const updated = [...counterCart];
+          updated[existingIndex] = {
+            ...updated[existingIndex],
+            qty: (updated[existingIndex].qty ?? 1) + 1,
+          };
+          set({ counterCart: updated });
+        } else {
+          set({ counterCart: [...counterCart, { ...item, qty: 1 }] });
+        }
+      },
+
+      // Procesa el pago del carrito de mostrador y publica payment.completed con tableNumber: null.
+      payCounterCart: (paymentMethod = 'efectivo', customBus) => {
+        const { counterCart } = get();
+        if (!counterCart || counterCart.length === 0) {
+          return { ok: false, error: 'Carrito de mostrador vacío' };
+        }
+
+        const total = counterCart.reduce((acc, i) => acc + Number(i.price) * Number(i.qty ?? 1), 0);
+        const targetBus = customBus ?? bus;
+
+        try {
+          targetBus.publish('payment.completed', {
+            billId: `counter-${Date.now()}`,
+            tableNumber: null,
+            amount: total,
+            paymentMethod,
+            timestamp: Date.now(),
+          });
+        } catch {
+          // Tolera transporte inactivo
+        }
+
+        set({ counterCart: [] });
+        return { ok: true, total };
       },
 
       // Restablece el slice a su estado inicial para tests (limpiando persistencia).
