@@ -55,6 +55,8 @@ const initialState = {
   cashShift: INITIAL_CASH_SHIFT,
   // Visibilidad del modal de turno de caja.
   cashShiftModalOpen: false,
+  // Registro de notas de crédito emitidas (pos-credit-note).
+  creditNotes: [],
 };
 
 // Store de Zustand para PosView con persistencia del turno de caja.
@@ -182,6 +184,34 @@ export const usePosStore = create(
         });
 
         return () => offQrPayment();
+      },
+
+      // Emite una nota de crédito autorizada por PIN de admin ("9921") (pos-credit-note).
+      issueCreditNote: (billId, amount, reason, pin, customBus) => {
+        // Si no hay id de venta o el PIN es incorrecto, bloquea.
+        if (!billId) return { ok: false, error: 'No hay venta seleccionada' };
+        if (pin !== '9921') return { ok: false, error: 'PIN de administrador incorrecto' };
+
+        const newNote = {
+          id: `nc-${Date.now()}`,
+          billId: String(billId),
+          amount: Number(amount),
+          reason: String(reason ?? 'Devolución'),
+          timestamp: Date.now(),
+          approvedBy: 'Admin (9921)',
+        };
+
+        set((state) => ({ creditNotes: [newNote, ...(state.creditNotes ?? [])] }));
+
+        // Opcionalmente emite el evento de nota de crédito.
+        const targetBus = customBus ?? bus;
+        try {
+          targetBus.publish('credit.note_issued', newNote);
+        } catch {
+          // Tolera bus inactivo
+        }
+
+        return { ok: true, creditNote: newNote };
       },
 
       // Restablece el slice a su estado inicial para tests (limpiando persistencia).
