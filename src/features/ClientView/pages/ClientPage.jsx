@@ -24,6 +24,8 @@ import CustomerSurveyModal from '../components/CustomerSurveyModal.jsx';
 import SosModal from '../components/SosModal.jsx';
 // Modal de bienvenida para onboarding de primera visita (client-onboarding).
 import WelcomeModal from '../components/WelcomeModal.jsx';
+// Modal de solicitud de factura demo (client-factura).
+import InvoiceRequestModal from '../components/InvoiceRequestModal.jsx';
 
 // ClientPage: pantalla principal de la Mesa Virtual del comensal.
 export default function ClientPage() {
@@ -63,6 +65,8 @@ export default function ClientPage() {
       return true;
     }
   });
+  // Estado local para el modal de solicitud de factura (client-factura).
+  const [invoiceOpen, setInvoiceOpen] = useState(false);
 
   // Store de división de cuenta (account-split).
   const splitOpen = useSplitStore((s) => s.open);
@@ -140,6 +144,14 @@ export default function ClientPage() {
                 className="rounded-full bg-amber-500/10 px-3 py-1 text-xs font-bold text-amber-700 hover:bg-amber-500/20 border border-amber-300"
               >
                 ★ Calificar Servicio
+              </button>
+              {/* Botón para solicitar factura electrónica demo (client-factura). */}
+              <button
+                type="button"
+                onClick={() => setInvoiceOpen(true)}
+                className="rounded-full bg-brand-900/10 px-3 py-1 text-xs font-bold text-brand-900 hover:bg-brand-900/20 border border-brand-900/30 transition active:scale-95"
+              >
+                📄 Solicitar Factura
               </button>
               {/* Badge con el código QR de la sesión (identidad de la mesa). */}
               <Badge variant="brand">Código {tableContext?.code ?? '••••'}</Badge>
@@ -257,6 +269,13 @@ export default function ClientPage() {
         <WelcomeModal
           open={welcomeOpen}
           onClose={() => setWelcomeOpen(false)}
+        />
+
+        {/* Modal de solicitud de factura demo (client-factura). */}
+        <InvoiceRequestModal
+          open={invoiceOpen}
+          totalAmount={cartTotal}
+          onClose={() => setInvoiceOpen(false)}
         />
 
         {/* Toast de confirmación al agregar un plato (base shared/ui). */}
