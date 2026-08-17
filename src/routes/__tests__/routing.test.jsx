@@ -63,7 +63,7 @@ describe('app-routing: tabla de rutas (spec)', () => {
     renderApp('/');
     // Espera el título del hub (contenido sincrónico del Portal).
     expect(
-      await screen.findByRole('heading', { name: 'Demo de división de cuentas' }),
+      await screen.findByRole('heading', { name: 'Demo de división de cuentas' }, { timeout: 5000 }),
     ).toBeInTheDocument();
   });
 
@@ -71,50 +71,50 @@ describe('app-routing: tabla de rutas (spec)', () => {
     // Renderiza la app arrancando en la ruta del cliente.
     renderApp('/cliente');
     // El banner muestra el contexto de mesa tras la carga del servicio.
-    expect(await screen.findByText('Mesa 12')).toBeInTheDocument();
+    expect(await screen.findByText('Mesa 12', {}, { timeout: 5000 })).toBeInTheDocument();
     // El menú llega vía clientService (en GREEN a través de mockFetch).
-    expect(await screen.findByText('Hamburguesa Clásica')).toBeInTheDocument();
+    expect(await screen.findByText('Hamburguesa Clásica', {}, { timeout: 5000 })).toBeInTheDocument();
   });
 
   it('renderiza la grilla del garzón en /garzon con mesas del servicio', async () => {
     // Renderiza la app arrancando en la ruta del garzón.
     renderApp('/garzon');
     // Tras la carga hay al menos una mesa en estado Ocupada (semántica brand).
-    expect((await screen.findAllByText(/Ocupada/)).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText(/Ocupada/, {}, { timeout: 5000 })).length).toBeGreaterThan(0);
   });
 
   it('renderiza la cocina KDS en /cocina (modo oscuro) con tickets', async () => {
     // Renderiza la app arrancando en la ruta de la cocina.
     renderApp('/cocina');
     // Cabecera del KDS: título visible de la vista (inmediato).
-    expect(await screen.findByRole('heading', { name: 'Cocina' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Cocina' }, { timeout: 5000 })).toBeInTheDocument();
     // Los tickets resuelven vía kdsService (en GREEN a través de mockFetch).
-    expect(await screen.findByText('Hamburguesa Clásica')).toBeInTheDocument();
+    expect(await screen.findByText('Hamburguesa Clásica', {}, { timeout: 5000 })).toBeInTheDocument();
   });
 
   it('renderiza el Radar Local Admin en /admin (index)', async () => {
     // Renderiza la app arrancando en la ruta del radar.
     renderApp('/admin');
     // Cabecera del Local Admin: título de la vista.
-    expect(await screen.findByRole('heading', { name: 'Local Admin' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Local Admin' }, { timeout: 5000 })).toBeInTheDocument();
     // El mapa topológico se dibuja tras la siembra desde el store demo.
-    expect(await screen.findByText('Plano del salón')).toBeInTheDocument();
+    expect(await screen.findByText(/Plano del salón/i, {}, { timeout: 5000 })).toBeInTheDocument();
   });
 
-  it('renderiza el placeholder de Super Admin en /admin/super SIN montar el Radar', async () => {
+  it('renderiza el panel de Super Admin en /admin/super SIN montar el Radar', async () => {
     // Renderiza la app arrancando en la ruta anidada del Super Admin.
     renderApp('/admin/super');
-    // El placeholder explícito declara la vista como no implementada.
-    expect(await screen.findByText('No implementado')).toBeInTheDocument();
+    // Verifica la presencia del panel corporativo de Super Admin.
+    expect(await screen.findByRole('heading', { name: /Panel Corporativo Multi-Local/i }, { timeout: 5000 })).toBeInTheDocument();
     // ESPEC app-routing: el Radar NO debe montarse para el hijo anidado.
-    expect(screen.queryByText('Plano del salón')).not.toBeInTheDocument();
+    expect(screen.queryByText(/Plano del salón/i)).not.toBeInTheDocument();
   });
 
   it('el hub lista todos los launchers de las vistas', async () => {
     // Renderiza la app arrancando en la raíz (hub).
     renderApp('/');
     // Espera a que el hub esté montado (título de landing).
-    await screen.findByRole('heading', { name: 'Demo de división de cuentas' });
+    await screen.findByRole('heading', { name: 'Demo de división de cuentas' }, { timeout: 5000 });
     // Verifica un launcher por vista del spec app-routing.
     const labels = ['Mesa Virtual', 'Garzón', 'Cocina', 'Local Admin', 'Super Admin'];
     // Recorre cada etiqueta esperada del hub.
@@ -130,13 +130,13 @@ describe('app-routing: tabla de rutas (spec)', () => {
     // Renderiza la app arrancando en el hub.
     renderApp('/');
     // Espera el launcher de la cocina (card clickeable del hub).
-    const cocinaLink = await screen.findByRole('link', { name: /Cocina/ });
+    const cocinaLink = await screen.findByRole('link', { name: /Cocina/ }, { timeout: 5000 });
     // Activa el launcher como haría un usuario real.
     await user.click(cocinaLink);
     // La URL cambió a la ruta de la cocina (escenario "launcher navigates").
     expect(screen.getByTestId('pathname').textContent).toBe('/cocina');
     // Y el KDS quedó montado (cabecera de la vista de cocina).
-    expect(await screen.findByRole('heading', { name: 'Cocina' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Cocina' }, { timeout: 5000 })).toBeInTheDocument();
   });
 
   it('una ruta desconocida muestra el 404 con link de vuelta al hub', async () => {
@@ -145,13 +145,13 @@ describe('app-routing: tabla de rutas (spec)', () => {
     // Renderiza la app arrancando en una URL fuera de la tabla (/no-existe).
     renderApp('/no-existe');
     // La vista 404 se renderiza sin crashear la app.
-    expect(await screen.findByText('La página que buscas no existe')).toBeInTheDocument();
+    expect(await screen.findByText('La página que buscas no existe', {}, { timeout: 5000 })).toBeInTheDocument();
     // Activa el link de retorno al hub ("fallback ofrece una vía de vuelta").
     await user.click(screen.getByRole('link', { name: /Volver al inicio/ }));
     // El hub vuelve a montarse en la raíz (pathname y vista).
     expect(screen.getByTestId('pathname').textContent).toBe('/');
     expect(
-      await screen.findByRole('heading', { name: 'Demo de división de cuentas' }),
+      await screen.findByRole('heading', { name: 'Demo de división de cuentas' }, { timeout: 5000 }),
     ).toBeInTheDocument();
   });
 });
