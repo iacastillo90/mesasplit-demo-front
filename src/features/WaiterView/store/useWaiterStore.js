@@ -14,6 +14,8 @@ import { checkConservation } from '../../ClientView/services/splitService.js';
 
 // Instancia única del bus para las acciones del garzón.
 const bus = createRealtimeBus('mesasplit');
+// Exporta el bus del store para espionaje en tests (D5: ausencia de alert.fraud en removeItem).
+export const waiterRealtimeBus = bus;
 
 // Identificador demo del garzón en sesión (asignación origen en tables.json).
 export const CURRENT_WAITER_ID = 'pedro-soto';
@@ -149,6 +151,40 @@ export const useWaiterStore = create((set, get) => ({
     // Actualiza el borrador en el store.
     set({ orderDraft: updatedDraft });
   },
+
+  // Sube en 1 la cantidad de la línea del productId en el curso dado.
+  // Solo toca líneas existentes: NUNCA crea duplicados (aggregation-semantics).
+  increaseQty: (productId, course) =>
+    set((state) => ({
+      orderDraft: state.orderDraft.map((line) =>
+        line.productId === productId && line.course === course
+          ? { ...line, qty: line.qty + 1 }
+          : line,
+      ),
+    })),
+
+  // Baja en 1 la cantidad; si la línea llega a 0, se remueve del borrador (sc.2).
+  decreaseQty: (productId, course) =>
+    set((state) => ({
+      orderDraft: state.orderDraft
+        .map((line) =>
+          line.productId === productId && line.course === course
+            ? { ...line, qty: line.qty - 1 }
+            : line,
+        )
+        // Remueve las líneas que quedaron en cero (semántica de borrado en 0).
+        .filter((line) => line.qty > 0),
+    })),
+
+  // Elimina la línea completa del borrador sin importar su cantidad.
+  // D5: es borrado de borrador, NO emite alert.fraud (la anulación auditada
+  // con PIN sigue siendo responsabilidad exclusiva de voidItemWithPin).
+  removeItem: (productId, course) =>
+    set((state) => ({
+      orderDraft: state.orderDraft.filter(
+        (line) => !(line.productId === productId && line.course === course),
+      ),
+    })),
 
   // Alterna o agrega un flag de alergia médica sobre una línea del pedido (Escudo de Alergias).
   toggleAllergyFlag: (itemId, allergen) => {
