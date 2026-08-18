@@ -141,7 +141,8 @@ export default function ClientDashboardPage() {
 
           {/* Tarjeta 2: Mi Perfil Completo */}
           <Link
-            to="/cliente/perfil"
+            to="/cliente/perfil?tab=overview"
+            state={{ tab: 'overview' }}
             className="group rounded-3xl bg-white p-5 shadow-soft border border-brand-100 hover:border-amber-300 transition flex flex-col justify-between gap-4 active:scale-98 cursor-pointer"
           >
             <div className="flex items-center justify-between">
@@ -184,7 +185,8 @@ export default function ClientDashboardPage() {
 
           {/* Tarjeta 4: Boletas Electrónicas DTE */}
           <Link
-            to="/cliente/perfil"
+            to="/cliente/perfil?tab=payments"
+            state={{ tab: 'payments' }}
             className="group rounded-3xl bg-white p-5 shadow-soft border border-brand-100 hover:border-indigo-300 transition flex flex-col justify-between gap-4 active:scale-98 cursor-pointer"
           >
             <div className="flex items-center justify-between">
@@ -205,7 +207,8 @@ export default function ClientDashboardPage() {
 
           {/* Tarjeta 5: Mis Reseñas de Platos */}
           <Link
-            to="/cliente/perfil"
+            to="/cliente/perfil?tab=reviews"
+            state={{ tab: 'reviews' }}
             className="group rounded-3xl bg-white p-5 shadow-soft border border-brand-100 hover:border-rose-300 transition flex flex-col justify-between gap-4 active:scale-98 cursor-pointer"
           >
             <div className="flex items-center justify-between">
@@ -226,7 +229,8 @@ export default function ClientDashboardPage() {
 
           {/* Tarjeta 6: Invitar Amigos */}
           <Link
-            to="/cliente/perfil"
+            to="/cliente/perfil?tab=referrals"
+            state={{ tab: 'referrals' }}
             className="group rounded-3xl bg-white p-5 shadow-soft border border-brand-100 hover:border-emerald-400 transition flex flex-col justify-between gap-4 active:scale-98 cursor-pointer"
           >
             <div className="flex items-center justify-between">

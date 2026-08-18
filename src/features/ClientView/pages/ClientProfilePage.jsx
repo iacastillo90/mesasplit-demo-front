@@ -3,9 +3,9 @@
 // Cumple estrictamente con AGENTS.md: cada línea de código comentada en español.
 
 // Hooks de React.
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 // Hooks de navegación de React Router.
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 // Store de cliente para datos del usuario logueado.
 import { useClientStore } from '../store/useClientStore.js';
 // Store de recompensas del cliente.
@@ -31,6 +31,8 @@ import ClientBottomNav from '../components/ClientBottomNav.jsx';
 export default function ClientProfilePage() {
   // Hook de navegación de React Router.
   const navigate = useNavigate();
+  // Location de React Router para parámetros de URL.
+  const location = useLocation();
   // Usuario activo en la sesión.
   const user = useClientStore((s) => s.user);
   // Actualización de datos del usuario.
@@ -44,8 +46,23 @@ export default function ClientProfilePage() {
   // Acción para canjear recompensa.
   const redeemReward = useRewardsStore((s) => s.redeemReward);
 
+  // Determina la pestaña inicial según los parámetros de la URL o del estado.
+  const getTargetTab = () => {
+    const searchTab = new URLSearchParams(location.search).get('tab');
+    const stateTab = location.state?.tab;
+    return stateTab || searchTab || 'overview';
+  };
+
   // Tab interactiva seleccionada ('overview', 'rewards', 'branches', 'payments', 'reviews', 'referrals', 'edit-profile').
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState(getTargetTab());
+
+  // Sincroniza la pestaña activa en tiempo real ante cambios de URL o navegación.
+  useEffect(() => {
+    const tab = getTargetTab();
+    if (tab) {
+      setActiveTab(tab);
+    }
+  }, [location.search, location.state]);
   // Visibilidad del modal de asistente de reservas.
   const [bookingModalOpen, setBookingModalOpen] = useState(false);
   // Visibilidad del widget de soporte.

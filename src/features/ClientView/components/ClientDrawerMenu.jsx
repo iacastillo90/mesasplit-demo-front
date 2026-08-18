@@ -134,7 +134,7 @@ export default function ClientDrawerMenu({ isOpen, onClose }) {
           {/* Opción 6: Puntos y Premios */}
           <button
             type="button"
-            onClick={() => handleNavigate('/cliente/perfil')}
+            onClick={() => handleNavigate('/cliente/perfil?tab=rewards')}
             className="flex items-center justify-between rounded-2xl px-4 py-3 text-xs font-bold transition text-left hover:bg-white/10 text-amber-300 cursor-pointer"
           >
             <div className="flex items-center gap-3">
@@ -149,7 +149,7 @@ export default function ClientDrawerMenu({ isOpen, onClose }) {
           {/* Opción 7: Locales Registrados */}
           <button
             type="button"
-            onClick={() => handleNavigate('/cliente/perfil')}
+            onClick={() => handleNavigate('/cliente/perfil?tab=branches')}
             className="flex items-center gap-3 rounded-2xl px-4 py-3 text-xs font-bold transition text-left hover:bg-white/10 text-brand-100 cursor-pointer"
           >
             <span className="text-base">📍</span>
@@ -159,7 +159,7 @@ export default function ClientDrawerMenu({ isOpen, onClose }) {
           {/* Opción 8: Historial de Pagos & Boletas */}
           <button
             type="button"
-            onClick={() => handleNavigate('/cliente/perfil')}
+            onClick={() => handleNavigate('/cliente/perfil?tab=payments')}
             className="flex items-center gap-3 rounded-2xl px-4 py-3 text-xs font-bold transition text-left hover:bg-white/10 text-brand-100 cursor-pointer"
           >
             <span className="text-base">📜</span>
@@ -169,7 +169,7 @@ export default function ClientDrawerMenu({ isOpen, onClose }) {
           {/* Opción 9: Reseñas de Platos */}
           <button
             type="button"
-            onClick={() => handleNavigate('/cliente/perfil')}
+            onClick={() => handleNavigate('/cliente/perfil?tab=reviews')}
             className="flex items-center gap-3 rounded-2xl px-4 py-3 text-xs font-bold transition text-left hover:bg-white/10 text-brand-100 cursor-pointer"
           >
             <span className="text-base">⭐</span>
@@ -179,7 +179,7 @@ export default function ClientDrawerMenu({ isOpen, onClose }) {
           {/* Opción 10: Referidos Invitar Amigos */}
           <button
             type="button"
-            onClick={() => handleNavigate('/cliente/perfil')}
+            onClick={() => handleNavigate('/cliente/perfil?tab=referrals')}
             className="flex items-center justify-between rounded-2xl px-4 py-3 text-xs font-bold transition text-left hover:bg-white/10 text-emerald-300 cursor-pointer"
           >
             <div className="flex items-center gap-3">
