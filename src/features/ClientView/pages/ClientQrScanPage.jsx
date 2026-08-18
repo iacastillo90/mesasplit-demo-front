@@ -12,6 +12,8 @@ import { useClientStore } from '../store/useClientStore.js';
 import AppHeader from '../../../shared/ui/AppHeader.jsx';
 // Pie de página universal.
 import AppFooter from '../../../shared/ui/AppFooter.jsx';
+// Barra de navegación inferior fija para móviles.
+import ClientBottomNav from '../components/ClientBottomNav.jsx';
 
 // Componente principal del simulador de escaneo QR de mesa.
 export default function ClientQrScanPage() {
@@ -47,7 +49,7 @@ export default function ClientQrScanPage() {
       <AppHeader title="Mesa Virtual" subtitle="Escaneo QR de Mesa" currentRoute="/cliente/scan" theme="light" />
 
       {/* Contenedor central */}
-      <main className="flex-1 flex items-center justify-center px-4 py-8">
+      <main className="flex-1 flex items-center justify-center px-4 py-8 pb-24">
         <div className="w-full max-w-md rounded-3xl bg-white p-6 sm:p-8 shadow-2xl border border-brand-100 flex flex-col gap-6">
           {/* Cabecera de la tarjeta */}
           <div className="flex flex-col items-center gap-2 text-center">
@@ -155,6 +157,9 @@ export default function ClientQrScanPage() {
 
       {/* Pie de página universal */}
       <AppFooter theme="light" />
+
+      {/* Barra de navegación inferior fija para móviles */}
+      <ClientBottomNav />
     </div>
   );
 }

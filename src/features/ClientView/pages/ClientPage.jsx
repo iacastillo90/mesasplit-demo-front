@@ -45,6 +45,8 @@ import RewardsBadgeWidget from '../components/RewardsBadgeWidget.jsx';
 import ItemReviewModal from '../components/ItemReviewModal.jsx';
 // Hero promocional ultra-premium para la Mesa Virtual.
 import ClientPageHero from '../components/ClientPageHero.jsx';
+// Barra de navegación inferior fija para móviles.
+import ClientBottomNav from '../components/ClientBottomNav.jsx';
 
 
 // ClientPage: pantalla principal de la Mesa Virtual del comensal.
@@ -471,9 +473,9 @@ export default function ClientPage() {
 
 
       {/* CTA flotante del carrito: affordance SIEMPRE visible (spec). */}
-      <div className="fixed inset-x-0 bottom-6 z-40 flex justify-center px-6">
+      <div className="fixed inset-x-0 bottom-20 z-40 flex justify-center px-6">
         {/* Botón del carrito: badge de unidades + total, abre el drawer. */}
-        <Button variant="primary" className="w-full max-w-3xl" onClick={() => setCartOpen(true)}>
+        <Button variant="primary" className="w-full max-w-3xl shadow-2xl" onClick={() => setCartOpen(true)}>
           {/* Etiqueta del botón con la cantidad de ítems del carrito. */}
           <span>Ver carrito</span>
           {/* Chip con la cantidad de unidades (visible cuando hay ítems). */}
@@ -487,6 +489,9 @@ export default function ClientPage() {
           <span className="ml-auto">{formatCurrency(cartTotal)}</span>
         </Button>
       </div>
+
+      {/* Barra de navegación inferior fija para móviles */}
+      <ClientBottomNav />
     </main>
   );
 }

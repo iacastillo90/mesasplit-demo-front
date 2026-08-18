@@ -51,6 +51,27 @@ export default function AppHeader({ title = 'MesaSplit', subtitle, currentRoute 
           <span className="text-lg">🍔</span>
         </button>
 
+        {/* Botón Volver / Retroceder ⬅️ en sub-páginas del cliente */}
+        {isClientArea && currentRoute !== '/cliente/dashboard' && (
+          <button
+            type="button"
+            onClick={() => {
+              if (typeof window !== 'undefined' && window.history?.length > 1) {
+                window.history.back();
+              }
+            }}
+            aria-label="Volver a la pantalla anterior"
+            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border transition active:scale-95 cursor-pointer ${
+              isDark
+                ? 'bg-brand-900 border-brand-800 text-white hover:bg-brand-800'
+                : 'bg-brand-50 border-brand-200 text-brand-900 hover:bg-brand-100'
+            }`}
+            title="Volver"
+          >
+            <span className="text-sm font-extrabold">⬅️</span>
+          </button>
+        )}
+
         <div className="flex flex-col text-left min-w-0">
           <div className="flex items-center gap-1.5 truncate">
             <span className="text-sm font-extrabold tracking-tight shrink-0">MesaSplit</span>

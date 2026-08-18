@@ -16,6 +16,8 @@ import AppHeader from '../../../shared/ui/AppHeader.jsx';
 import AppFooter from '../../../shared/ui/AppFooter.jsx';
 // Modal de reservas inteligente.
 import ClientReservationAssistant from '../components/ClientReservationAssistant.jsx';
+// Barra de navegación inferior fija para móviles.
+import ClientBottomNav from '../components/ClientBottomNav.jsx';
 
 // Componente principal de la vista Dashboard de Cliente.
 export default function ClientDashboardPage() {
@@ -37,7 +39,7 @@ export default function ClientDashboardPage() {
       <AppHeader title="Mesa Virtual" subtitle="Dashboard del Comensal" currentRoute="/cliente/dashboard" theme="light" />
 
       {/* Contenido principal del Dashboard */}
-      <main className="flex-1 px-4 sm:px-6 py-8 max-w-4xl mx-auto w-full flex flex-col gap-6">
+      <main className="flex-1 px-4 sm:px-6 py-8 pb-24 max-w-4xl mx-auto w-full flex flex-col gap-6">
         {/* Banner de Bienvenida Personalizado */}
         <div className="rounded-3xl bg-gradient-to-br from-brand-900 via-brand-950 to-amber-950 p-6 sm:p-8 text-white shadow-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-6 border border-brand-800">
           <div className="flex items-center gap-4">
@@ -250,6 +252,9 @@ export default function ClientDashboardPage() {
 
       {/* Pie de página universal */}
       <AppFooter theme="light" />
+
+      {/* Barra de navegación inferior fija para móviles */}
+      <ClientBottomNav />
     </div>
   );
 }

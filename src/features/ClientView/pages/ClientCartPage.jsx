@@ -17,6 +17,8 @@ import { Button, Badge } from '../../../shared/ui/index.js';
 // Modales de evaluación y división.
 import ItemReviewModal from '../components/ItemReviewModal.jsx';
 import BillSplitterModal from '../components/BillSplitterModal.jsx';
+// Barra de navegación inferior fija para móviles.
+import ClientBottomNav from '../components/ClientBottomNav.jsx';
 
 // Componente principal ClientCartPage.
 export default function ClientCartPage() {
@@ -223,6 +225,9 @@ export default function ClientCartPage() {
           onClose={() => setSplitOpen(false)}
         />
       )}
+
+      {/* Barra de navegación inferior fija para móviles */}
+      <ClientBottomNav />
     </div>
   );
 }

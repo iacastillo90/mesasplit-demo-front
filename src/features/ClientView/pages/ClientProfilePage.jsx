@@ -20,6 +20,8 @@ import ClientReservationAssistant from '../components/ClientReservationAssistant
 import ChileanSupportWidget from '../../../shared/ui/ChileanSupportWidget.jsx';
 // Utilidad de formato de moneda CLP.
 import { formatCurrency } from '../../../shared/utils/formatCurrency.js';
+// Barra de navegación inferior fija para móviles.
+import ClientBottomNav from '../components/ClientBottomNav.jsx';
 
 // Componente principal de la página de Perfil del Usuario.
 export default function ClientProfilePage() {
@@ -106,7 +108,7 @@ export default function ClientProfilePage() {
       <AppHeader title="Mesa Virtual" subtitle="Perfil del Comensal" currentRoute="/cliente/perfil" theme="light" />
 
       {/* Contenido principal del perfil */}
-      <main className="flex-1 px-4 sm:px-6 py-8 max-w-4xl mx-auto w-full flex flex-col gap-6">
+      <main className="flex-1 px-4 sm:px-6 py-8 pb-24 max-w-4xl mx-auto w-full flex flex-col gap-6">
         {/* Tarjeta de Identidad de Usuario y resumen VIP */}
         <div className="rounded-3xl bg-gradient-to-br from-brand-900 to-brand-950 p-6 sm:p-8 text-white shadow-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-6 border border-brand-800">
           <div className="flex items-center gap-4">
@@ -387,6 +389,9 @@ export default function ClientProfilePage() {
 
       {/* Pie de página universal */}
       <AppFooter theme="light" />
+
+      {/* Barra de navegación inferior fija para móviles */}
+      <ClientBottomNav />
     </div>
   );
 }
