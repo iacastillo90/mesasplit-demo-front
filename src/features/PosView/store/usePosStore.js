@@ -101,6 +101,41 @@ export const usePosStore = create(
         }
       },
 
+      // Agrega un ítem de la carta directamente al ticket activo del POS para venta rápida.
+      addItemToActiveBill: (item) => {
+        const { activeBill, openBills } = get();
+        if (!activeBill) {
+          const newTicket = {
+            id: `b-${Date.now()}`,
+            tableNumber: 200 + openBills.length,
+            type: 'takeaway',
+            customerName: 'Venta Rápida Mostrador 🛍️',
+            totalAmount: item.price,
+            status: 'pending',
+            items: [{ ...item, qty: 1 }],
+          };
+          set({ openBills: [newTicket, ...openBills], activeBill: newTicket });
+          return;
+        }
+
+        const existingItems = activeBill.items || [];
+        const existingIndex = existingItems.findIndex((i) => i.id === item.id);
+        let updatedItems;
+        if (existingIndex >= 0) {
+          updatedItems = existingItems.map((i, idx) =>
+            idx === existingIndex ? { ...i, qty: (i.qty || 1) + 1 } : i
+          );
+        } else {
+          updatedItems = [...existingItems, { ...item, qty: 1 }];
+        }
+
+        const newTotal = updatedItems.reduce((acc, curr) => acc + curr.price * (curr.qty || 1), 0);
+        const updatedBill = { ...activeBill, items: updatedItems, totalAmount: newTotal };
+        const updatedBills = openBills.map((b) => (b.id === activeBill.id ? updatedBill : b));
+
+        set({ openBills: updatedBills, activeBill: updatedBill });
+      },
+
       // Cambia el método de pago seleccionado.
       setPaymentMethod: (paymentMethod) => set({ paymentMethod }),
 
