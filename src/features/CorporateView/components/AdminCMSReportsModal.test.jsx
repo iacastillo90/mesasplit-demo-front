@@ -21,6 +21,6 @@ describe('AdminCMSReportsModal — Centro de Reportes CMS Administrativos & Exce
     const rrhhTab = screen.getByRole('button', { name: /📋 Planilla Asistencia & RRHH/i });
     fireEvent.click(rrhhTab);
 
-    expect(screen.getByText('Cotización Al Día ✓')).toBeInTheDocument();
+    expect(screen.getAllByText('Cotización Al Día ✓')[0]).toBeInTheDocument();
   });
 });
