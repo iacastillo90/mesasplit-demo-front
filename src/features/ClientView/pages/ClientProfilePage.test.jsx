@@ -28,6 +28,6 @@ describe('ClientProfilePage — Perfil Completo del Comensal', () => {
     // Verifica que aparezca el nombre y nivel del usuario.
     expect(screen.getByRole('heading', { name: /Constanza Silva/i })).toBeInTheDocument();
     expect(screen.getByText(/VIP Gold 🏆/i)).toBeInTheDocument();
-    expect(screen.getByText(/Catálogo de Premios Canjeables/i)).toBeInTheDocument();
+    expect(screen.getByText(/Puntos de Afiliado/i)).toBeInTheDocument();
   });
 });
