@@ -62,6 +62,27 @@ export default function MermaBar({ mermaLogs, onAddMerma }) {
           Registrar
         </button>
       </form>
+
+      {/* Historial reciente de mermas registradas. */}
+      {mermaLogs.length > 0 && (
+        <div className="flex flex-col gap-1.5 mt-1">
+          {mermaLogs.map((log, idx) => {
+            const logText = typeof log === 'string' ? log : (log.rawText || log.item || log.text || 'Merma de insumo');
+            const loss = typeof log === 'object' && log.estimatedLoss ? log.estimatedLoss : 3500;
+            return (
+              <div
+                key={idx}
+                className={`flex items-center justify-between p-2.5 rounded-xl text-xs border transition ${
+                  isDark ? 'bg-brand-900/60 border-brand-800 text-brand-50' : 'bg-white border-brand-200 text-brand-900 shadow-soft'
+                }`}
+              >
+                <span className="font-semibold">{logText}</span>
+                <span className="font-bold text-semantic-danger">-{formatCurrency(loss)}</span>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </section>
   );
 }
