@@ -18,6 +18,8 @@ import AppFooter from '../../../shared/ui/AppFooter.jsx';
 import ClientReservationAssistant from '../components/ClientReservationAssistant.jsx';
 // Modal de soporte estilo WhatsApp con 4 opciones.
 import ClientSupportChatModal from '../components/ClientSupportChatModal.jsx';
+// Modal emergente centrado de ticket térmico DTE SII.
+import DteTicketModal from '../components/DteTicketModal.jsx';
 // Utilidad de formato de moneda CLP.
 import { formatCurrency } from '../../../shared/utils/formatCurrency.js';
 // Barra de navegación inferior fija para móviles.
@@ -29,6 +31,8 @@ export default function ClientProfilePage() {
   const navigate = useNavigate();
   // Usuario activo en la sesión.
   const user = useClientStore((s) => s.user);
+  // Actualización de datos del usuario.
+  const updateUser = useClientStore((s) => s.updateUser);
   // Acción de cerrar sesión.
   const logoutUser = useClientStore((s) => s.logoutUser);
   // Puntos acumulados de lealtad.
@@ -38,21 +42,45 @@ export default function ClientProfilePage() {
   // Acción para canjear recompensa.
   const redeemReward = useRewardsStore((s) => s.redeemReward);
 
-  // Tab interactiva seleccionada ('overview', 'rewards', 'branches', 'payments', 'reviews', 'referrals', 'support').
+  // Tab interactiva seleccionada ('overview', 'rewards', 'branches', 'payments', 'reviews', 'referrals', 'edit-profile').
   const [activeTab, setActiveTab] = useState('overview');
   // Visibilidad del modal de asistente de reservas.
   const [bookingModalOpen, setBookingModalOpen] = useState(false);
   // Visibilidad del widget de soporte.
   const [supportOpen, setSupportOpen] = useState(false);
+  // Ticket de boleta DTE seleccionado para desplegar en el modal térmico.
+  const [selectedTicket, setSelectedTicket] = useState(null);
   // Estado local para feedback de copiar código de referido.
   const [copiedReferral, setCopiedReferral] = useState(false);
+  // Feedback al guardar perfil.
+  const [savedProfileSuccess, setSavedProfileSuccess] = useState(false);
+
+  // Formulario local para editar perfil.
+  const [profileForm, setProfileForm] = useState({
+    name: user?.name || 'Constanza Silva',
+    email: user?.email || 'constanza.silva@gastronomia.cl',
+    phone: user?.phone || '+56 9 8765 4321',
+    rut: user?.rut || '18.942.310-7',
+    preferences: {
+      vegetarian: false,
+      vegan: true,
+      glutenFree: true,
+      lactoseFree: false,
+      nutAllergy: false,
+    },
+  });
+
   // Estado local de lista de reseñas de platos agregadas por el usuario.
   const [reviewsList, setReviewsList] = useState([
-    { id: 'r1', dish: 'Lomo Lo Ovalle', rating: 5, comment: 'Corte jugoso y papas crujientes. Excelente atención.', date: 'Ayer' },
-    { id: 'r2', dish: 'Pisco Sour Artesanal 🍹', rating: 5, comment: 'Perfecta acidez de limón de pica.', date: 'Hace 3 días' },
+    { id: 'r1', dish: 'Lomo Lo Ovalle', rating: 5, comment: 'Corte jugoso y papas crujientes. Excelente atención.', date: 'Ayer', likes: 12 },
+    { id: 'r2', dish: 'Pisco Sour Artesanal 🍹', rating: 5, comment: 'Perfecta acidez de limón de pica.', date: 'Hace 3 días', likes: 8 },
   ]);
-  // Input de nueva reseña rápida.
+  // Input de plato a reseñar.
+  const [newReviewDish, setNewReviewDish] = useState('');
+  // Input de texto de reseña.
   const [newReviewText, setNewReviewText] = useState('');
+  // Selección de estrellas (1 a 5).
+  const [newReviewRating, setNewReviewRating] = useState(5);
 
   // Copia el código de referido al portapapeles.
   const handleCopyReferral = () => {
@@ -70,11 +98,29 @@ export default function ClientProfilePage() {
   const handleAddReview = (e) => {
     e.preventDefault();
     if (!newReviewText.trim()) return;
+    const dishName = newReviewDish.trim() || 'Plato Recomendado Restô';
     setReviewsList((prev) => [
-      { id: `r-${Date.now()}`, dish: 'Plato del Día Restô', rating: 5, comment: newReviewText, date: 'Hoy' },
+      { id: `r-${Date.now()}`, dish: dishName, rating: newReviewRating, comment: newReviewText.trim(), date: 'Hoy', likes: 1 },
       ...prev,
     ]);
+    setNewReviewDish('');
     setNewReviewText('');
+    setNewReviewRating(5);
+  };
+
+  // Guarda la actualización del perfil de usuario y preferencias alimentarias.
+  const handleSaveProfile = (e) => {
+    e.preventDefault();
+    if (typeof updateUser === 'function') {
+      updateUser({
+        name: profileForm.name,
+        email: profileForm.email,
+        phone: profileForm.phone,
+        rut: profileForm.rut,
+      });
+    }
+    setSavedProfileSuccess(true);
+    window.setTimeout(() => setSavedProfileSuccess(false), 3000);
   };
 
   // Si el usuario no está logueado, redirige o invita a iniciar sesión.
@@ -161,14 +207,15 @@ export default function ClientProfilePage() {
         </div>
 
         {/* Barra de pestañas responsivas del perfil */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none whitespace-nowrap touch-pan-x">
+        <div className="flex items-center gap-2 overflow-x-auto pb-3 pt-1 scrollbar-none whitespace-nowrap touch-pan-x w-full shrink-0 flex-nowrap">
           {[
             { id: 'overview', label: '📊 Resumen General', icon: '👤' },
             { id: 'rewards', label: '🏆 Puntos & Premios', icon: '🎁' },
             { id: 'branches', label: '📍 Locales & Visitas', icon: '🏪' },
-            { id: 'payments', label: '📜 Historial Pagos', icon: '📄' },
+            { id: 'payments', label: '📜 Historial Pagos DTE', icon: '📄' },
             { id: 'reviews', label: '⭐ Mis Reseñas', icon: '💬' },
             { id: 'referrals', label: '👥 Invitar Amigos', icon: '🚀' },
+            { id: 'edit-profile', label: '👤 Editar Perfil', icon: '⚙️' },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -296,7 +343,7 @@ export default function ClientProfilePage() {
                     Evento Especial
                   </span>
                   <h3 className="text-lg font-extrabold mt-2">🎷 Noche de Jazz & Cata de Vinos</h3>
-                  <p className="text-xs font-purple-200 text-slate-300 mt-1">Este Viernes 20:30 hrs en Restô Vitacura. Maridaje de 4 tiempos.</p>
+                  <p className="text-xs text-slate-300 mt-1">Este Viernes 20:30 hrs en Restô Vitacura. Maridaje de 4 tiempos.</p>
                 </div>
                 <button
                   type="button"
@@ -385,7 +432,13 @@ export default function ClientProfilePage() {
                   myShare: 8900,
                   doc: 'Boleta Electrónica N° 39102',
                   method: 'Débito Redelcom',
-                  table: 'Mesa 12',
+                  table: 'Mesa 12 · Restô Lo Ovalle',
+                  items: [
+                    { name: 'Lomo Lo Ovalle con Papas', qty: 1, price: 14900 },
+                    { name: 'Pisco Sour Artesanal', qty: 2, price: 9800 },
+                    { name: 'Volcán de Chocolate', qty: 1, price: 5200 },
+                    { name: 'Bebida 350ml', qty: 2, price: 4900 },
+                  ],
                 },
                 {
                   id: 'b-102',
@@ -394,7 +447,11 @@ export default function ClientProfilePage() {
                   myShare: 14450,
                   doc: 'Boleta Electrónica N° 38941',
                   method: 'Flow.cl Webpay',
-                  table: 'Mesa 05',
+                  table: 'Mesa 05 · Restô Providencia',
+                  items: [
+                    { name: 'Ceviche Mixto Tradicional', qty: 1, price: 13900 },
+                    { name: 'Chardonnay Reserva', qty: 1, price: 15000 },
+                  ],
                 },
                 {
                   id: 'b-103',
@@ -403,7 +460,11 @@ export default function ClientProfilePage() {
                   myShare: 52000,
                   doc: 'Factura Electrónica N° 33019',
                   method: 'Transferencia',
-                  table: 'Mesa 08',
+                  table: 'Mesa 08 · Restô Vitacura',
+                  items: [
+                    { name: 'Asado de Tira 400g', qty: 2, price: 36000 },
+                    { name: 'Vino Carmenere Premium', qty: 1, price: 16000 },
+                  ],
                 },
               ].map((p) => (
                 <div key={p.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-2xl bg-brand-50 border border-brand-200 gap-3">
@@ -422,8 +483,8 @@ export default function ClientProfilePage() {
 
                   <button
                     type="button"
-                    onClick={() => alert(`Descargando ${p.doc} en PDF formato SII Chile.`)}
-                    className="rounded-xl bg-sky-500 hover:bg-sky-600 px-3.5 py-2 text-xs font-bold text-white transition active:scale-95 cursor-pointer shadow-soft shrink-0"
+                    onClick={() => setSelectedTicket(p)}
+                    className="rounded-xl bg-sky-600 hover:bg-sky-700 px-3.5 py-2 text-xs font-bold text-white transition active:scale-95 cursor-pointer shadow-soft shrink-0"
                   >
                     Ver Ticket PDF 📄
                   </button>
@@ -433,43 +494,82 @@ export default function ClientProfilePage() {
           </div>
         )}
 
-        {/* Pestaña 5: Mis Reseñas */}
+        {/* Pestaña 5: Mis Reseñas de Platos y Atención */}
         {activeTab === 'reviews' && (
-          <div className="rounded-3xl bg-white p-6 shadow-soft border border-brand-100 flex flex-col gap-4">
-            <h2 className="text-base font-extrabold text-brand-900">Mis Reseñas de Platos y Atención</h2>
-            
-            {/* Formulario rápido para publicar nueva reseña */}
-            <form onSubmit={handleAddReview} className="flex flex-col gap-2 p-4 rounded-2xl bg-amber-500/10 border border-amber-300">
-              <label htmlFor="new-review" className="text-xs font-bold text-amber-900">
-                Escribí una nueva reseña de tu experiencia:
-              </label>
-              <div className="flex gap-2">
-                <input
-                  id="new-review"
-                  type="text"
+          <div className="rounded-3xl bg-white p-6 shadow-soft border border-brand-100 flex flex-col gap-5">
+            <h2 className="text-base font-extrabold text-brand-900">Mis Reseñas de Platos y Experiencia Gastronómica</h2>
+
+            {/* Formulario completo para publicar nueva reseña */}
+            <form onSubmit={handleAddReview} className="flex flex-col gap-3 p-4 rounded-2xl bg-amber-500/10 border border-amber-300 text-left">
+              <span className="text-xs font-extrabold text-amber-950">
+                ✍️ Escribí tu opinión sobre un plato probado en MesaSplit:
+              </span>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="flex flex-col gap-1">
+                  <label htmlFor="dish-name" className="text-[11px] font-bold text-slate-700">Nombre del Plato:</label>
+                  <input
+                    id="dish-name"
+                    type="text"
+                    value={newReviewDish}
+                    onChange={(e) => setNewReviewDish(e.target.value)}
+                    placeholder="ej. Lomo Lo Ovalle o Pisco Sour"
+                    className="rounded-xl bg-white px-3 py-2 text-xs font-semibold border border-slate-300 focus:outline-none focus:border-amber-500"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label htmlFor="dish-rating" className="text-[11px] font-bold text-slate-700">Calificación (Estrellas):</label>
+                  <div className="flex items-center gap-1 bg-white px-3 py-1.5 rounded-xl border border-slate-300">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setNewReviewRating(star)}
+                        className={`text-lg cursor-pointer transition ${star <= newReviewRating ? 'text-amber-500' : 'text-slate-300'}`}
+                      >
+                        ★
+                      </button>
+                    ))}
+                    <span className="text-xs font-bold text-amber-700 ml-2">{newReviewRating} / 5</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label htmlFor="new-review-text" className="text-[11px] font-bold text-slate-700">Comentario detallado:</label>
+                <textarea
+                  id="new-review-text"
+                  rows={2}
                   value={newReviewText}
                   onChange={(e) => setNewReviewText(e.target.value)}
-                  placeholder="ej. Los postres son exquisitos..."
-                  className="flex-1 rounded-xl bg-white px-3 py-2 text-xs font-bold border border-amber-300 focus:outline-none"
+                  placeholder="ej. La cocción del corte estaba impecable y la salsa deliciosa..."
+                  className="rounded-xl bg-white px-3 py-2 text-xs font-semibold border border-slate-300 focus:outline-none focus:border-amber-500"
                 />
-                <button
-                  type="submit"
-                  className="rounded-xl bg-amber-500 hover:bg-amber-600 px-4 py-2 text-xs font-extrabold text-white transition active:scale-95 cursor-pointer shadow-soft"
-                >
-                  Publicar ★
-                </button>
               </div>
+
+              <button
+                type="submit"
+                disabled={!newReviewText.trim()}
+                className="self-end rounded-xl bg-amber-500 hover:bg-amber-600 disabled:opacity-40 px-5 py-2.5 text-xs font-extrabold text-white transition active:scale-95 cursor-pointer shadow-soft"
+              >
+                Publicar Reseña ★
+              </button>
             </form>
 
+            {/* Listado de Reseñas Publicadas */}
             <div className="flex flex-col gap-3">
               {reviewsList.map((r) => (
-                <div key={r.id} className="p-4 rounded-2xl bg-brand-50 border border-brand-200 flex flex-col gap-1">
+                <div key={r.id} className="p-4 rounded-2xl bg-brand-50 border border-brand-200 flex flex-col gap-2 text-left">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-extrabold text-brand-900">{r.dish}</span>
                     <span className="text-xs font-bold text-amber-500">{'★'.repeat(r.rating)}</span>
                   </div>
-                  <p className="text-xs text-brand-800/80">{r.comment}</p>
-                  <span className="text-[10px] text-brand-800/50 self-end">{r.date}</span>
+                  <p className="text-xs text-brand-800/90 leading-relaxed">{r.comment}</p>
+                  <div className="flex items-center justify-between pt-2 border-t border-brand-200/60 mt-1">
+                    <span className="text-[10px] text-brand-800/60">{r.date}</span>
+                    <span className="text-[11px] font-bold text-emerald-700">👍 {r.likes || 1} Votos Útiles</span>
+                  </div>
                 </div>
               ))}
             </div>
@@ -478,28 +578,208 @@ export default function ClientProfilePage() {
 
         {/* Pestaña 6: Invitar Amigos & Referidos */}
         {activeTab === 'referrals' && (
-          <div className="rounded-3xl bg-white p-6 shadow-soft border border-brand-100 flex flex-col gap-4 text-center">
-            <span className="text-4xl">🚀</span>
-            <h2 className="text-lg font-extrabold text-brand-900">Invitá Amigos y Ganá $3.000 Puntos</h2>
-            <p className="text-xs text-brand-800/70 max-w-md mx-auto">
-              Compartí tu código de referido único con tus amigos. Cada vez que escaneen una mesa y pidan, ambos acumulan 3.000 puntos MesaSplit.
-            </p>
-
-            <div className="flex items-center justify-center gap-2 max-w-sm mx-auto w-full mt-2">
-              <input
-                type="text"
-                readOnly
-                value="CONSTANZA-REWARDS-2026"
-                className="w-full rounded-2xl bg-brand-50 px-4 py-3 text-xs font-mono font-extrabold text-center border border-brand-200 tracking-widest uppercase text-brand-900"
-              />
-              <button
-                type="button"
-                onClick={handleCopyReferral}
-                className="rounded-2xl bg-brand-900 hover:bg-brand-800 text-white px-4 py-3 text-xs font-bold transition active:scale-95 cursor-pointer shadow-soft shrink-0"
-              >
-                {copiedReferral ? '¡Copiado! ✓' : 'Copiar'}
-              </button>
+          <div className="rounded-3xl bg-white p-6 shadow-soft border border-brand-100 flex flex-col gap-6 text-center">
+            <div className="flex flex-col items-center gap-2">
+              <span className="text-4xl">🚀</span>
+              <h2 className="text-lg font-extrabold text-brand-900">Invitá Amigos y Ganá $3.000 Puntos</h2>
+              <p className="text-xs text-brand-800/70 max-w-md">
+                Compartí tu código de referido único. Cada vez que un amigo escanee una mesa y realice su primer pedido, ambos reciben 3.000 puntos MesaSplit.
+              </p>
             </div>
+
+            {/* Caja de Código Único */}
+            <div className="p-5 rounded-3xl bg-gradient-to-br from-amber-500 to-amber-600 text-white flex flex-col items-center gap-3 shadow-soft max-w-md mx-auto w-full">
+              <span className="text-xs font-extrabold uppercase tracking-wider bg-white/20 px-3 py-1 rounded-full">
+                Tu Código Único de Referido
+              </span>
+
+              <div className="flex items-center justify-between gap-2 bg-white/15 p-2 rounded-2xl w-full border border-white/30">
+                <span className="flex-1 font-mono text-base font-extrabold tracking-widest uppercase text-white">
+                  CONSTANZA-REWARDS-2026
+                </span>
+                <button
+                  type="button"
+                  onClick={handleCopyReferral}
+                  className="rounded-xl bg-white text-amber-700 hover:bg-amber-50 px-4 py-2 text-xs font-extrabold transition active:scale-95 cursor-pointer shadow-soft shrink-0"
+                >
+                  {copiedReferral ? '¡Copiado! ✓' : 'Copiar'}
+                </button>
+              </div>
+
+              {/* Botón directo de WhatsApp */}
+              <a
+                href={`https://api.whatsapp.com/send?text=${encodeURIComponent(
+                  '¡Hola! Usá mi código CONSTANZA-REWARDS-2026 en MesaSplit Gastronomía para ganar $3.000 puntos en tu primera visita a cualquier restaurante 🍽️'
+                )}`}
+                target="_blank"
+                rel="noreferrer"
+                className="w-full rounded-2xl bg-emerald-600 hover:bg-emerald-700 py-3 text-xs font-extrabold text-white transition active:scale-95 shadow-soft flex items-center justify-center gap-2"
+              >
+                <span>💬 Compartir por WhatsApp</span>
+              </a>
+            </div>
+
+            {/* Historial de Referidos Registrados */}
+            <div className="flex flex-col gap-3 text-left max-w-md mx-auto w-full">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-extrabold text-brand-900">Amigos Invitados Registrados</h3>
+                <span className="text-xs font-bold text-emerald-700">+9.000 Pts Ganados</span>
+              </div>
+
+              {[
+                { name: 'Felipe Arancibia', date: '15/08/2026', bonus: '+3.000 Pts', status: 'Completado ✓' },
+                { name: 'Camila Torres', date: '10/08/2026', bonus: '+3.000 Pts', status: 'Completado ✓' },
+                { name: 'Rodrigo Morales', date: '02/08/2026', bonus: '+3.000 Pts', status: 'Completado ✓' },
+              ].map((ref, idx) => (
+                <div key={idx} className="flex items-center justify-between p-3.5 rounded-2xl bg-brand-50 border border-brand-200">
+                  <div className="flex flex-col text-left">
+                    <span className="text-xs font-bold text-brand-900">{ref.name}</span>
+                    <span className="text-[10px] text-brand-800/70">{ref.date}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-extrabold text-amber-600">{ref.bonus}</span>
+                    <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[9px] font-bold text-emerald-800 border border-emerald-300">
+                      {ref.status}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Pestaña 7: Editar Perfil / Preferencias Dietéticas */}
+        {activeTab === 'edit-profile' && (
+          <div className="rounded-3xl bg-white p-6 shadow-soft border border-brand-100 flex flex-col gap-5 text-left">
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-extrabold text-brand-900">Editar Información de Perfil</h2>
+              {savedProfileSuccess && (
+                <span className="text-xs font-extrabold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 animate-fade-in">
+                  ¡Perfil guardado con éxito! 💾
+                </span>
+              )}
+            </div>
+
+            <form onSubmit={handleSaveProfile} className="flex flex-col gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="flex flex-col gap-1">
+                  <label htmlFor="profile-name" className="text-xs font-bold text-slate-700">Nombre Completo:</label>
+                  <input
+                    id="profile-name"
+                    type="text"
+                    value={profileForm.name}
+                    onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
+                    className="rounded-xl bg-slate-50 px-3.5 py-2.5 text-xs font-bold border border-slate-300 focus:outline-none focus:bg-white"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label htmlFor="profile-email" className="text-xs font-bold text-slate-700">Correo Electrónico:</label>
+                  <input
+                    id="profile-email"
+                    type="email"
+                    value={profileForm.email}
+                    onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
+                    className="rounded-xl bg-slate-50 px-3.5 py-2.5 text-xs font-bold border border-slate-300 focus:outline-none focus:bg-white"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label htmlFor="profile-phone" className="text-xs font-bold text-slate-700">Teléfono Móvil (Chile):</label>
+                  <input
+                    id="profile-phone"
+                    type="text"
+                    value={profileForm.phone}
+                    onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
+                    className="rounded-xl bg-slate-50 px-3.5 py-2.5 text-xs font-bold border border-slate-300 focus:outline-none focus:bg-white"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label htmlFor="profile-rut" className="text-xs font-bold text-slate-700">R.U.T. Cliente (Boletas DTE):</label>
+                  <input
+                    id="profile-rut"
+                    type="text"
+                    value={profileForm.rut}
+                    onChange={(e) => setProfileForm({ ...profileForm, rut: e.target.value })}
+                    className="rounded-xl bg-slate-50 px-3.5 py-2.5 text-xs font-bold border border-slate-300 focus:outline-none focus:bg-white"
+                  />
+                </div>
+              </div>
+
+              {/* Preferencias Dietéticas del Comensal */}
+              <div className="flex flex-col gap-2 pt-3 border-t border-slate-200">
+                <span className="text-xs font-extrabold text-slate-800">🥗 Preferencias y Alergias Alimentarias:</span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-bold text-slate-700">
+                  <label className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={profileForm.preferences.vegetarian}
+                      onChange={(e) =>
+                        setProfileForm({
+                          ...profileForm,
+                          preferences: { ...profileForm.preferences, vegetarian: e.target.checked },
+                        })
+                      }
+                      className="rounded text-amber-500 focus:ring-amber-500 h-4 w-4"
+                    />
+                    <span>🌱 Vegetariano</span>
+                  </label>
+
+                  <label className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={profileForm.preferences.vegan}
+                      onChange={(e) =>
+                        setProfileForm({
+                          ...profileForm,
+                          preferences: { ...profileForm.preferences, vegan: e.target.checked },
+                        })
+                      }
+                      className="rounded text-amber-500 focus:ring-amber-500 h-4 w-4"
+                    />
+                    <span>🌿 Vegano</span>
+                  </label>
+
+                  <label className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={profileForm.preferences.glutenFree}
+                      onChange={(e) =>
+                        setProfileForm({
+                          ...profileForm,
+                          preferences: { ...profileForm.preferences, glutenFree: e.target.checked },
+                        })
+                      }
+                      className="rounded text-amber-500 focus:ring-amber-500 h-4 w-4"
+                    />
+                    <span>🌾 Sin Gluten / Celíaco</span>
+                  </label>
+
+                  <label className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={profileForm.preferences.lactoseFree}
+                      onChange={(e) =>
+                        setProfileForm({
+                          ...profileForm,
+                          preferences: { ...profileForm.preferences, lactoseFree: e.target.checked },
+                        })
+                      }
+                      className="rounded text-amber-500 focus:ring-amber-500 h-4 w-4"
+                    />
+                    <span>🥛 Intolerante a la Lactosa</span>
+                  </label>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className="self-end mt-2 rounded-2xl bg-amber-500 hover:bg-amber-600 px-6 py-3 text-xs font-extrabold text-white transition active:scale-95 cursor-pointer shadow-soft"
+              >
+                Guardar Cambios 💾
+              </button>
+            </form>
           </div>
         )}
 
@@ -528,6 +808,9 @@ export default function ClientProfilePage() {
 
       {/* Modal de Chat de Soporte Técnico Estilo WhatsApp con 4 opciones */}
       <ClientSupportChatModal isOpen={supportOpen} onClose={() => setSupportOpen(false)} />
+
+      {/* Modal Emergente Centrado de Boleta DTE Thermal Ticket */}
+      <DteTicketModal isOpen={Boolean(selectedTicket)} onClose={() => setSelectedTicket(null)} ticketData={selectedTicket} />
 
       {/* Pie de página universal */}
       <AppFooter theme="light" />
