@@ -17,28 +17,28 @@ describe('feature-views: mapa del radar (spec)', () => {
   beforeEach(() => {
     // Restablece el store de Radar antes de cada prueba y fija loading en false.
     useRadarStore.getState().resetDemo();
-    useRadarStore.setState({ loadRadarData: () => {}, loading: false });
+    useRadarStore.setState({ loading: false });
   });
 
-  it('el conteo del mapa coincide con el fixture de mesas', async () => {
+  it('el conteo del mapa coincide con el fixture de mesas', () => {
     // Renderiza la vista de Radar Local Admin.
     render(<RadarPage />);
     // La cabecera indica la cantidad de mesas activas en el salón.
-    expect(await screen.findByRole('heading', { name: /Plano del salón/i }, { timeout: 3000 })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Plano del salón/i })).toBeInTheDocument();
   });
 });
 
 describe('local-admin-radar: Plano Topológico y Delivery Omnicanal', () => {
   beforeEach(() => {
     useRadarStore.getState().resetDemo();
-    useRadarStore.setState({ loadRadarData: () => {}, loading: false });
+    useRadarStore.setState({ loading: false });
   });
 
-  it('renderiza filtros por zona (Salón, Terraza, Barra) y tarjetas de Delivery Omnicanal', async () => {
+  it('renderiza filtros por zona (Salón, Terraza, Barra) y tarjetas de Delivery Omnicanal', () => {
     // Renderiza la vista de Radar.
     render(<RadarPage />);
     // Verifica la presencia de los botones de zonas.
-    expect(await screen.findByRole('button', { name: 'Salón' }, { timeout: 3000 })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Salón' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Terraza' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Barra' })).toBeInTheDocument();
 
@@ -50,14 +50,14 @@ describe('local-admin-radar: Plano Topológico y Delivery Omnicanal', () => {
 describe('local-admin-radar: Modo Hora Punta y Exception Feed', () => {
   beforeEach(() => {
     useRadarStore.getState().resetDemo();
-    useRadarStore.setState({ loadRadarData: () => {}, loading: false });
+    useRadarStore.setState({ loading: false });
   });
 
-  it('activa el Modo Hora Punta mostrando el badge y despliega el Exception Feed', async () => {
+  it('activa el Modo Hora Punta mostrando el badge y despliega el Exception Feed', () => {
     // Renderiza la vista de Radar.
     render(<RadarPage />);
     // Encuentra el botón de alternancia de Hora Punta.
-    const focusBtn = await screen.findByRole('button', { name: /Hora Punta/i }, { timeout: 3000 });
+    const focusBtn = screen.getByRole('button', { name: /Hora Punta/i });
     // Activa el modo Hora Punta.
     fireEvent.click(focusBtn);
     // Confirma la aparición del badge parpadeante de Hora Punta.
@@ -66,23 +66,23 @@ describe('local-admin-radar: Modo Hora Punta y Exception Feed', () => {
     // Abre el cajón de auditoría de excepciones.
     const auditBtn = screen.getByRole('button', { name: /Auditoría/i });
     fireEvent.click(auditBtn);
-    // Verifica el título del cajón de auditoría.
-    expect(await screen.findByText(/Registro de Excepciones y Auditoría/i)).toBeInTheDocument();
+    // Verifica el título del cajón de auditoría síncronamente.
+    expect(screen.getByText(/Registro de Excepciones y Auditoría/i)).toBeInTheDocument();
   });
 });
 
 describe('local-admin-radar: Registro de Merma y Botón de Pánico', () => {
   beforeEach(() => {
     useRadarStore.getState().resetDemo();
-    useRadarStore.setState({ loadRadarData: () => {}, loading: false });
+    useRadarStore.setState({ loading: false });
   });
 
-  it('permite ingresar mertas en la barra de comando y activar el Botón de Pánico', async () => {
+  it('permite ingresar mermas en la barra de comando y activar el Botón de Pánico', () => {
     // Renderiza la vista de Radar.
     render(<RadarPage />);
     // Busca el input de registro de mermas e inventario vencido.
-    const mermaInput = await screen.findByPlaceholderText(/Registrar merma/i, {}, { timeout: 3000 });
-    // Escribe una merta de prueba.
+    const mermaInput = screen.getByPlaceholderText(/Registrar merma/i);
+    // Escribe una merma de prueba.
     fireEvent.change(mermaInput, { target: { value: '3 kilos de tomate vencido' } });
     // Presiona Enter o el botón de registro.
     fireEvent.submit(mermaInput.closest('form'));
