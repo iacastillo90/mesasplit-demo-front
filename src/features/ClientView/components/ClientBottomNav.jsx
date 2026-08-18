@@ -2,12 +2,14 @@
 // Permite al cliente navegar instantáneamente entre Dashboard, Escáner QR, Mesa Virtual, Comanda y Perfil desde cualquier vista.
 // Cumple estrictamente con AGENTS.md: cada línea de código comentada en español.
 
-// Hooks de React para memorización.
-import { useMemo } from 'react';
+// Hooks de React para memorización y estado.
+import { useState, useMemo } from 'react';
 // Hooks de navegación y Router.
 import { Link, useLocation } from 'react-router-dom';
 // Store de cliente para contador de ítems del carrito.
 import { selectCartCount, useClientStore } from '../store/useClientStore.js';
+// Modal de Chat interactivo estilo WhatsApp para reservas.
+import WhatsAppReservationChatModal from './WhatsAppReservationChatModal.jsx';
 
 // Componente de la barra de navegación inferior fija para teléfonos móviles.
 export default function ClientBottomNav() {
@@ -17,6 +19,8 @@ export default function ClientBottomNav() {
   const cart = useClientStore((s) => s.cart);
   // Total de ítems acumulados en la comanda.
   const cartCount = useMemo(() => selectCartCount(cart), [cart]);
+  // Estado local para abrir el chat de WhatsApp.
+  const [chatOpen, setChatOpen] = useState(false);
 
   // Lista de pestañas principales de la experiencia cliente.
   const navTabs = [
@@ -28,7 +32,8 @@ export default function ClientBottomNav() {
   ];
 
   return (
-    <nav
+    <>
+      <nav
       aria-label="Navegación inferior cliente"
       className="fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-brand-200 shadow-2xl py-2 px-2 flex items-center justify-around max-w-4xl mx-auto rounded-t-3xl"
     >
@@ -68,5 +73,21 @@ export default function ClientBottomNav() {
         );
       })}
     </nav>
+
+    {/* Botón Flotante de Asistente de Reservas estilo WhatsApp */}
+    <button
+      type="button"
+      onClick={() => setChatOpen(true)}
+      aria-label="Abrir Chat de Reservas en WhatsApp"
+      className="fixed bottom-20 right-4 z-40 flex items-center gap-2 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 shadow-2xl transition active:scale-95 cursor-pointer border border-emerald-400/40"
+      title="Abrir Chat de Reservas en WhatsApp"
+    >
+      <span className="text-lg animate-bounce">💬</span>
+      <span className="text-xs font-extrabold hidden xs:inline">Reservar Mesa</span>
+    </button>
+
+    {/* Modal de Chat de Reservas estilo WhatsApp */}
+    <WhatsAppReservationChatModal isOpen={chatOpen} onClose={() => setChatOpen(false)} />
+  </>
   );
 }
