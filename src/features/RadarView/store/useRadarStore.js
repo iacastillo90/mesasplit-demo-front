@@ -14,11 +14,14 @@ import { createRealtimeBus } from '../../../hooks/useRealtimeBus.js';
 // Instancia única del bus para las acciones y suscripciones del radar.
 const bus = createRealtimeBus('mesasplit');
 
-// Fixture canónico inicial de comandas de delivery omnicanal.
+// Fixture canónico inicial de comandas de delivery omnicanal (Uber Eats, PedidosYa, Rappi, Justo).
 const INITIAL_DELIVERY = [
-  { id: 'del-1', platform: 'ubereats', customerName: 'Camila Rojas', itemsSummary: '2x Hamburguesa + Limonada', total: 15400, elapsedMinutes: 8, driverName: 'Juan P.', status: 'pending' },
-  { id: 'del-2', platform: 'rappi', customerName: 'Ignacio Silva', itemsSummary: '1x Pizza Margherita', total: 10900, elapsedMinutes: 14, driverName: 'Rodrigo M.', status: 'in_prep' },
-  { id: 'del-3', platform: 'pedidosya', customerName: 'Felipe Soto', itemsSummary: '3x Papas fritas + 2x Cerveza', total: 13500, elapsedMinutes: 22, driverName: 'Matías L.', status: 'in_prep' },
+  { id: 'del-1', platform: 'ubereats', customerName: 'Camila Rojas', itemsSummary: '2x Hamburguesa Brioche + 1x Limonada Menta', total: 17800, elapsedMinutes: 8, driverName: 'Chef Pedro (Cocina)', status: 'in_prep' },
+  { id: 'del-2', platform: 'pedidosya', customerName: 'Felipe Soto', itemsSummary: '1x Lomo Lo Ovalle + 1x Pisco Sour', total: 24800, elapsedMinutes: 18, driverName: 'Matías L. 🛵', status: 'on_way' },
+  { id: 'del-3', platform: 'justo', customerName: 'Valentina Bravo', itemsSummary: '2x Pizza Pepperoni Fuego + 2x Chicha Morada', total: 28300, elapsedMinutes: 12, driverName: 'Delivery Propio 🛵', status: 'in_prep' },
+  { id: 'del-4', platform: 'rappi', customerName: 'Ignacio Fuentes', itemsSummary: '1x Ceviche Mixto + 1x Chardonnay Reserva', total: 18900, elapsedMinutes: 24, driverName: 'Rodrigo M. 🛵', status: 'on_way' },
+  { id: 'del-5', platform: 'ubereats', customerName: 'Valeria Castro', itemsSummary: '1x Volcán de Chocolate + 2x Capuchino', total: 11300, elapsedMinutes: 35, driverName: 'Esteban C. 🛵', status: 'delivered' },
+  { id: 'del-6', platform: 'justo', customerName: 'Gonzalo Morales', itemsSummary: '3x Tacos de Champiñones + 2x Mojito Cubano', total: 32100, elapsedMinutes: 42, driverName: 'Delivery Propio 🛵', status: 'delivered' },
 ];
 
 // Fixture canónico inicial de auditorías y excepciones registradas.
