@@ -1,10 +1,12 @@
 // src/features/RadarView/components/TopologicalMap.jsx — plano topológico interactivo del radar (local-admin-radar + modo-hora-punta)
 // Renderiza la vista espacial del salón por zonas (Salón, Terraza, Barra) con semáforos de estado,
 // capacidad de comensales, suscripción a eventos table.status_changed y filtrado de mesas críticas en Modo Hora Punta.
+// Soporta tema dinámico Claro ☀️ y Oscuro 🌙 con useThemeStore.
 // Cumple con las reglas obligatorias de AGENTS.md (comentarios en español por cada línea).
 
 import { useState } from 'react';
 import IsometricTableGrid3D from '../../../shared/ui/IsometricTableGrid3D.jsx';
+import { useThemeStore } from '../../../shared/store/useThemeStore.js';
 
 // Semáforos visuales de estado para el mapa del plano (docs/04).
 const SEMAPHORES = {
@@ -26,6 +28,10 @@ const isCritical = (status) =>
 
 // Componente del mapa topológico interactivo.
 export default function TopologicalMap({ tables, activeZone, onSelectZone, focusMode }) {
+  // Store de tema global para alternar entre claro y oscuro.
+  const theme = useThemeStore((s) => s.theme);
+  const isDark = theme === 'dark';
+
   // Estado local para conmutar entre plano 2D y vista 3D isométrica.
   const [viewMode, setViewMode] = useState('2d');
 
@@ -51,12 +57,12 @@ export default function TopologicalMap({ tables, activeZone, onSelectZone, focus
 
         <div className="flex items-center gap-2">
           {/* Conmutador de perspectiva 2D / 3D. */}
-          <div className="flex items-center gap-1 rounded-xl bg-brand-900 p-1 border border-brand-800">
+          <div className={`flex items-center gap-1 rounded-xl p-1 border ${isDark ? 'bg-brand-900 border-brand-800' : 'bg-brand-50 border-brand-200 shadow-xs'}`}>
             <button
               type="button"
               onClick={() => setViewMode('2d')}
               className={`rounded-lg px-2.5 py-1 text-xs font-bold transition ${
-                viewMode === '2d' ? 'bg-brand-500 text-white shadow-soft' : 'text-brand-50/60 hover:bg-brand-800'
+                viewMode === '2d' ? 'bg-brand-500 text-white shadow-soft' : isDark ? 'text-brand-50/60 hover:bg-brand-800' : 'text-brand-800/70 hover:bg-brand-100'
               }`}
             >
               📐 2D
@@ -65,7 +71,7 @@ export default function TopologicalMap({ tables, activeZone, onSelectZone, focus
               type="button"
               onClick={() => setViewMode('3d')}
               className={`rounded-lg px-2.5 py-1 text-xs font-bold transition ${
-                viewMode === '3d' ? 'bg-brand-500 text-white shadow-soft' : 'text-brand-50/60 hover:bg-brand-800'
+                viewMode === '3d' ? 'bg-brand-500 text-white shadow-soft' : isDark ? 'text-brand-50/60 hover:bg-brand-800' : 'text-brand-800/70 hover:bg-brand-100'
               }`}
             >
               🧊 3D Isométrico
@@ -74,7 +80,7 @@ export default function TopologicalMap({ tables, activeZone, onSelectZone, focus
 
           {/* Oculta las pestañas de zona no esenciales en Modo Hora Punta para reducir fricción. */}
           {!focusMode && (
-            <div className="flex items-center gap-1 rounded-xl bg-brand-900 p-1 border border-brand-800">
+            <div className={`flex items-center gap-1 rounded-xl p-1 border ${isDark ? 'bg-brand-900 border-brand-800' : 'bg-brand-50 border-brand-200 shadow-xs'}`}>
               {['todos', 'Salón', 'Terraza', 'Barra'].map((zone) => (
                 <button
                   key={zone}
@@ -83,7 +89,9 @@ export default function TopologicalMap({ tables, activeZone, onSelectZone, focus
                   className={`rounded-lg px-3 py-1 text-xs font-bold transition active:scale-95 ${
                     activeZone.toLowerCase() === zone.toLowerCase()
                       ? 'bg-brand-500 text-white shadow-soft'
-                      : 'text-brand-50/60 hover:bg-brand-800 hover:text-brand-50'
+                      : isDark
+                      ? 'text-brand-50/60 hover:bg-brand-800 hover:text-brand-50'
+                      : 'text-brand-800/70 hover:bg-brand-100 hover:text-brand-900'
                   }`}
                 >
                   {zone === 'todos' ? 'Todas' : zone}
@@ -108,58 +116,60 @@ export default function TopologicalMap({ tables, activeZone, onSelectZone, focus
       {viewMode === '3d' ? (
         <IsometricTableGrid3D tables={filteredTables} />
       ) : (
-        /* Plano espacial con fondo oscuro brand-950 y grilla sintética. */
-      <div
-        className={`relative min-h-[360px] w-full rounded-2xl bg-brand-950 p-6 border transition-all ${
-          focusMode ? 'border-semantic-urgent ring-2 ring-semantic-urgent/50 shadow-2xl' : 'border-brand-800 shadow-soft'
-        }`}
-      >
-        {/* Grilla visual sintética del suelo del salón. */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#024064_1px,transparent_1px),linear-gradient(to_bottom,#024064_1px,transparent_1px)] bg-[size:2rem_2rem] opacity-20" />
+        /* Plano espacial con fondo adaptativo e información de grilla. */
+        <div
+          className={`relative min-h-[360px] w-full rounded-2xl p-6 border transition-all ${
+            isDark ? 'bg-brand-950 border-brand-800' : 'bg-slate-50 border-brand-200 shadow-soft'
+          } ${
+            focusMode ? 'border-semantic-urgent ring-2 ring-semantic-urgent/50 shadow-2xl' : ''
+          }`}
+        >
+          {/* Grilla visual sintética del suelo del salón. */}
+          <div className={`absolute inset-0 bg-[size:2rem_2rem] ${isDark ? 'bg-[linear-gradient(to_right,#024064_1px,transparent_1px),linear-gradient(to_bottom,#024064_1px,transparent_1px)] opacity-20' : 'bg-[linear-gradient(to_right,#cbd5e1_1px,transparent_1px),linear-gradient(to_bottom,#cbd5e1_1px,transparent_1px)] opacity-40'}`} />
 
-        {/* Mesas posicionadas topológicamente según sus coordenadas porcentuales x e y. */}
-        <div className="relative h-72 w-full">
-          {filteredTables.map((table) => {
-            // Estilo del semáforo visual según estado.
-            const style = SEMAPHORES[table.status] ?? SEMAPHORES.free;
+          {/* Mesas posicionadas topológicamente según sus coordenadas porcentuales x e y. */}
+          <div className="relative h-72 w-full">
+            {filteredTables.map((table) => {
+              // Estilo del semáforo visual según estado.
+              const style = SEMAPHORES[table.status] ?? SEMAPHORES.free;
 
-            return (
-              // Nodo de mesa interactivo en el plano topológico.
-              <button
-                key={table.id}
-                type="button"
-                style={{ left: `${table.x ?? 50}%`, top: `${table.y ?? 50}%` }}
-                className={`absolute flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full border-2 transition-transform hover:scale-110 active:scale-95 ${style}`}
-              >
-                {/* Número de la mesa. */}
-                <span className="text-sm font-bold leading-none text-brand-50">
-                  Mesa {table.number}
-                </span>
-                {/* Capacidad o cantidad de comensales. */}
-                <span className="mt-0.5 text-[10px] leading-none text-brand-50/50">
-                  {table.seats ?? 4}p
-                </span>
-              </button>
-            );
-          })}
+              return (
+                // Nodo de mesa interactivo en el plano topológico.
+                <button
+                  key={table.id}
+                  type="button"
+                  style={{ left: `${table.x ?? 50}%`, top: `${table.y ?? 50}%` }}
+                  className={`absolute flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full border-2 transition-transform hover:scale-110 active:scale-95 ${style}`}
+                >
+                  {/* Número de la mesa. */}
+                  <span className={`text-sm font-extrabold leading-none ${isDark ? 'text-brand-50' : 'text-slate-900'}`}>
+                    Mesa {table.number}
+                  </span>
+                  {/* Capacidad o cantidad de comensales. */}
+                  <span className={`mt-0.5 text-[10px] font-bold leading-none ${isDark ? 'text-brand-50/60' : 'text-slate-700'}`}>
+                    {table.seats ?? 4}p
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Leyenda explicativa de los semáforos del mapa al pie. */}
+          <div className={`mt-4 flex flex-wrap items-center gap-4 border-t pt-3 text-xs ${isDark ? 'border-brand-800/80 text-brand-50/70' : 'border-brand-200 text-brand-900'}`}>
+            <span className="flex items-center gap-1.5 font-semibold">
+              <span className="h-2.5 w-2.5 rounded-full bg-semantic-success" /> Libre
+            </span>
+            <span className="flex items-center gap-1.5 font-semibold">
+              <span className="h-2.5 w-2.5 rounded-full bg-brand-500" /> Ocupada
+            </span>
+            <span className="flex items-center gap-1.5 font-semibold">
+              <span className="h-2.5 w-2.5 rounded-full bg-semantic-urgent" /> Cobrando / Cuenta
+            </span>
+            <span className="flex items-center gap-1.5 font-semibold">
+              <span className="h-2.5 w-2.5 rounded-full bg-semantic-warning" /> Esperando Comida
+            </span>
+          </div>
         </div>
-
-        {/* Leyenda explicativa de los semáforos del mapa al pie. */}
-        <div className="mt-4 flex flex-wrap items-center gap-4 border-t border-brand-800/80 pt-3 text-xs text-brand-50/70">
-          <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-semantic-success" /> Libre
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-brand-500" /> Ocupada
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-semantic-urgent" /> Cobrando / Cuenta
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-semantic-warning" /> Esperando Comida
-          </span>
-        </div>
-      </div>
       )}
     </section>
   );

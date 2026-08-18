@@ -40,7 +40,7 @@ describe('local-admin-radar: Plano Topológico y Delivery Omnicanal', () => {
     // Verifica la presencia de los botones de zonas.
     expect(screen.getByRole('button', { name: 'Salón' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Terraza' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Barra' })).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: 'Barra' })[0]).toBeInTheDocument();
 
     // Verifica el encabezado del canal virtual de Delivery Omnicanal.
     expect(screen.getByRole('region', { name: /Delivery Omnicanal/i })).toBeInTheDocument();

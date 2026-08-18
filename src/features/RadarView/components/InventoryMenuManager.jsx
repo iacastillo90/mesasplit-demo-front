@@ -1,12 +1,18 @@
 // src/features/RadarView/components/InventoryMenuManager.jsx — módulo de gestión de inventario, recetas y precios del salón (radar-inventory)
 // Muestra las fotos reales en HD de la carta del cliente, descripciones, precios de venta, costos primarios y stock (Lista 86).
+// Soporta tema dinámico Claro ☀️ y Oscuro 🌙 con useThemeStore.
 // Cumple estrictamente con las reglas obligatorias de AGENTS.md (comentarios por cada línea en español).
 
 import { useState } from 'react';
 import initialMenu from '../../../mocks/menu.json';
 import { formatCurrency } from '../../../shared/utils/index.js';
+import { useThemeStore } from '../../../shared/store/useThemeStore.js';
 
 export default function InventoryMenuManager() {
+  // Store de tema global para alternar entre claro y oscuro.
+  const theme = useThemeStore((s) => s.theme);
+  const isDark = theme === 'dark';
+
   // Estado local del catálogo de platos del menú con imágenes HD.
   const [items, setItems] = useState(initialMenu);
 
@@ -70,17 +76,22 @@ export default function InventoryMenuManager() {
   );
 
   return (
-    <section aria-label="Gestión de Inventario y Menú" className="rounded-2xl bg-brand-900 p-5 shadow-xl border border-brand-800 text-brand-50 flex flex-col gap-6">
+    <section
+      aria-label="Gestión de Inventario y Menú"
+      className={`rounded-2xl p-5 border transition-colors duration-200 flex flex-col gap-6 ${
+        isDark ? 'bg-brand-900 border-brand-800 text-brand-50 shadow-xl' : 'bg-white border-brand-200 text-brand-900 shadow-soft'
+      }`}
+    >
       {/* Cabecera del Módulo de Inventario con Menú Hiperrealista */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-brand-800 pb-4">
+      <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-4 ${isDark ? 'border-brand-800' : 'border-brand-100'}`}>
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-lg font-bold text-white">📦 Gestión de Inventario & Menú Gastronómico</h2>
-            <span className="rounded-full bg-brand-500/20 px-2.5 py-0.5 text-xs font-extrabold text-brand-400 border border-brand-500/30">
+            <h2 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-brand-900'}`}>📦 Gestión de Inventario & Menú Gastronómico</h2>
+            <span className="rounded-full bg-brand-500/20 px-2.5 py-0.5 text-xs font-extrabold text-brand-500 border border-brand-500/30">
               Local Admin
             </span>
           </div>
-          <p className="text-xs text-brand-50/70">
+          <p className={`text-xs ${isDark ? 'text-brand-50/70' : 'text-brand-800/70'}`}>
             Fotografías HD en vivo de la carta del cliente, control de stock (Lista 86), costos primarios y ajuste de precios.
           </p>
         </div>
@@ -104,7 +115,9 @@ export default function InventoryMenuManager() {
             className={`rounded-xl px-3.5 py-1.5 text-xs font-bold capitalize transition cursor-pointer border ${
               activeCategory === cat
                 ? 'bg-amber-500 text-white border-amber-500 shadow-soft'
-                : 'bg-brand-800/80 text-brand-50/70 border-brand-700/50 hover:bg-brand-800 hover:text-white'
+                : isDark
+                ? 'bg-brand-800/80 text-brand-50/70 border-brand-700/50 hover:bg-brand-800 hover:text-white'
+                : 'bg-brand-50 text-brand-800 border-brand-200 hover:bg-brand-100'
             }`}
           >
             {cat}
@@ -125,13 +138,17 @@ export default function InventoryMenuManager() {
               key={item.id}
               className={`flex flex-col justify-between rounded-2xl p-4 border transition-all duration-200 ${
                 isAvailable
-                  ? 'bg-brand-950/90 border-brand-800 hover:border-amber-500/50 shadow-soft'
-                  : 'bg-brand-950/40 border-rose-500/30 opacity-75'
+                  ? isDark
+                    ? 'bg-brand-950/90 border-brand-800 hover:border-amber-500/50 shadow-soft'
+                    : 'bg-brand-50/60 border-brand-200 hover:border-amber-500/50 shadow-soft'
+                  : isDark
+                  ? 'bg-brand-950/40 border-rose-500/30 opacity-75'
+                  : 'bg-slate-100 border-rose-300 opacity-75'
               }`}
             >
               <div className="flex flex-col gap-3">
                 {/* Imagen HD del plato idéntica a la carta del cliente */}
-                <div className="relative h-40 w-full overflow-hidden rounded-xl border border-brand-800/80 bg-brand-900">
+                <div className={`relative h-40 w-full overflow-hidden rounded-xl border ${isDark ? 'border-brand-800/80 bg-brand-900' : 'border-brand-200 bg-brand-100'}`}>
                   <img
                     src={dishImage}
                     alt={item.name}
@@ -157,28 +174,28 @@ export default function InventoryMenuManager() {
                 {/* Título y Descripción del plato */}
                 <div className="flex flex-col gap-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">
-                    <h3 className="font-extrabold text-sm text-white truncate">{item.name}</h3>
+                    <h3 className={`font-extrabold text-sm truncate ${isDark ? 'text-white' : 'text-brand-900'}`}>{item.name}</h3>
                     {item.popular && (
-                      <span className="text-[10px] font-bold text-amber-400 shrink-0">⭐ Popular</span>
+                      <span className="text-[10px] font-bold text-amber-500 shrink-0">⭐ Popular</span>
                     )}
                   </div>
 
                   {item.description && (
-                    <p className="text-xs text-brand-50/60 line-clamp-2 leading-relaxed">
+                    <p className={`text-xs line-clamp-2 leading-relaxed ${isDark ? 'text-brand-50/60' : 'text-brand-800/70'}`}>
                       {item.description}
                     </p>
                   )}
                 </div>
 
                 {/* Métricas de Costo y Margen de Utilidad */}
-                <div className="flex items-center justify-between rounded-xl bg-brand-900/60 p-2.5 border border-brand-800/50 text-xs">
+                <div className={`flex items-center justify-between rounded-xl p-2.5 border text-xs ${isDark ? 'bg-brand-900/60 border-brand-800/50' : 'bg-white border-brand-200/80 shadow-xs'}`}>
                   <div className="flex flex-col">
-                    <span className="text-[10px] text-brand-50/50 uppercase font-bold">Costo Materia Prima</span>
-                    <span className="font-bold text-brand-50/90">{formatCurrency(cost)}</span>
+                    <span className={`text-[10px] uppercase font-bold ${isDark ? 'text-brand-50/50' : 'text-brand-800/50'}`}>Costo Materia Prima</span>
+                    <span className={`font-bold ${isDark ? 'text-brand-50/90' : 'text-brand-900'}`}>{formatCurrency(cost)}</span>
                   </div>
                   <div className="flex flex-col items-end">
-                    <span className="text-[10px] text-brand-50/50 uppercase font-bold">Margen Bruto</span>
-                    <span className={`font-extrabold ${margin >= 60 ? 'text-emerald-400' : 'text-amber-400'}`}>
+                    <span className={`text-[10px] uppercase font-bold ${isDark ? 'text-brand-50/50' : 'text-brand-800/50'}`}>Margen Bruto</span>
+                    <span className={`font-extrabold ${margin >= 60 ? 'text-emerald-500' : 'text-amber-500'}`}>
                       {margin}%
                     </span>
                   </div>
@@ -186,9 +203,9 @@ export default function InventoryMenuManager() {
               </div>
 
               {/* Controles de Modificación de Precio y Disponibilidad */}
-              <div className="mt-4 border-t border-brand-800/80 pt-3 flex items-center justify-between gap-2">
+              <div className={`mt-4 border-t pt-3 flex items-center justify-between gap-2 ${isDark ? 'border-brand-800/80' : 'border-brand-200/80'}`}>
                 <div className="flex items-center gap-1.5">
-                  <label htmlFor={`price-${item.id}`} className="text-[11px] font-bold text-brand-50/70">
+                  <label htmlFor={`price-${item.id}`} className={`text-[11px] font-bold ${isDark ? 'text-brand-50/70' : 'text-brand-800/70'}`}>
                     Precio ($):
                   </label>
                   <input
@@ -197,7 +214,9 @@ export default function InventoryMenuManager() {
                     step={500}
                     value={item.price}
                     onChange={(e) => handlePriceChange(item.id, e.target.value)}
-                    className="w-24 rounded-xl bg-brand-800 p-2 text-center text-xs font-extrabold text-amber-300 border border-brand-700 focus:border-amber-500 focus:outline-none"
+                    className={`w-24 rounded-xl p-2 text-center text-xs font-extrabold border focus:outline-none ${
+                      isDark ? 'bg-brand-800 text-amber-300 border-brand-700 focus:border-amber-500' : 'bg-white text-brand-900 border-brand-300 focus:border-amber-500 shadow-xs'
+                    }`}
                   />
                 </div>
 
@@ -206,8 +225,8 @@ export default function InventoryMenuManager() {
                   onClick={() => toggleAvailable(item.id)}
                   className={`rounded-xl px-3 py-2 text-[11px] font-extrabold transition active:scale-95 cursor-pointer border ${
                     isAvailable
-                      ? 'bg-rose-500/20 text-rose-300 hover:bg-rose-600 hover:text-white border-rose-500/40'
-                      : 'bg-emerald-500/20 text-emerald-300 hover:bg-emerald-600 hover:text-white border-emerald-500/40'
+                      ? 'bg-rose-500/20 text-rose-500 hover:bg-rose-600 hover:text-white border-rose-500/40'
+                      : 'bg-emerald-500/20 text-emerald-500 hover:bg-emerald-600 hover:text-white border-emerald-500/40'
                   }`}
                 >
                   {isAvailable ? 'Marcar Agotado' : 'Habilitar Stock'}
@@ -221,13 +240,13 @@ export default function InventoryMenuManager() {
       {/* Modal de Alta de Nuevo Plato con Foto HD */}
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-brand-950/80 backdrop-blur-xs p-4 animate-in fade-in">
-          <div className="w-full max-w-md rounded-2xl bg-brand-900 p-6 shadow-2xl border border-brand-800 flex flex-col gap-4 text-white">
-            <div className="flex items-center justify-between border-b border-brand-800 pb-3">
+          <div className={`w-full max-w-md rounded-2xl p-6 shadow-2xl border flex flex-col gap-4 ${isDark ? 'bg-brand-900 border-brand-800 text-white' : 'bg-white border-brand-200 text-brand-900'}`}>
+            <div className={`flex items-center justify-between border-b pb-3 ${isDark ? 'border-brand-800' : 'border-brand-200'}`}>
               <h3 className="text-base font-bold">➕ Agregar Nuevo Plato a la Carta</h3>
               <button
                 type="button"
                 onClick={() => setIsAddModalOpen(false)}
-                className="rounded-xl bg-brand-800 p-1 text-xs font-bold"
+                className={`rounded-xl p-1 text-xs font-bold ${isDark ? 'bg-brand-800 text-white' : 'bg-brand-100 text-brand-900'}`}
               >
                 ✕
               </button>
@@ -235,35 +254,35 @@ export default function InventoryMenuManager() {
 
             <form onSubmit={handleAddItem} className="flex flex-col gap-4">
               <div>
-                <label className="block text-xs font-bold text-brand-50/80 mb-1">Nombre del Plato</label>
+                <label className={`block text-xs font-bold mb-1 ${isDark ? 'text-brand-50/80' : 'text-brand-800'}`}>Nombre del Plato</label>
                 <input
                   type="text"
                   required
                   value={newItemName}
                   onChange={(e) => setNewItemName(e.target.value)}
                   placeholder="ej. Ceviche Mixto de Salmón"
-                  className="w-full rounded-xl bg-brand-800 p-3 text-xs font-bold text-white border border-brand-700 focus:border-brand-500 focus:outline-none"
+                  className={`w-full rounded-xl p-3 text-xs font-bold border focus:outline-none ${isDark ? 'bg-brand-800 text-white border-brand-700 focus:border-brand-500' : 'bg-white text-brand-900 border-brand-300 focus:border-brand-500'}`}
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-brand-50/80 mb-1">Descripción Gourmet</label>
+                <label className={`block text-xs font-bold mb-1 ${isDark ? 'text-brand-50/80' : 'text-brand-800'}`}>Descripción Gourmet</label>
                 <input
                   type="text"
                   value={newItemDescription}
                   onChange={(e) => setNewItemDescription(e.target.value)}
                   placeholder="ej. Salmón austral, leche de tigre y choclo dulce."
-                  className="w-full rounded-xl bg-brand-800 p-3 text-xs font-bold text-white border border-brand-700 focus:border-brand-500 focus:outline-none"
+                  className={`w-full rounded-xl p-3 text-xs font-bold border focus:outline-none ${isDark ? 'bg-brand-800 text-white border-brand-700 focus:border-brand-500' : 'bg-white text-brand-900 border-brand-300 focus:border-brand-500'}`}
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-brand-50/80 mb-1">Categoría</label>
+                  <label className={`block text-xs font-bold mb-1 ${isDark ? 'text-brand-50/80' : 'text-brand-800'}`}>Categoría</label>
                   <select
                     value={newItemCategory}
                     onChange={(e) => setNewItemCategory(e.target.value)}
-                    className="w-full rounded-xl bg-brand-800 p-3 text-xs font-bold text-white border border-brand-700 focus:border-brand-500 focus:outline-none capitalize"
+                    className={`w-full rounded-xl p-3 text-xs font-bold border focus:outline-none capitalize ${isDark ? 'bg-brand-800 text-white border-brand-700 focus:border-brand-500' : 'bg-white text-brand-900 border-brand-300 focus:border-brand-500'}`}
                   >
                     {categories.filter((c) => c !== 'todos').map((c) => (
                       <option key={c} value={c}>
@@ -274,25 +293,25 @@ export default function InventoryMenuManager() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-brand-50/80 mb-1">Precio Venta ($)</label>
+                  <label className={`block text-xs font-bold mb-1 ${isDark ? 'text-brand-50/80' : 'text-brand-800'}`}>Precio Venta ($)</label>
                   <input
                     type="number"
                     step={500}
                     value={newItemPrice}
                     onChange={(e) => setNewItemPrice(e.target.value)}
-                    className="w-full rounded-xl bg-brand-800 p-3 text-xs font-bold text-white border border-brand-700 focus:border-brand-500 focus:outline-none"
+                    className={`w-full rounded-xl p-3 text-xs font-bold border focus:outline-none ${isDark ? 'bg-brand-800 text-white border-brand-700 focus:border-brand-500' : 'bg-white text-brand-900 border-brand-300 focus:border-brand-500'}`}
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-brand-50/80 mb-1">Costo Estimado Materia Prima ($)</label>
+                <label className={`block text-xs font-bold mb-1 ${isDark ? 'text-brand-50/80' : 'text-brand-800'}`}>Costo Estimado Materia Prima ($)</label>
                 <input
                   type="number"
                   step={200}
                   value={newItemCost}
                   onChange={(e) => setNewItemCost(e.target.value)}
-                  className="w-full rounded-xl bg-brand-800 p-3 text-xs font-bold text-white border border-brand-700 focus:border-brand-500 focus:outline-none"
+                  className={`w-full rounded-xl p-3 text-xs font-bold border focus:outline-none ${isDark ? 'bg-brand-800 text-white border-brand-700 focus:border-brand-500' : 'bg-white text-brand-900 border-brand-300 focus:border-brand-500'}`}
                 />
               </div>
 
