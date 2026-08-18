@@ -123,12 +123,12 @@ export default function WaiterPage({ bus: busProp }) {
       <AppHeader title="Vista Garzón / Mozo" subtitle={waiterName} currentRoute="/garzon" theme="light" />
       <main className="flex-1 px-6 py-6">
         <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
-          <header className="flex items-center justify-between">
+          <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h1 className="text-2xl font-bold text-brand-900">Garzón</h1>
               <p className="text-sm text-brand-800/60">Turno tarde · Salón principal</p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <button
                 type="button"
                 onClick={() => setTapOpen(true)}

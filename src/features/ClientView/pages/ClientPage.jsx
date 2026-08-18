@@ -174,10 +174,10 @@ export default function ClientPage() {
         {/* Banner de contexto de mesa: identidad de la sesión del comensal. */}
         <header className="rounded-2xl bg-white p-5 shadow-soft">
           {/* Fila superior del banner: número de mesa y badge de sesión. */}
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             {/* Título del banner con el número de mesa destacado. */}
-            <h1 className="text-xl font-bold text-brand-900">Mesa {tableContext?.number ?? '—'}</h1>
-            <div className="flex items-center gap-2">
+            <h1 className="text-xl font-bold text-brand-900 shrink-0">Mesa {tableContext?.number ?? '—'}</h1>
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
               {/* Botón S.O.S. de llamada urgente al mozo (spec: siempre visible, rojo puro #EF4444 por ser emergencia). */}
               <button
                 type="button"

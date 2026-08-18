@@ -31,13 +31,13 @@ export default function AppHeader({ title = 'MesaSplit', subtitle, currentRoute 
       }`}
     >
       {/* Lado Izquierdo: Identidad de Marca y Título de la Vista */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
         {/* Botón Hamburguesa Rápido */}
         <button
           type="button"
           onClick={() => setMenuOpen(!menuOpen)}
           aria-label="Abrir menú de navegación"
-          className={`flex h-10 w-10 items-center justify-center rounded-xl border transition active:scale-95 cursor-pointer ${
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border transition active:scale-95 cursor-pointer ${
             isDark
               ? 'bg-brand-900 border-brand-800 text-white hover:bg-brand-800'
               : 'bg-brand-50 border-brand-200 text-brand-900 hover:bg-brand-100'
@@ -46,14 +46,14 @@ export default function AppHeader({ title = 'MesaSplit', subtitle, currentRoute 
           <span className="text-lg">🍔</span>
         </button>
 
-        <div className="flex flex-col text-left">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-extrabold tracking-tight">MesaSplit</span>
-            <span className="rounded-full bg-brand-500/10 px-2 py-0.2 text-[10px] font-bold text-brand-500 border border-brand-500/20">
+        <div className="flex flex-col text-left min-w-0">
+          <div className="flex items-center gap-1.5 truncate">
+            <span className="text-sm font-extrabold tracking-tight shrink-0">MesaSplit</span>
+            <span className="hidden xs:inline-block rounded-full bg-brand-500/10 px-2 py-0.2 text-[10px] font-bold text-brand-500 border border-brand-500/20 shrink-0">
               Gastronomía
             </span>
           </div>
-          {title && <span className="text-xs font-bold text-brand-500/90">{title} {subtitle ? `· ${subtitle}` : ''}</span>}
+          {title && <span className="text-xs font-bold text-brand-500/90 truncate max-w-[150px] sm:max-w-none">{title} {subtitle ? `· ${subtitle}` : ''}</span>}
         </div>
       </div>
 
