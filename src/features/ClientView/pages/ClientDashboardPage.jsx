@@ -46,13 +46,17 @@ export default function ClientDashboardPage() {
       <main className="flex-1 px-4 sm:px-6 py-8 pb-24 max-w-4xl mx-auto w-full flex flex-col gap-6">
         {/* Banner de Bienvenida Personalizado */}
         <div className="rounded-3xl bg-gradient-to-br from-brand-900 via-brand-950 to-amber-950 p-6 sm:p-8 text-white shadow-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-6 border border-brand-800">
-          <div className="flex items-center gap-4">
-            <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-500/20 text-4xl shadow-inner border border-amber-400/30">
+          <Link
+            to="/cliente/perfil"
+            className="flex items-center gap-4 group cursor-pointer hover:opacity-90 transition-opacity"
+            title="Ir a Mi Perfil"
+          >
+            <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-500/20 text-4xl shadow-inner border border-amber-400/30 group-hover:scale-105 transition-transform">
               {user?.avatar || '👤'}
             </span>
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-extrabold tracking-tight">
+                <h1 className="text-2xl font-extrabold tracking-tight group-hover:text-amber-400 transition-colors">
                   ¡Hola {user ? user.name : 'Comensal'}! 👋
                 </h1>
                 <span className="rounded-full bg-amber-500 px-3 py-0.5 text-[10px] font-extrabold text-brand-950 uppercase tracking-widest">
@@ -60,14 +64,14 @@ export default function ClientDashboardPage() {
                 </span>
               </div>
               <p className="text-xs text-brand-50/70">
-                Bienvenido a tu centro de mando gastronómico MesaSplit
+                Bienvenido a tu centro de mando gastronómico MesaSplit (Ver Mi Perfil →)
               </p>
               <div className="flex items-center gap-3 mt-1">
                 <span className="text-xs font-bold text-amber-400">✨ {points} Puntos Acumulados</span>
                 <span className="text-xs text-emerald-400 font-semibold">● Mesa 12 Activa</span>
               </div>
             </div>
-          </div>
+          </Link>
 
           {/* Botones principales de Escaneo QR, Reservas y Mesa Virtual */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">

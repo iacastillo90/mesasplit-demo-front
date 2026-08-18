@@ -51,11 +51,15 @@ export default function ClientDrawerMenu({ isOpen, onClose }) {
       <aside className="relative z-10 flex w-4/5 max-w-sm flex-col bg-brand-900 text-white shadow-2xl border-r border-brand-800 animate-slide-in">
         {/* Cabecera del drawer lateral */}
         <div className="flex items-center justify-between p-5 border-b border-brand-800 bg-brand-950/50">
-          <div className="flex items-center gap-3">
+          <div
+            onClick={() => handleNavigate('/cliente/perfil')}
+            className="flex items-center gap-3 cursor-pointer hover:opacity-90 transition-opacity"
+            title="Ir a Mi Perfil"
+          >
             <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-500/20 text-2xl border border-amber-400/30">
               {user?.avatar || '👤'}
             </span>
-            <div className="flex flex-col">
+            <div className="flex flex-col text-left">
               <span className="text-sm font-extrabold text-white truncate max-w-[150px]">
                 {user ? user.name : 'Invitado MesaSplit'}
               </span>
