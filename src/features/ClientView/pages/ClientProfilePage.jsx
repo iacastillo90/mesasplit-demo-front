@@ -14,8 +14,8 @@ import { useRewardsStore } from '../store/useRewardsStore.js';
 import AppHeader from '../../../shared/ui/AppHeader.jsx';
 // Pie de página universal.
 import AppFooter from '../../../shared/ui/AppFooter.jsx';
-// Modal de reservas.
-import AssistantBookingModal from '../components/AssistantBookingModal.jsx';
+// Modal de reservas inteligente.
+import ClientReservationAssistant from '../components/ClientReservationAssistant.jsx';
 // Widget de soporte en vivo.
 import ChileanSupportWidget from '../../../shared/ui/ChileanSupportWidget.jsx';
 // Utilidad de formato de moneda CLP.
@@ -380,7 +380,7 @@ export default function ClientProfilePage() {
       </main>
 
       {/* Modal de Asistente Inteligente de Reservas */}
-      <AssistantBookingModal isOpen={bookingModalOpen} onClose={() => setBookingModalOpen(false)} />
+      <ClientReservationAssistant isOpen={bookingModalOpen} onClose={() => setBookingModalOpen(false)} />
 
       {/* Widget de Soporte Flotante */}
       {supportOpen && <ChileanSupportWidget />}
