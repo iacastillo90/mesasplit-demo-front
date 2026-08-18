@@ -100,9 +100,9 @@ export default function TableGrid({ tables, selectedTableId, onSelectTable }) {
               <div className="flex items-center justify-between">
                 {/* Número destacado de la mesa. */}
                 <span className="text-lg font-bold text-brand-900">Mesa {table.number}</span>
-                {/* Cantidad de comensales sentados. */}
+                {/* Cantidad de comensales sentados (campo seats del fixture). */}
                 <span className="rounded-full bg-brand-50 px-2 py-0.5 text-xs font-semibold text-brand-800/70">
-                  👥 {table.guests}
+                  👥 {table.seats}
                 </span>
               </div>
 
