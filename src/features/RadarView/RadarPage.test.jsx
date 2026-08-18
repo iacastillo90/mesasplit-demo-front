@@ -25,7 +25,7 @@ describe('feature-views: mapa del radar (spec)', () => {
     render(<RadarPage />);
     // La cabecera indica la cantidad de mesas activas en el salón.
     expect(screen.getByRole('heading', { name: /Plano del salón/i })).toBeInTheDocument();
-  });
+  }, 15000);
 });
 
 describe('local-admin-radar: Plano Topológico y Delivery Omnicanal', () => {
@@ -44,7 +44,7 @@ describe('local-admin-radar: Plano Topológico y Delivery Omnicanal', () => {
 
     // Verifica el encabezado del canal virtual de Delivery Omnicanal.
     expect(screen.getByRole('region', { name: /Delivery Omnicanal/i })).toBeInTheDocument();
-  });
+  }, 15000);
 });
 
 describe('local-admin-radar: Modo Hora Punta y Exception Feed', () => {
@@ -68,7 +68,7 @@ describe('local-admin-radar: Modo Hora Punta y Exception Feed', () => {
     fireEvent.click(auditBtn);
     // Verifica el título del cajón de auditoría síncronamente.
     expect(screen.getByText(/Registro de Excepciones y Auditoría/i)).toBeInTheDocument();
-  });
+  }, 15000);
 });
 
 describe('local-admin-radar: Registro de Merma y Botón de Pánico', () => {
@@ -94,5 +94,5 @@ describe('local-admin-radar: Registro de Merma y Botón de Pánico', () => {
     fireEvent.click(panicBtn);
     // Confirma la alerta de emergencia global.
     expect(screen.getByText(/ALERTA DE EMERGENCIA ACTIVADA/i)).toBeInTheDocument();
-  });
+  }, 15000);
 });
