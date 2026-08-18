@@ -98,5 +98,59 @@
     "y": 88,
     "order": null,
     "waiterId": null
+  },
+  {
+    "id": "t9",
+    "number": 9,
+    "seats": 4,
+    "status": "occupied",
+    "zone": "Terraza",
+    "x": 92,
+    "y": 40,
+    "order": {
+      "items": [
+        { "id": "o6", "name": "Hamburguesa Clásica Brioche", "qty": 2, "price": 8900 },
+        { "id": "o7", "name": "Papas Fritas", "qty": 1, "price": 4500 },
+        { "id": "o8", "name": "Limonada Menta", "qty": 3, "price": 2900 }
+      ]
+    },
+    "waiterId": "pedro-soto"
+  },
+  {
+    "id": "t10",
+    "number": 10,
+    "seats": 2,
+    "status": "waiting_food",
+    "zone": "Salón",
+    "x": 15,
+    "y": 30,
+    "order": {
+      "items": [{ "id": "o9", "name": "Ensalada César con Pollo", "qty": 1, "price": 8400 }]
+    },
+    "waiterId": "pedro-soto"
+  },
+  {
+    "id": "t11",
+    "number": 11,
+    "seats": 6,
+    "status": "bill_requested",
+    "zone": "Barra",
+    "x": 55,
+    "y": 10,
+    "order": {
+      "items": [{ "id": "o10", "name": "Pizza Margherita", "qty": 2, "price": 10900 }]
+    },
+    "waiterId": "pedro-soto"
+  },
+  {
+    "id": "t12",
+    "number": 12,
+    "seats": 4,
+    "status": "free",
+    "zone": "Terraza",
+    "x": 88,
+    "y": 75,
+    "order": null,
+    "waiterId": null
   }
 ]
