@@ -20,6 +20,8 @@ import ClientReservationAssistant from '../components/ClientReservationAssistant
 import ClientSupportChatModal from '../components/ClientSupportChatModal.jsx';
 // Modal emergente centrado de ticket térmico DTE SII.
 import DteTicketModal from '../components/DteTicketModal.jsx';
+// Modal emergente interactivo de detalle de plato y reseña.
+import DishReviewDetailModal from '../components/DishReviewDetailModal.jsx';
 // Utilidad de formato de moneda CLP.
 import { formatCurrency } from '../../../shared/utils/formatCurrency.js';
 // Barra de navegación inferior fija para móviles.
@@ -50,6 +52,10 @@ export default function ClientProfilePage() {
   const [supportOpen, setSupportOpen] = useState(false);
   // Ticket de boleta DTE seleccionado para desplegar en el modal térmico.
   const [selectedTicket, setSelectedTicket] = useState(null);
+  // Reseña de plato seleccionada para desplegar en el modal de detalle completo.
+  const [selectedReview, setSelectedReview] = useState(null);
+  // Filtro activo para la lista de reseñas.
+  const [reviewFilter, setReviewFilter] = useState('Todos');
   // Estado local para feedback de copiar código de referido.
   const [copiedReferral, setCopiedReferral] = useState(false);
   // Feedback al guardar perfil.
@@ -70,10 +76,64 @@ export default function ClientProfilePage() {
     },
   });
 
-  // Estado local de lista de reseñas de platos agregadas por el usuario.
+  // Estado local de lista de reseñas de platos con fotos HD y metadatos completos.
   const [reviewsList, setReviewsList] = useState([
-    { id: 'r1', dish: 'Lomo Lo Ovalle', rating: 5, comment: 'Corte jugoso y papas crujientes. Excelente atención.', date: 'Ayer', likes: 12 },
-    { id: 'r2', dish: 'Pisco Sour Artesanal 🍹', rating: 5, comment: 'Perfecta acidez de limón de pica.', date: 'Hace 3 días', likes: 8 },
+    {
+      id: 'r1',
+      dish: 'Lomo Lo Ovalle con Papas Rústicas',
+      category: 'Cortes Premium',
+      price: 14900,
+      rating: 5,
+      comment: 'Corte jugoso a término medio impecable y papas doradas crujientes. Excelente atención del garzón.',
+      date: '17/08/2026 21:45 hrs',
+      branchName: 'Restô Lo Ovalle',
+      branchAddress: 'Av. Lo Ovalle 1420, San Miguel, Santiago',
+      branchPhone: '+56 2 2891 4000',
+      likes: 12,
+      image: '/images/dish_lomo_lo_ovalle.png',
+    },
+    {
+      id: 'r2',
+      dish: 'Pisco Sour Artesanal 🍹',
+      category: 'Coctelería de Autor',
+      price: 4900,
+      rating: 5,
+      comment: 'Perfecta acidez de limón de pica con espuma sedosa. Recomendadísimo.',
+      date: '12/08/2026 22:15 hrs',
+      branchName: 'Restô Providencia',
+      branchAddress: 'Av. Providencia 2150, Providencia, Santiago',
+      branchPhone: '+56 2 2760 9100',
+      likes: 8,
+      image: '/images/dish_pisco_sour.png',
+    },
+    {
+      id: 'r3',
+      dish: 'Volcán de Chocolate con Helado 🍨',
+      category: 'Postres',
+      price: 5200,
+      rating: 5,
+      comment: 'Centro derretido irresistible y helado artesanal de vainilla.',
+      date: '01/08/2026 23:00 hrs',
+      branchName: 'Restô Vitacura',
+      branchAddress: 'Av. Alonso de Córdova 3890, Vitacura, Santiago',
+      branchPhone: '+56 2 2955 8820',
+      likes: 15,
+      image: '/images/dish_volcan_chocolate.png',
+    },
+    {
+      id: 'r4',
+      dish: 'Ceviche Mixto Tradicional 🐟',
+      category: 'Mariscos',
+      price: 13900,
+      rating: 5,
+      comment: 'Pescado blanco de roca fresco con choclo peruano y leche de tigre espectacular.',
+      date: '28/07/2026 14:20 hrs',
+      branchName: 'Restô Providencia',
+      branchAddress: 'Av. Providencia 2150, Providencia, Santiago',
+      branchPhone: '+56 2 2760 9100',
+      likes: 10,
+      image: '/images/dish_ceviche_mixto.png',
+    },
   ]);
   // Input de plato a reseñar.
   const [newReviewDish, setNewReviewDish] = useState('');
@@ -100,7 +160,20 @@ export default function ClientProfilePage() {
     if (!newReviewText.trim()) return;
     const dishName = newReviewDish.trim() || 'Plato Recomendado Restô';
     setReviewsList((prev) => [
-      { id: `r-${Date.now()}`, dish: dishName, rating: newReviewRating, comment: newReviewText.trim(), date: 'Hoy', likes: 1 },
+      {
+        id: `r-${Date.now()}`,
+        dish: dishName,
+        category: 'Recomendación del Cliente',
+        price: 12900,
+        rating: newReviewRating,
+        comment: newReviewText.trim(),
+        date: 'Hoy 14:00 hrs',
+        branchName: 'Restô Lo Ovalle',
+        branchAddress: 'Av. Lo Ovalle 1420, San Miguel, Santiago',
+        branchPhone: '+56 2 2891 4000',
+        likes: 1,
+        image: '/images/dish_lomo_lo_ovalle.png',
+      },
       ...prev,
     ]);
     setNewReviewDish('');
@@ -557,21 +630,84 @@ export default function ClientProfilePage() {
               </button>
             </form>
 
-            {/* Listado de Reseñas Publicadas */}
-            <div className="flex flex-col gap-3">
-              {reviewsList.map((r) => (
-                <div key={r.id} className="p-4 rounded-2xl bg-brand-50 border border-brand-200 flex flex-col gap-2 text-left">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-extrabold text-brand-900">{r.dish}</span>
-                    <span className="text-xs font-bold text-amber-500">{'★'.repeat(r.rating)}</span>
-                  </div>
-                  <p className="text-xs text-brand-800/90 leading-relaxed">{r.comment}</p>
-                  <div className="flex items-center justify-between pt-2 border-t border-brand-200/60 mt-1">
-                    <span className="text-[10px] text-brand-800/60">{r.date}</span>
-                    <span className="text-[11px] font-bold text-emerald-700">👍 {r.likes || 1} Votos Útiles</span>
-                  </div>
-                </div>
+            {/* Barra de Filtros Dinámicos Responsivos para Móvil */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none whitespace-nowrap touch-pan-x flex-nowrap w-full shrink-0">
+              <span className="text-xs font-bold text-slate-500 shrink-0">Filtrar por:</span>
+              {['Todos', 'Restô Lo Ovalle', 'Restô Providencia', 'Restô Vitacura', 'Cortes Premium', 'Postres & Tragos'].map((f) => (
+                <button
+                  key={f}
+                  type="button"
+                  onClick={() => setReviewFilter(f)}
+                  className={`rounded-full px-3.5 py-1.5 text-xs font-extrabold transition active:scale-95 border cursor-pointer ${
+                    reviewFilter === f
+                      ? 'bg-amber-500 text-white border-amber-500 shadow-soft'
+                      : 'bg-slate-100 text-slate-700 border-slate-200 hover:bg-amber-50'
+                  }`}
+                >
+                  {f}
+                </button>
               ))}
+            </div>
+
+            {/* Listado de Cards de Reseñas de Platos Enriquecidas con Fotos HD */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {reviewsList
+                .filter((r) => {
+                  if (reviewFilter === 'Todos') return true;
+                  if (reviewFilter === 'Cortes Premium') return r.category === 'Cortes Premium' || r.dish.toLowerCase().includes('lomo');
+                  if (reviewFilter === 'Postres & Tragos')
+                    return (
+                      r.category === 'Postres' ||
+                      r.category === 'Coctelería de Autor' ||
+                      r.dish.toLowerCase().includes('pisco') ||
+                      r.dish.toLowerCase().includes('volcán')
+                    );
+                  return r.branchName === reviewFilter;
+                })
+                .map((r) => (
+                  <div
+                    key={r.id}
+                    onClick={() => setSelectedReview(r)}
+                    className="group rounded-3xl bg-white border border-slate-200 overflow-hidden shadow-soft hover:shadow-lg transition-all duration-300 flex flex-col cursor-pointer hover:border-amber-400"
+                  >
+                    {/* Imagen HD del Plato */}
+                    <div className="relative h-44 w-full overflow-hidden bg-slate-900 shrink-0">
+                      <img
+                        src={r.image || '/images/dish_lomo_lo_ovalle.png'}
+                        alt={r.dish}
+                        className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
+                      <span className="absolute top-3 left-3 bg-amber-500 text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full shadow-soft">
+                        {r.category || 'Gastronomía'}
+                      </span>
+                      <span className="absolute bottom-3 left-3 text-amber-300 text-xs font-bold">
+                        {'★'.repeat(r.rating)} ({r.rating}.0)
+                      </span>
+                      <span className="absolute bottom-3 right-3 text-white text-xs font-extrabold">
+                        {formatCurrency(r.price || 14900)}
+                      </span>
+                    </div>
+
+                    {/* Contenido de la Card */}
+                    <div className="p-4 flex flex-col gap-2 text-left flex-1 justify-between">
+                      <div className="flex flex-col gap-1">
+                        <span className="text-xs font-extrabold text-brand-900 group-hover:text-amber-600 transition-colors">
+                          {r.dish}
+                        </span>
+                        <span className="text-[11px] font-semibold text-slate-500">📍 {r.branchName} · {r.date}</span>
+                        <p className="text-xs text-slate-700 leading-relaxed line-clamp-2 italic">&ldquo;{r.comment}&rdquo;</p>
+                      </div>
+
+                      <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-[11px]">
+                        <span className="font-bold text-emerald-700">👍 {r.likes || 1} Votos Útiles</span>
+                        <span className="font-extrabold text-amber-600 group-hover:translate-x-1 transition-transform">
+                          Ver Ficha Completa →
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
             </div>
           </div>
         )}
@@ -811,6 +947,9 @@ export default function ClientProfilePage() {
 
       {/* Modal Emergente Centrado de Boleta DTE Thermal Ticket */}
       <DteTicketModal isOpen={Boolean(selectedTicket)} onClose={() => setSelectedTicket(null)} ticketData={selectedTicket} />
+
+      {/* Modal Emergente Interactivo de Detalle Completo de Plato y Reseña */}
+      <DishReviewDetailModal isOpen={Boolean(selectedReview)} onClose={() => setSelectedReview(null)} reviewData={selectedReview} />
 
       {/* Pie de página universal */}
       <AppFooter theme="light" />
