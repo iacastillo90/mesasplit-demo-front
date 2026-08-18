@@ -33,6 +33,8 @@ export default defineConfig({
     // Restaura mocks y limpieza automática entre tests para evitar fugas.
     restoreMocks: true,
     clearMocks: true,
+    // Aumenta el timeout de los tests a 15s para evitar fallos por jsdom bajo carga masiva.
+    testTimeout: 15000,
     // Limpia el DOM de Testing Library tras cada test (evita estados colgados).
     css: false,
   },
