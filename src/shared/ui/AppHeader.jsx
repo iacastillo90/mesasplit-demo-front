@@ -78,7 +78,8 @@ export default function AppHeader({ title = 'MesaSplit', subtitle, currentRoute 
         )}
 
         <div className="flex flex-col text-left min-w-0">
-          <div className="flex items-center gap-1.5 truncate">
+          <div className="flex items-center gap-2 truncate">
+            <img src="/images/mesasplit_logo.png" alt="MesaSplit" className="h-7 w-7 rounded-lg object-cover shadow-sm border border-amber-500/40 shrink-0" />
             <span className="text-sm font-extrabold tracking-tight shrink-0">MesaSplit</span>
             <span className="hidden xs:inline-block rounded-full bg-brand-500/10 px-2 py-0.2 text-[10px] font-bold text-brand-500 border border-brand-500/20 shrink-0">
               Gastronomía

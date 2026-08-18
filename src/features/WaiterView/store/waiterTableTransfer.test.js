@@ -210,8 +210,8 @@ describe('waiter-table-transfer: Cancelar la confirmación (UI)', () => {
     render(React.createElement(WaiterPage, { bus }));
     // Espera la grilla de mesas asignadas.
     await screen.findByText(/Mis mesas/i, {}, { timeout: 3000 });
-    // Selecciona la Mesa 1 (cuenta origen con H. Clásica).
-    fireEvent.click(await screen.findByText(/Mesa 1/i, {}, { timeout: 3000 }));
+    // Selecciona la Mesa 1 (cuenta origen con H. Clásica — match exacto, no "Mesa 10/11/12").
+    fireEvent.click(await screen.findByText('Mesa 1', {}, { timeout: 3000 }));
     // Snapshot del estado de las mesas antes de abrir la confirmación.
     const before = JSON.stringify(useWaiterStore.getState().tables);
     // Abre el selector de unión de cuentas desde la mesa seleccionada.

@@ -11,6 +11,8 @@ import { Link } from 'react-router-dom';
 import { Badge, Button, Toast } from '../../../shared/ui/index.js';
 // formatCurrency: precio de cada ítem del menú en CLP.
 import { formatCurrency } from '../../../shared/utils/index.js';
+// Cabecera universal con hamburguesa y logo oficial.
+import AppHeader from '../../../shared/ui/AppHeader.jsx';
 // Store del slice: estado del menú, carrito y acciones del cliente.
 import { selectCartCount, selectCartTotal, useClientStore } from '../store/useClientStore.js';
 // Store de división de cuenta (account-split).
@@ -179,10 +181,14 @@ export default function ClientPage() {
   };
 
   return (
-    // Contenedor claro de la vista cliente (docs/04: fondo brand-50).
-    <main className="min-h-screen bg-brand-50 px-6 pb-32 pt-6">
-      {/* Contenido centrado con ancho máximo de lectura cómoda. */}
-      <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
+    // Contenedor principal con fondo brand-50 y cabecera universal AppHeader.
+    <div className="flex flex-col min-h-screen bg-brand-50 text-brand-900">
+      {/* Cabecera universal con botón de hamburguesa 🍔 y logo oficial de MesaSplit */}
+      <AppHeader title="Mesa Virtual" subtitle={`Mesa ${tableContext?.number ?? '12'} · En Vivo`} currentRoute="/cliente" theme="light" />
+
+      {/* Contenido principal centrado de la Mesa Virtual */}
+      <main className="flex-1 px-4 sm:px-6 pb-32 pt-6">
+        <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
         {/* Banner de reconexión de sesión de la Mesa Virtual (client-session-reconnect). */}
         <ReconnectBanner />
 
@@ -483,5 +489,6 @@ export default function ClientPage() {
       {/* Barra de navegación inferior fija para móviles */}
       <ClientBottomNav />
     </main>
+  </div>
   );
 }

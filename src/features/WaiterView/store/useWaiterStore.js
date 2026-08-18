@@ -5,8 +5,8 @@
 
 // create: fábrica de store de Zustand v5.
 import { create } from 'zustand';
-// Servicio de datos del garzón.
-import { fetchAssignedTables } from '../services/waiterService.js';
+// Servicio de datos del garzón (mesas asignadas + carta real).
+import { fetchAssignedTables, getMenu } from '../services/waiterService.js';
 // Instancia del bus en tiempo real de la aplicación (no hook para uso dentro de Zustand).
 import { createRealtimeBus } from '../../../hooks/useRealtimeBus.js';
 // Invariante de conservación de integridad de cuentas (Decisiones 4): reusado por mergeBills.
@@ -33,6 +33,8 @@ const initialState = {
   tables: tablesData,
   // ID de la mesa seleccionada actualmente.
   selectedTableId: null,
+  // Carta real del menú (fuente única: menu.json, D10).
+  menu: [],
   // Borrador de la comanda en preparación para la mesa seleccionada.
   orderDraft: [],
   // Curso seleccionado por defecto para los nuevos platos.
@@ -80,11 +82,20 @@ export const useWaiterStore = create((set, get) => ({
     set({ tables, loading: false });
   },
 
+  // Carga la carta real del menú (D10, mirror de useClientStore.loadMenu).
+  loadMenu: async () => {
+    // Solicita el menú al servicio mock (única fuente: menu.json).
+    const menu = await getMenu();
+    // Guarda la carta en el estado y finaliza la carga.
+    set({ menu, loading: false });
+  },
+
   // Selecciona una mesa de la grilla para trabajar sobre su comanda.
   selectTable: (tableId) => {
     // Garantiza que tableId sea una cadena limpia.
     const cleanId = typeof tableId === 'string' ? tableId : String(tableId ?? 't1');
     // Si no había borrador previo, siembra ítems de prueba para la mesa seleccionada.
+    // Seed alineado con menu.json (D12): m2 = Hamburguesa Clásica Brioche a 8900.
     const existingDraft = get().orderDraft;
     const initialDraft =
       existingDraft.length > 0
@@ -92,9 +103,9 @@ export const useWaiterStore = create((set, get) => ({
         : [
             {
               id: 'd1',
-              productId: 'm1',
-              name: 'Hamburguesa Clásica',
-              price: 12500,
+              productId: 'm2',
+              name: 'Hamburguesa Clásica Brioche',
+              price: 8900,
               qty: 1,
               allergens: [],
               course: 'entrada',

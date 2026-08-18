@@ -4,8 +4,8 @@
 // anulación con PIN de admin y botón de liberación de mesa ("Cerrar y Liberar Mesa").
 // Cumple con todas las normas de AGENTS.md (comentarios en español por cada línea).
 
-// useState de React.
-import { useState } from 'react';
+// useState y useMemo de React.
+import { useMemo, useState } from 'react';
 // Formateador de moneda en CLP.
 import { formatCurrency } from '../../../shared/utils/index.js';
 // Selector de tiempos (Course Control).
@@ -18,18 +18,14 @@ import TransferModal from './TransferModal.jsx';
 import { suggestUpsell } from '../services/upsellService.js';
 import SmartUpsellWidget from './SmartUpsellWidget.jsx';
 
-// Menú de productos mock del catálogo del garzón.
-const MENU_CATALOG = [
-  { id: 'm1', name: 'Hamburguesa Clásica', price: 12500, category: 'Fuego', allergens: ['maní'] },
-  { id: 'm2', name: 'Papas fritas', price: 4500, category: 'Fuego', allergens: [] },
-  { id: 'm3', name: 'Sandwich de plancha', price: 8900, category: 'Plancha', allergens: [] },
-  { id: 'm4', name: 'Carbonara', price: 11900, category: 'Fuego', allergens: [] },
-  { id: 'm5', name: 'Limonada Menta', price: 3800, category: 'Barra', allergens: [] },
-];
+// Asset de respaldo cuando una foto de la carta falla al cargar (D4).
+const PLACEHOLDER_IMG = '/images/dish_placeholder.png';
 
 // Componente OrderPad de la PWA del garzón.
 export default function OrderPad({
   table,
+  menu,
+  loading,
   orderDraft,
   selectedCourse,
   toastMessage,
@@ -50,11 +46,30 @@ export default function OrderPad({
   // Calcula el total general de la comanda en borrador.
   const totalAmount = orderDraft.reduce((acc, line) => acc + line.price * line.qty, 0);
 
+  // Agrupa la carta real por categoría preservando el orden de menu.json.
+  const menuByCategory = useMemo(() => {
+    return (menu ?? []).reduce((acc, item) => {
+      // Categoría del ítem (fallback "Otros" si el fixture no la declara).
+      const category = item.category ?? 'Otros';
+      // Inicializa el arreglo de la categoría en la primera aparición.
+      if (!acc[category]) acc[category] = [];
+      // Agrega el ítem a su categoría.
+      acc[category].push(item);
+      return acc;
+    }, {});
+  }, [menu]);
+
+  // Fallback de imagen: si la foto remota/local falla, muestra el placeholder.
+  const handleImgError = (e) => {
+    // Reemplaza el src fallido por el asset de respaldo compartido.
+    e.currentTarget.src = PLACEHOLDER_IMG;
+  };
+
   // Upsell asistido: sugiere un candidato según la ÚLTIMA línea agregada al borrador.
   // El chip jamás auto-agrega; solo propone (waiter-upsell: NUNCA auto-add).
   const lastDraftLine = orderDraft[orderDraft.length - 1];
   // Selector puro: devuelve un candidato (máx. 1) o null si no hay regla.
-  const suggestion = lastDraftLine ? suggestUpsell(lastDraftLine.productId, MENU_CATALOG) : null;
+  const suggestion = lastDraftLine ? suggestUpsell(lastDraftLine.productId, menu ?? []) : null;
 
   // Inicia la anulación de una línea.
   const handleInitiateVoid = (line) => {
@@ -134,40 +149,66 @@ export default function OrderPad({
             onMarchFondo={onMarchFondo}
           />
 
-          {/* Catálogo táctil de una sola mano con tarjetas clickeables. */}
+          {/* Catálogo táctil de una sola mano con tarjetas compactas (D11). */}
           <div className="flex flex-col gap-3">
             <h3 className="text-xs font-bold uppercase tracking-wider text-brand-800/70">
               Catálogo de Platos (Toca para agregar)
             </h3>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              {MENU_CATALOG.map((item) => {
-                // Cuenta cuántas unidades de este producto hay en el borrador.
-                const countInDraft = orderDraft
-                  .filter((line) => line.productId === item.id)
-                  .reduce((sum, line) => sum + line.qty, 0);
+            {loading ? (
+              // Estado de carga mientras la carta real resuelve desde el servicio.
+              <p className="py-6 text-center text-sm text-brand-800/60">Cargando carta…</p>
+            ) : (
+              // Carta real agrupada por categoría (28 ítems en 7 categorías).
+              <div className="flex flex-col gap-4">
+                {Object.entries(menuByCategory).map(([category, items]) => (
+                  // Sección por categoría del menú real.
+                  <section key={category}>
+                    {/* Título de la categoría. */}
+                    <h4 className="mb-2 text-xs font-bold uppercase tracking-wider text-brand-800/60">
+                      {category}
+                    </h4>
+                    {/* Grilla de cards compactas de la categoría. */}
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
+                      {items.map((item) => {
+                        // Cuenta cuántas unidades de este producto hay en el borrador.
+                        const countInDraft = orderDraft
+                          .filter((line) => line.productId === item.id)
+                          .reduce((sum, line) => sum + line.qty, 0);
 
-                return (
-                  // Tarjeta interactiva del catálogo.
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => onAddToCart(item)}
-                    className="relative flex items-center justify-between rounded-xl bg-white p-3 shadow-soft text-left transition hover:border-brand-300 active:scale-95 border border-brand-100"
-                  >
-                    <div>
-                      <p className="font-bold text-brand-900">{item.name}</p>
-                      <p className="text-xs text-brand-800/60">{formatCurrency(item.price)}</p>
+                        return (
+                          // Card compacta: thumb, nombre, precio y badge Nx (D11).
+                          <button
+                            key={item.id}
+                            type="button"
+                            onClick={() => onAddToCart(item)}
+                            className="relative flex items-center gap-2 rounded-xl bg-white p-2 shadow-soft text-left transition hover:border-brand-300 active:scale-95 border border-brand-100"
+                          >
+                            {/* Miniatura de la foto del plato con fallback a placeholder. */}
+                            <img
+                              src={item.image}
+                              alt={item.name}
+                              onError={handleImgError}
+                              className="h-10 w-10 shrink-0 rounded-lg object-cover border border-brand-100"
+                            />
+                            {/* Bloque de nombre y precio del ítem. */}
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-xs font-bold text-brand-900">{item.name}</p>
+                              <p className="text-[11px] text-brand-800/60">{formatCurrency(item.price)}</p>
+                            </div>
+                            {/* Badge circular de cantidad acumulada si ya fue tocado. */}
+                            {countInDraft > 0 && (
+                              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-500 text-[11px] font-bold text-white shadow-md">
+                                {countInDraft}x
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
                     </div>
-                    {/* Badge circular de cantidad acumulada si ya fue tocado. */}
-                    {countInDraft > 0 && (
-                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-500 text-xs font-bold text-white shadow-md">
-                        {countInDraft}x
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
+                  </section>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Chip de sugerencia de upsell: visible solo si el último plato tiene regla.

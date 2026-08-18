@@ -14,3 +14,10 @@ export function fetchAssignedTables() {
   // Delega en mockFetch: resuelve el fixture tables.json tras ~300ms.
   return mockFetch('/api/tables');
 }
+
+// Servicio del garzón: devuelve la carta real (task 4.2, D10).
+// Espejo de clientService.getMenu: la fuente única de ítems es menu.json.
+export function getMenu() {
+  // Delega en mockFetch: resuelve el fixture menu.json tras ~300ms.
+  return mockFetch('/api/menu');
+}

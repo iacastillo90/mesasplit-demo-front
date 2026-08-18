@@ -23,6 +23,8 @@ export default function WaiterPage({ bus: busProp }) {
   const shiftStatus = useWaiterStore((s) => s.shiftStatus);
   const waiterName = useWaiterStore((s) => s.waiterName);
   const tables = useWaiterStore((s) => s.tables);
+  const menu = useWaiterStore((s) => s.menu);
+  const loading = useWaiterStore((s) => s.loading);
   const selectedTableId = useWaiterStore((s) => s.selectedTableId);
   const orderDraft = useWaiterStore((s) => s.orderDraft);
   const selectedCourse = useWaiterStore((s) => s.selectedCourse);
@@ -32,6 +34,7 @@ export default function WaiterPage({ bus: busProp }) {
 
   const clockIn = useWaiterStore((s) => s.clockIn);
   const loadTables = useWaiterStore((s) => s.loadTables);
+  const loadMenu = useWaiterStore((s) => s.loadMenu);
   const selectTable = useWaiterStore((s) => s.selectTable);
   const addToDraft = useWaiterStore((s) => s.addToDraft);
   const toggleAllergyFlag = useWaiterStore((s) => s.toggleAllergyFlag);
@@ -48,9 +51,11 @@ export default function WaiterPage({ bus: busProp }) {
 
   useEffect(() => {
     if (shiftStatus === 'clocked_in') {
+      // Carga mesas asignadas y la carta real (D10) al activarse el turno.
       loadTables();
+      loadMenu();
     }
-  }, [shiftStatus, loadTables]);
+  }, [shiftStatus, loadTables, loadMenu]);
 
   useEffect(() => {
     const handleSos = (payload) => {
@@ -183,6 +188,8 @@ export default function WaiterPage({ bus: busProp }) {
 
           <OrderPad
             table={activeTable}
+            menu={menu}
+            loading={loading}
             orderDraft={orderDraft}
             selectedCourse={selectedCourse}
             toastMessage={toastMessage}

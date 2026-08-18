@@ -49,7 +49,8 @@ describe('waiter-pwa: Grilla de Mesas y Semáforos de Estado', () => {
     // Espera la carga de mesas desde el servicio mockFetch.
     await screen.findByText(/Mis mesas/i, {}, { timeout: 3000 });
     // Verifica que se muestren las mesas asignadas con sus semáforos.
-    expect(await screen.findByText(/Mesa 1/i, {}, { timeout: 3000 })).toBeInTheDocument();
+    // Match EXACTO: con 12 mesas, /Mesa 1/i también casaría con "Mesa 10/11/12".
+    expect(await screen.findByText('Mesa 1', {}, { timeout: 3000 })).toBeInTheDocument();
     expect((await screen.findAllByText(/Ocupada/i, {}, { timeout: 3000 })).length).toBeGreaterThan(0);
   });
 });
@@ -64,8 +65,8 @@ describe('waiter-pwa: Toma de Pedido con Una Mano y Badges', () => {
     render(<WaiterPage />);
     // Espera las mesas asignadas.
     await screen.findByText(/Mis mesas/i, {}, { timeout: 3000 });
-    // Selecciona la Mesa 1 para ingresar la comanda.
-    fireEvent.click(await screen.findByText(/Mesa 1/i, {}, { timeout: 3000 }));
+    // Selecciona la Mesa 1 para ingresar la comanda (match exacto, no "Mesa 10/11/12").
+    fireEvent.click(await screen.findByText('Mesa 1', {}, { timeout: 3000 }));
     // Espera a que se despliegue el catálogo táctil con la carta real (seed m2).
     const itemCards = await screen.findAllByText(/Hamburguesa Clásica Brioche/i, {}, { timeout: 3000 });
     // La card del catálogo es la primera coincidencia (el detalle va después).
@@ -85,9 +86,9 @@ describe('waiter-pwa: Escudo de Alergias y Course Control', () => {
   it('tiñe el ítem en Rojo Puro #EF4444 al seleccionar alergia y permite Marchar Fondo', async () => {
     // Renderiza la vista del garzón.
     const { container } = render(<WaiterPage />);
-    // Carga las mesas y selecciona la Mesa 1.
+    // Carga las mesas y selecciona la Mesa 1 (match exacto, no "Mesa 10/11/12").
     await screen.findByText(/Mis mesas/i, {}, { timeout: 3000 });
-    fireEvent.click(await screen.findByText(/Mesa 1/i, {}, { timeout: 3000 }));
+    fireEvent.click(await screen.findByText('Mesa 1', {}, { timeout: 3000 }));
     // Selecciona el chip de alergia al maní en el ítem.
     const allergyBtn = await screen.findByRole('button', { name: /\+ Alergia Maní/i }, { timeout: 3000 });
     fireEvent.click(allergyBtn);
@@ -117,9 +118,9 @@ describe('waiter-pwa: Anulación Protegida con PIN y Liberación de Mesa', () =>
   it('exige PIN de admin para anular ítem ya enviado y permite liberar la mesa', async () => {
     // Renderiza la PWA del garzón.
     render(<WaiterPage />);
-    // Selecciona una mesa.
+    // Selecciona una mesa (match exacto, no "Mesa 10/11/12").
     await screen.findByText(/Mis mesas/i, {}, { timeout: 3000 });
-    fireEvent.click(await screen.findByText(/Mesa 1/i, {}, { timeout: 3000 }));
+    fireEvent.click(await screen.findByText('Mesa 1', {}, { timeout: 3000 }));
     // Intenta eliminar un ítem enviado a cocina.
     const deleteBtn = await screen.findByRole('button', { name: /Anular con PIN/i }, { timeout: 3000 });
     fireEvent.click(deleteBtn);
