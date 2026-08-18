@@ -187,59 +187,34 @@ export default function ClientPage() {
         <ReconnectBanner />
 
         {/* Banner de contexto de mesa: identidad de la sesión del comensal. */}
-        <header className="rounded-2xl bg-white p-5 shadow-soft">
-          {/* Fila superior del banner: número de mesa y badge de sesión. */}
+        <header className="rounded-3xl bg-white p-5 shadow-soft border border-brand-100 flex flex-col gap-4">
+          {/* Fila superior: Título de Mesa, comensales y datos de sesión de usuario */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            {/* Título del banner con el número de mesa destacado. */}
-            <h1 className="text-xl font-bold text-brand-900 shrink-0">Mesa {tableContext?.number ?? '—'}</h1>
-            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-              {/* Botón S.O.S. de llamada urgente al mozo (spec: siempre visible, rojo puro #EF4444 por ser emergencia). */}
-              <button
-                type="button"
-                onClick={() => setSosOpen(true)}
-                className="relative rounded-full bg-semantic-danger/10 px-3 py-1 text-xs font-bold text-semantic-danger border border-semantic-danger/40 hover:bg-semantic-danger/20 transition active:scale-95 animate-pulse"
-              >
-                🆘 S.O.S.
-              </button>
-              {/* Botón para abrir la encuesta de satisfacción. */}
-              <button
-                type="button"
-                onClick={() => setSurveyOpen(true)}
-                className="rounded-full bg-amber-500/10 px-3 py-1 text-xs font-bold text-amber-700 hover:bg-amber-500/20 border border-amber-300"
-              >
-                ★ Calificar Servicio
-              </button>
-              {/* Botón para solicitar factura electrónica demo (client-factura). */}
-              <button
-                type="button"
-                onClick={() => setInvoiceOpen(true)}
-                className="rounded-full bg-brand-900/10 px-3 py-1 text-xs font-bold text-brand-900 hover:bg-brand-900/20 border border-brand-900/30 transition active:scale-95"
-              >
-                📄 Solicitar Factura
-              </button>
-              {/* Botón para abrir el asistente inteligente de reservas por local y fila virtual. */}
-              <button
-                type="button"
-                onClick={() => setAssistantOpen(true)}
-                className="rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-700 hover:bg-emerald-500/20 border border-emerald-300 transition active:scale-95"
-              >
-                📅 Reservas
-              </button>
-              {/* Botón para navegar a la vista dedicada de carrito interactivo. */}
-              <Link
-                to="/cliente/carrito"
-                className="rounded-full bg-sky-500/10 px-3 py-1 text-xs font-bold text-sky-700 hover:bg-sky-500/20 border border-sky-300 transition active:scale-95 flex items-center gap-1"
-              >
-                🛒 Ir a Comanda ({cartCount})
-              </Link>
-              {/* Badge con el código QR de la sesión (identidad de la mesa). */}
+            {/* Título de Mesa 12 y detalle de comensales */}
+            <div className="flex flex-col gap-0.5">
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-extrabold text-brand-900 tracking-tight">
+                  Mesa {tableContext?.number ?? '—'}
+                </h1>
+                <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-bold text-emerald-700 border border-emerald-300">
+                  ● En Vivo
+                </span>
+              </div>
+              <p className="text-xs font-medium text-brand-800/70">
+                {tableContext?.guests ?? 0} comensales en la mesa · Cuenta abierta
+              </p>
+            </div>
+
+            {/* Código QR de sesión y estado de usuario logueado */}
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Badge con el código QR de la sesión */}
               <Badge variant="brand">Código {tableContext?.code ?? '••••'}</Badge>
 
               {/* Sesión de usuario logueado o botón de inicio de sesión */}
               {user ? (
                 <div className="flex items-center gap-1.5 rounded-full bg-amber-500/10 px-3 py-1 text-xs font-bold text-amber-900 border border-amber-300 shadow-soft">
                   <span>{user.avatar || '👤'}</span>
-                  <span>{user.name}</span>
+                  <span className="truncate max-w-[110px]">{user.name}</span>
                   <button
                     type="button"
                     onClick={logoutUser}
@@ -259,11 +234,58 @@ export default function ClientPage() {
               )}
             </div>
           </div>
-          {/* Detalle de comensales y estado de la cuenta. */}
-          <p className="mt-1 text-sm text-brand-800/70">
-            {/* Cantidad de comensales sentados en la mesa. */}
-            {tableContext?.guests ?? 0} comensales · Cuenta abierta
-          </p>
+
+          {/* Fila inferior: Botones de acciones rápidas de la mesa organizados en grilla responsiva */}
+          <div className="pt-3 border-t border-brand-100 grid grid-cols-2 xs:grid-cols-3 sm:flex sm:flex-wrap items-center gap-2">
+            {/* Botón S.O.S. de llamada urgente al mozo */}
+            <button
+              type="button"
+              onClick={() => setSosOpen(true)}
+              className="flex items-center justify-center gap-1 rounded-2xl bg-semantic-danger/10 px-3.5 py-2 text-xs font-bold text-semantic-danger border border-semantic-danger/40 hover:bg-semantic-danger/20 transition active:scale-95 animate-pulse cursor-pointer shadow-soft"
+            >
+              <span>🆘</span>
+              <span>S.O.S. Mozo</span>
+            </button>
+
+            {/* Botón para navegar a la vista dedicada de carrito interactivo */}
+            <Link
+              to="/cliente/carrito"
+              className="flex items-center justify-center gap-1 rounded-2xl bg-sky-500/10 px-3.5 py-2 text-xs font-bold text-sky-800 border border-sky-300 hover:bg-sky-500/20 transition active:scale-95 cursor-pointer shadow-soft"
+            >
+              <span>🛒</span>
+              <span>Comanda ({cartCount})</span>
+            </Link>
+
+            {/* Botón para abrir el asistente inteligente de reservas y fila virtual */}
+            <button
+              type="button"
+              onClick={() => setAssistantOpen(true)}
+              className="flex items-center justify-center gap-1 rounded-2xl bg-emerald-500/10 px-3.5 py-2 text-xs font-bold text-emerald-800 border border-emerald-300 hover:bg-emerald-500/20 transition active:scale-95 cursor-pointer shadow-soft"
+            >
+              <span>📅</span>
+              <span>Reservas</span>
+            </button>
+
+            {/* Botón para solicitar factura electrónica demo */}
+            <button
+              type="button"
+              onClick={() => setInvoiceOpen(true)}
+              className="flex items-center justify-center gap-1 rounded-2xl bg-brand-900/10 px-3.5 py-2 text-xs font-bold text-brand-900 border border-brand-900/30 hover:bg-brand-900/20 transition active:scale-95 cursor-pointer shadow-soft"
+            >
+              <span>📄</span>
+              <span>Solicitar Factura</span>
+            </button>
+
+            {/* Botón para abrir la encuesta de satisfacción */}
+            <button
+              type="button"
+              onClick={() => setSurveyOpen(true)}
+              className="flex items-center justify-center gap-1 col-span-2 xs:col-span-1 rounded-2xl bg-amber-500/10 px-3.5 py-2 text-xs font-bold text-amber-800 border border-amber-300 hover:bg-amber-500/20 transition active:scale-95 cursor-pointer shadow-soft"
+            >
+              <span>★</span>
+              <span>Calificar</span>
+            </button>
+          </div>
         </header>
 
         {/* Hero Promocional Ultra-Premium para la Mesa Virtual */}
