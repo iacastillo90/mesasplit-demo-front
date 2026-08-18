@@ -18,6 +18,7 @@ import RealtimeSalesChart from '../components/RealtimeSalesChart.jsx';
 import FranchiseComparisonWidget from '../components/FranchiseComparisonWidget.jsx';
 import RrhhManagementModal from '../components/RrhhManagementModal.jsx';
 import PlanPricingMatrixModal from '../components/PlanPricingMatrixModal.jsx';
+import AdminCMSReportsModal from '../components/AdminCMSReportsModal.jsx';
 import { exportToCsv } from '../../../shared/utils/exportToCsv.js';
 import { AdminLayout } from '../../../shared/ui/index.js';
 
@@ -32,6 +33,8 @@ export default function SuperAdminPage() {
   const [rrhhModalOpen, setRrhhModalOpen] = useState(false);
   // Estado para controlar la visibilidad del modal de Planes & Tarifas SaaS.
   const [planMatrixOpen, setPlanMatrixOpen] = useState(false);
+  // Estado para abrir el Centro de Reportes CMS Administrativos & Excel.
+  const [cmsReportsModalOpen, setCmsReportsModalOpen] = useState(false);
 
   const loadCorporateData = useCorporateStore((s) => s.loadCorporateData);
   const toggleFeature = useCorporateStore((s) => s.toggleFeature);
@@ -48,13 +51,13 @@ export default function SuperAdminPage() {
   const totalStaff = branches.reduce((acc, b) => acc + (b.activeStaff ?? 0), 0);
 
   const navTabs = [
-    { id: 'all', label: '🌐 Vista Completa', subtitle: 'Todas las métricas y módulos' },
-    { id: 'kpis', label: '📊 Resumen & Sucursales', subtitle: 'KPIs globales y estado por local' },
-    { id: 'charts', label: '📈 Gráficos Realtime', subtitle: 'Evolución de ventas y comparativa' },
-    { id: 'rules', label: '⚙️ Reglas & Compliance', subtitle: 'Switches, Ley 40h y SII' },
+    { id: 'all', label: '🌐 Vista Completa CMS', subtitle: 'Todas las métricas administrativas' },
+    { id: 'kpis', label: '📊 Reporte de Ventas & KPI', subtitle: 'KPIs globales y estado por local' },
+    { id: 'charts', label: '💳 Tarjetas, Transbank & POS', subtitle: 'Evolución de ventas y comparativa' },
+    { id: 'rules', label: '⚙️ Reglas & Compliance SII', subtitle: 'Switches, Ley 40h y SII' },
     { id: 'whatif', label: '🎛️ Simulador What-If', subtitle: 'Estrategia y proyecciones de precio' },
-    { id: 'matrix', label: '📊 Ingeniería de Menú', subtitle: 'Matriz BCG (Estrellas, Puzzles...)' },
-    { id: 'events', label: '⚡ Flujo de Eventos', subtitle: 'Auditoría en tiempo real de red' },
+    { id: 'matrix', label: '📦 Stock & Mermas', subtitle: 'Matriz BCG e insumos' },
+    { id: 'events', label: '📋 Asistencia RRHH & Auditoría', subtitle: 'Auditoría en tiempo real de red' },
   ];
 
   return (
@@ -79,14 +82,23 @@ export default function SuperAdminPage() {
           <p className="text-xs text-brand-800/70">Supervisión ejecutiva de red de restaurantes y franquicias</p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Botón para abrir el Centro de Reportes CMS Administrativos & Excel */}
+          <button
+            type="button"
+            onClick={() => setCmsReportsModalOpen(true)}
+            className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-emerald-700 active:scale-95 shadow-soft"
+          >
+            📊 Reportes CMS Excel 🆕
+          </button>
+
           {/* Botón para ver la Matriz de Planes & Tarifas SaaS. */}
           <button
             type="button"
             onClick={() => setPlanMatrixOpen(true)}
             className="inline-flex items-center gap-1.5 rounded-xl bg-amber-500 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-amber-600 active:scale-95 shadow-soft"
           >
-            💳 Planes & Tarifas SaaS
+            💳 Planes SaaS
           </button>
 
           {/* Botón para abrir el Módulo de RRHH Completo y Previred. */}
@@ -95,7 +107,7 @@ export default function SuperAdminPage() {
             onClick={() => setRrhhModalOpen(true)}
             className="inline-flex items-center gap-1.5 rounded-xl bg-sky-600 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-sky-700 active:scale-95 shadow-soft"
           >
-            👥 Gestión RRHH & Previred 🆕
+            👥 Gestión RRHH 🆕
           </button>
 
           <button
@@ -273,6 +285,12 @@ export default function SuperAdminPage() {
       <PlanPricingMatrixModal
         open={planMatrixOpen}
         onClose={() => setPlanMatrixOpen(false)}
+      />
+
+      {/* Modal de Centro de Reportes CMS Administrativos & Excel. */}
+      <AdminCMSReportsModal
+        isOpen={cmsReportsModalOpen}
+        onClose={() => setCmsReportsModalOpen(false)}
       />
     </AdminLayout>
   );

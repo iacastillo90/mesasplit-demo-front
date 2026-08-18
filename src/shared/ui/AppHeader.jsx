@@ -88,6 +88,29 @@ export default function AppHeader({ title = 'MesaSplit', subtitle, currentRoute 
         {/* Selector de idioma dinámico i18n con soporte de tema. */}
         <LanguageSelector theme={theme} />
 
+        {/* Botón Toggle de Modo Claro / Oscuro Global */}
+        <button
+          type="button"
+          onClick={() => {
+            if (typeof window !== 'undefined') {
+              const isCurrentlyDark = document.documentElement.classList.contains('dark');
+              if (isCurrentlyDark) {
+                document.documentElement.classList.remove('dark');
+              } else {
+                document.documentElement.classList.add('dark');
+              }
+              window.dispatchEvent(new CustomEvent('themechange', { detail: !isCurrentlyDark }));
+            }
+          }}
+          title={isDark ? 'Cambiar a Modo Claro ☀️' : 'Cambiar a Modo Oscuro 🌙'}
+          aria-label="Cambiar tema claro u oscuro"
+          className={`flex h-8 w-8 items-center justify-center rounded-xl border text-xs transition active:scale-95 cursor-pointer ${
+            isDark ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 hover:bg-amber-500/30' : 'bg-slate-100 text-slate-800 border-slate-300 hover:bg-slate-200'
+          }`}
+        >
+          {isDark ? '☀️' : '🌙'}
+        </button>
+
         {/* Botón Toggle de Silencio Auditivo Global */}
         <button
           type="button"

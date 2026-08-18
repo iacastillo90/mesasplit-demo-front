@@ -6,6 +6,7 @@
 import { useState } from 'react';
 import AppHeader from './AppHeader.jsx';
 import AppFooter from './AppFooter.jsx';
+import AdminCMSReportsModal from '../../features/CorporateView/components/AdminCMSReportsModal.jsx';
 
 export default function AdminLayout({
   children,
@@ -19,6 +20,7 @@ export default function AdminLayout({
 }) {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [cmsReportsOpen, setCmsReportsOpen] = useState(false);
   const isDark = theme === 'dark';
 
   // Rutas principales del área administrativa de la empresa.
@@ -142,8 +144,17 @@ export default function AdminLayout({
             )}
           </div>
 
-          {/* Retorno al Hub */}
-          <div className="border-t pt-3 border-brand-800/30 w-full">
+          {/* Retorno al Hub y Módulo de Reportes CMS */}
+          <div className="border-t pt-3 border-brand-800/30 w-full flex flex-col gap-2">
+            <button
+              type="button"
+              onClick={() => setCmsReportsOpen(true)}
+              title="Centro de Reportes CMS & Excel"
+              className="flex items-center justify-center gap-2 rounded-xl p-2 text-xs font-bold transition bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer shadow-soft w-full"
+            >
+              {sidebarCollapsed ? '📊' : '📊 Reportes CMS Excel 🆕'}
+            </button>
+
             <a
               href="/"
               title="Hub Principal"
@@ -252,6 +263,9 @@ export default function AdminLayout({
           </div>
         </main>
       </div>
+
+      {/* Modal de Centro de Reportes CMS Administrativos & Excel */}
+      <AdminCMSReportsModal isOpen={cmsReportsOpen} onClose={() => setCmsReportsOpen(false)} />
 
       {/* PIE DE PÁGINA FIJO */}
       <AppFooter theme={theme} />
