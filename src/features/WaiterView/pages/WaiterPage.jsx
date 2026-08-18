@@ -35,6 +35,9 @@ export default function WaiterPage({ bus: busProp }) {
   const clockIn = useWaiterStore((s) => s.clockIn);
   const loadTables = useWaiterStore((s) => s.loadTables);
   const loadMenu = useWaiterStore((s) => s.loadMenu);
+  const increaseQty = useWaiterStore((s) => s.increaseQty);
+  const decreaseQty = useWaiterStore((s) => s.decreaseQty);
+  const removeItem = useWaiterStore((s) => s.removeItem);
   const selectTable = useWaiterStore((s) => s.selectTable);
   const addToDraft = useWaiterStore((s) => s.addToDraft);
   const toggleAllergyFlag = useWaiterStore((s) => s.toggleAllergyFlag);
@@ -199,6 +202,9 @@ export default function WaiterPage({ bus: busProp }) {
             onMarchFondo={fireCourse}
             onVoidItem={voidItemWithPin}
             onReleaseTable={releaseTable}
+            onIncreaseQty={increaseQty}
+            onDecreaseQty={decreaseQty}
+            onRemoveItem={removeItem}
           />
 
           {/* Modal de calculadora de cobro rápido al paso en mesa */}

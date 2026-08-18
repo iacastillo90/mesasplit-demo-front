@@ -60,20 +60,18 @@ describe('waiter-pwa: Toma de Pedido con Una Mano y Badges', () => {
     useWaiterStore.getState().resetDemo();
   });
 
-  it('permite seleccionar una mesa e incrementar el contador del plato al tocarlo', async () => {
+  it('permite seleccionar una mesa e incrementar el contador del plato desde la línea sembrada', async () => {
     // Renderiza la PWA del garzón.
     render(<WaiterPage />);
     // Espera las mesas asignadas.
     await screen.findByText(/Mis mesas/i, {}, { timeout: 3000 });
     // Selecciona la Mesa 1 para ingresar la comanda (match exacto, no "Mesa 10/11/12").
     fireEvent.click(await screen.findByText('Mesa 1', {}, { timeout: 3000 }));
-    // Espera a que se despliegue el catálogo táctil con la carta real (seed m2).
-    const itemCards = await screen.findAllByText(/Hamburguesa Clásica Brioche/i, {}, { timeout: 3000 });
-    // La card del catálogo es la primera coincidencia (el detalle va después).
-    const card = itemCards[0];
-    // Toca la tarjeta del catálogo para agregar otra unidad sobre el seed.
-    fireEvent.click(card);
-    // Verifica que la comanda refleje las unidades agregadas (badge + línea de detalle).
+    // Usa el control "+" de la línea sembrada (m2, qty 1 → 2x) estilo SharedCartDrawer.
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Agregar uno a Hamburguesa Clásica Brioche' }, { timeout: 3000 }),
+    );
+    // Verifica que la comanda refleje las unidades agregadas (badge Nx del catálogo).
     expect(screen.getAllByText(/2x/i).length).toBeGreaterThan(0);
   });
 });

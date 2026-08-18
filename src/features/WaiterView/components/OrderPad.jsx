@@ -39,6 +39,9 @@ export default function OrderPad({
   onMarchFondo,
   onVoidItem,
   onReleaseTable,
+  onIncreaseQty,
+  onDecreaseQty,
+  onRemoveItem,
 }) {
   // Estado local para controlar la apertura del modal de autorización por PIN.
   const [pinModalOpen, setPinModalOpen] = useState(false);
@@ -278,18 +281,49 @@ export default function OrderPad({
                           : 'border-brand-100 bg-brand-50/50'
                       }`}
                     >
-                      {/* Fila superior: cantidad, nombre, precio y acción de anular. */}
-                      <div className="flex items-center justify-between">
+                      {/* Fila superior: nombre, curso, controles de qty, precio y acción de anular. */}
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                         <div className="flex items-center gap-2">
-                          <span className="font-bold text-brand-900">{line.qty}x</span>
                           <span className="font-semibold text-brand-900">{line.name}</span>
                           <span className="text-xs text-brand-800/60">({line.course})</span>
                         </div>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center justify-between gap-3 sm:justify-end">
+                          {/* Controles de cantidad −/qty/+/✕ (patrón de SharedCartDrawer). */}
+                          <div className="flex items-center gap-2">
+                            {/* Botón restar: baja la cantidad (en 0 el store remueve la línea). */}
+                            <button
+                              type="button"
+                              aria-label={`Quitar uno de ${line.name}`}
+                              onClick={() => onDecreaseQty(line.productId, line.course)}
+                              className="h-8 w-8 rounded-full bg-white text-brand-900 shadow-soft hover:bg-brand-100"
+                            >
+                              −
+                            </button>
+                            {/* Cantidad actual de la línea (visible en el centro del control). */}
+                            <span className="w-6 text-center font-semibold text-brand-900">{line.qty}</span>
+                            {/* Botón sumar: sube en 1 la cantidad de la línea. */}
+                            <button
+                              type="button"
+                              aria-label={`Agregar uno a ${line.name}`}
+                              onClick={() => onIncreaseQty(line.productId, line.course)}
+                              className="h-8 w-8 rounded-full bg-brand-500 text-white hover:bg-brand-800"
+                            >
+                              +
+                            </button>
+                            {/* Botón quitar línea completa (papelera compacta, sin alert.fraud). */}
+                            <button
+                              type="button"
+                              aria-label={`Quitar ${line.name} del carrito`}
+                              onClick={() => onRemoveItem(line.productId, line.course)}
+                              className="h-8 w-8 rounded-full bg-white text-semantic-danger shadow-soft hover:bg-semantic-danger/10"
+                            >
+                              ✕
+                            </button>
+                          </div>
                           <span className="font-bold text-brand-900">
                             {formatCurrency(line.price * line.qty)}
                           </span>
-                          {/* Botón para anular el ítem de la comanda. */}
+                          {/* Botón para anular el ítem de la comanda (con PIN si fue a cocina). */}
                           <button
                             type="button"
                             onClick={() => handleInitiateVoid(line)}
