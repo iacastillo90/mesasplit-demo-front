@@ -69,7 +69,7 @@ describe('modo-hora-punta: Modo Hora Punta en Radar Local Admin', () => {
     render(<RadarPage />);
 
     // La barra de merma rápida permanece visible e interactiva.
-    expect(screen.getByPlaceholderText(/Registrar merma/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/Tomate San Marzano/i)).toBeInTheDocument();
 
     // El botón de auditoría/excepciones permanece visible en la cabecera.
     expect(screen.getByRole('button', { name: /Auditoría/i })).toBeInTheDocument();

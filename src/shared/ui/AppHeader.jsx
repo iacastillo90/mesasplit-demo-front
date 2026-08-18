@@ -56,8 +56,8 @@ export default function AppHeader({ title = 'MesaSplit', subtitle, currentRoute 
           <span className="text-lg">🍔</span>
         </button>
 
-        {/* Botón Volver / Retroceder ⬅️ disponible universalmente en todas las vistas excepto la raíz */}
-        {currentRoute !== '/' && (
+        {/* Botón Volver / Retroceder ⬅️ disponible en vistas operacionales (se omite en la raíz y en la vista de cliente) */}
+        {currentRoute !== '/' && !isClientArea && (
           <button
             type="button"
             onClick={() => {

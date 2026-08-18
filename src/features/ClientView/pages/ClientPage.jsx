@@ -319,65 +319,55 @@ export default function ClientPage() {
               <div className="flex flex-col gap-3">
                 {/* Renderiza una tarjeta por plato de la categoría. */}
                 {items.map((item) => (
-                  // Tarjeta de plato: datos del ítem + acción de agregar.
-                  <article key={item.id} className="rounded-2xl bg-white p-4 shadow-soft">
-                    {/* Fila del plato: foto apetitosa a la izquierda, info al centro, acción a la derecha. */}
-                    <div className="flex items-center gap-4">
-                      {/* Fotografía de alta calidad con tonos cálidos/rojos para estimular el apetito. */}
+                  // Tarjeta de plato: datos del ítem + acción de agregar con layout 100% responsivo para móvil.
+                  <article key={item.id} className="rounded-2xl bg-white p-4 shadow-soft border border-brand-100/80 hover:shadow-md transition">
+                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-start sm:items-center">
+                      {/* Fotografía HD responsiva (banner claro en móvil, miniatura cuadrada en desktop) */}
                       {item.image && (
                         <img
                           src={item.image}
                           alt={item.name}
-                          className="h-20 w-20 shrink-0 rounded-xl object-cover shadow-sm border border-brand-100"
+                          className="h-36 sm:h-20 w-full sm:w-20 shrink-0 rounded-xl object-cover shadow-sm border border-brand-100"
                         />
                       )}
-                      {/* Bloque de nombre, descripción y alergias del plato. */}
-                      <div className="min-w-0 flex-1">
-                        {/* Nombre del plato con truncado para títulos largos. */}
-                        <h3 className="font-semibold text-brand-900">{item.name}</h3>
-                        {/* Descripción corta del plato (segunda línea). */}
-                        <p className="text-sm text-brand-800/60">{item.description}</p>
-                        {/* Chips de alergias: solo si el plato declara alguna. */}
+                      {/* Bloque de nombre, precio, descripción y alergias. */}
+                      <div className="min-w-0 flex-1 w-full">
+                        <div className="flex items-start justify-between gap-2">
+                          <h3 className="font-extrabold text-brand-900 text-sm sm:text-base leading-snug">{item.name}</h3>
+                          <span className="font-extrabold text-brand-600 text-sm sm:text-base shrink-0">{formatCurrency(item.price)}</span>
+                        </div>
+                        <p className="text-xs text-brand-800/70 mt-1 leading-relaxed">{item.description}</p>
+                        {/* Chips de alergias declaradas. */}
                         {(item.allergens ?? []).length > 0 && (
-                          // Fila de chips de alergia del plato.
                           <div className="mt-2 flex flex-wrap gap-1">
-                            {/* Renderiza un chip por alergia declarada. */}
                             {item.allergens.map((allergen) => (
-                              // Chip rojo: salud/seguridad, el rojo es reservado.
                               <span
                                 key={allergen}
-                                className="rounded-full bg-semantic-danger/10 px-2 py-0.5 text-[11px] font-semibold text-semantic-danger"
+                                className="rounded-full bg-semantic-danger/10 px-2 py-0.5 text-[10px] font-bold text-semantic-danger border border-semantic-danger/20"
                               >
-                                {/* Nombre de la alergia en el chip. */}
                                 {allergen}
                               </span>
                             ))}
                           </div>
                         )}
                       </div>
-                      {/* Columna derecha: precio y acciones del plato. */}
-                      <div className="flex shrink-0 flex-col items-end gap-2">
-                        {/* Precio del plato en CLP con la marca de CTA. */}
-                        <p className="font-bold text-brand-900">{formatCurrency(item.price)}</p>
-                        <div className="flex items-center gap-1.5">
-                          {/* Botón para calificar el plato individualmente. */}
-                          <button
-                            type="button"
-                            onClick={() => setReviewItem(item)}
-                            className="rounded-xl border border-amber-300 bg-amber-50 px-2.5 py-2 text-xs font-semibold text-amber-800 transition hover:bg-amber-100 active:scale-95"
-                            title="Calificar este plato"
-                          >
-                            ★ Evaluar
-                          </button>
-                          {/* Botón agregar al carrito (CTA compacto de marca). */}
-                          <button
-                            type="button"
-                            onClick={() => handleAdd(item)}
-                            className="rounded-xl border border-brand-500 px-4 py-2 text-sm font-semibold text-brand-500 transition hover:bg-brand-500 hover:text-white active:scale-95"
-                          >
-                            Agregar
-                          </button>
-                        </div>
+                      {/* Botones de acción alineados y ordenados responsivamente. */}
+                      <div className="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto shrink-0 border-t sm:border-t-0 pt-2 sm:pt-0 border-brand-100">
+                        <button
+                          type="button"
+                          onClick={() => setReviewItem(item)}
+                          className="rounded-xl border border-amber-300 bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-800 transition hover:bg-amber-100 active:scale-95 cursor-pointer"
+                          title="Calificar este plato"
+                        >
+                          ★ Evaluar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleAdd(item)}
+                          className="rounded-xl bg-brand-500 hover:bg-brand-600 px-4 py-1.5 text-xs font-bold text-white transition active:scale-95 cursor-pointer shadow-soft"
+                        >
+                          Agregar
+                        </button>
                       </div>
                     </div>
                   </article>

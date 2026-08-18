@@ -94,6 +94,8 @@ export default function ClientProfilePage() {
       glutenFree: true,
       lactoseFree: false,
       nutAllergy: false,
+      otherAllergyEnabled: false,
+      otherAllergyText: '',
     },
   });
 
@@ -927,7 +929,59 @@ export default function ClientProfilePage() {
                     />
                     <span>🥛 Intolerante a la Lactosa</span>
                   </label>
+
+                  <label className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={profileForm.preferences.nutAllergy}
+                      onChange={(e) =>
+                        setProfileForm({
+                          ...profileForm,
+                          preferences: { ...profileForm.preferences, nutAllergy: e.target.checked },
+                        })
+                      }
+                      className="rounded text-amber-500 focus:ring-amber-500 h-4 w-4"
+                    />
+                    <span>🥜 Alergia a Frutos Secos</span>
+                  </label>
+
+                  <label className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={profileForm.preferences.otherAllergyEnabled}
+                      onChange={(e) =>
+                        setProfileForm({
+                          ...profileForm,
+                          preferences: { ...profileForm.preferences, otherAllergyEnabled: e.target.checked },
+                        })
+                      }
+                      className="rounded text-amber-500 focus:ring-amber-500 h-4 w-4"
+                    />
+                    <span>✏️ Otro (Especificar alergia)</span>
+                  </label>
                 </div>
+
+                {/* Campo de entrada de texto si la opción Otro está activada */}
+                {profileForm.preferences.otherAllergyEnabled && (
+                  <div className="flex flex-col gap-1 mt-2">
+                    <label htmlFor="other-allergy-input" className="text-xs font-bold text-slate-700">
+                      Especificar alergias adicionales o restricciones médicas:
+                    </label>
+                    <input
+                      id="other-allergy-input"
+                      type="text"
+                      value={profileForm.preferences.otherAllergyText || ''}
+                      onChange={(e) =>
+                        setProfileForm({
+                          ...profileForm,
+                          preferences: { ...profileForm.preferences, otherAllergyText: e.target.value },
+                        })
+                      }
+                      placeholder="ej. Alergia a mariscos, soya, mariscos en concha, ajonjolí..."
+                      className="rounded-xl bg-slate-50 px-3.5 py-2.5 text-xs font-bold border border-slate-300 focus:outline-none focus:bg-white"
+                    />
+                  </div>
+                )}
               </div>
 
               <button
