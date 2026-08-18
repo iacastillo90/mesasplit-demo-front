@@ -106,8 +106,6 @@ export default function ClientPage() {
 
   // Usuario logueado en la sesión demo de la app.
   const user = useClientStore((s) => s.user);
-  // Acción para cerrar sesión.
-  const logoutUser = useClientStore((s) => s.logoutUser);
 
   // Carga el menú y el contexto de mesa UNA vez al montar la vista.
   useEffect(() => {
