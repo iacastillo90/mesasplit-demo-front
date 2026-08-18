@@ -16,6 +16,8 @@ import AppHeader from '../../../shared/ui/AppHeader.jsx';
 import AppFooter from '../../../shared/ui/AppFooter.jsx';
 // Modal de reservas inteligente.
 import ClientReservationAssistant from '../components/ClientReservationAssistant.jsx';
+// Modal de Chat interactivo estilo WhatsApp para reservas.
+import WhatsAppReservationChatModal from '../components/WhatsAppReservationChatModal.jsx';
 // Modal de soporte estilo WhatsApp con 4 opciones.
 import ClientSupportChatModal from '../components/ClientSupportChatModal.jsx';
 // Modal emergente centrado de ticket térmico DTE SII.
@@ -65,6 +67,8 @@ export default function ClientProfilePage() {
   }, [location.search, location.state]);
   // Visibilidad del modal de asistente de reservas.
   const [bookingModalOpen, setBookingModalOpen] = useState(false);
+  // Visibilidad del modal de chat de WhatsApp para reservas.
+  const [whatsappModalOpen, setWhatsappModalOpen] = useState(false);
   // Visibilidad del widget de soporte.
   const [supportOpen, setSupportOpen] = useState(false);
   // Ticket de boleta DTE seleccionado para desplegar en el modal térmico.
@@ -276,7 +280,7 @@ export default function ClientProfilePage() {
             </Link>
             <button
               type="button"
-              onClick={() => setBookingModalOpen(true)}
+              onClick={() => setWhatsappModalOpen(true)}
               className="rounded-2xl bg-emerald-600 hover:bg-emerald-700 px-4 py-2.5 text-xs font-extrabold text-white transition active:scale-95 cursor-pointer shadow-soft flex items-center gap-1.5"
             >
               <span>📅</span>
@@ -297,12 +301,12 @@ export default function ClientProfilePage() {
         </div>
 
         {/* Barra de pestañas responsivas del perfil */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-3 pt-1 scrollbar-none whitespace-nowrap touch-pan-x w-full shrink-0 flex-nowrap">
+        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 pb-3 pt-1 w-full shrink-0">
           {[
-            { id: 'overview', label: '📊 Resumen General', icon: '👤' },
+            { id: 'overview', label: '📊 Resumen', icon: '👤' },
             { id: 'rewards', label: '🏆 Puntos & Premios', icon: '🎁' },
             { id: 'branches', label: '📍 Locales & Visitas', icon: '🏪' },
-            { id: 'payments', label: '📜 Historial Pagos DTE', icon: '📄' },
+            { id: 'payments', label: '📜 Historial DTE', icon: '📄' },
             { id: 'reviews', label: '⭐ Mis Reseñas', icon: '💬' },
             { id: 'referrals', label: '👥 Invitar Amigos', icon: '🚀' },
             { id: 'edit-profile', label: '👤 Editar Perfil', icon: '⚙️' },
@@ -311,7 +315,7 @@ export default function ClientProfilePage() {
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id)}
-              className={`rounded-2xl px-4 py-2.5 text-xs font-extrabold transition active:scale-95 border cursor-pointer ${
+              className={`rounded-2xl px-3 sm:px-4 py-2 sm:py-2.5 text-[11px] sm:text-xs font-extrabold transition active:scale-95 border cursor-pointer flex-1 sm:flex-none text-center whitespace-nowrap min-w-fit ${
                 activeTab === tab.id
                   ? 'bg-amber-500 text-white border-amber-500 shadow-soft'
                   : 'bg-white text-brand-900 border-brand-200 hover:bg-brand-50'
@@ -958,6 +962,9 @@ export default function ClientProfilePage() {
 
       {/* Modal de Asistente Inteligente de Reservas */}
       <ClientReservationAssistant isOpen={bookingModalOpen} onClose={() => setBookingModalOpen(false)} />
+
+      {/* Modal de Chat de Reservas en WhatsApp */}
+      <WhatsAppReservationChatModal isOpen={whatsappModalOpen} onClose={() => setWhatsappModalOpen(false)} />
 
       {/* Modal de Chat de Soporte Técnico Estilo WhatsApp con 4 opciones */}
       <ClientSupportChatModal isOpen={supportOpen} onClose={() => setSupportOpen(false)} />

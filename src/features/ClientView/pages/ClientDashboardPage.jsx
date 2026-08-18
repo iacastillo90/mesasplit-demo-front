@@ -16,6 +16,8 @@ import AppHeader from '../../../shared/ui/AppHeader.jsx';
 import AppFooter from '../../../shared/ui/AppFooter.jsx';
 // Modal de reservas inteligente.
 import ClientReservationAssistant from '../components/ClientReservationAssistant.jsx';
+// Modal de Chat interactivo estilo WhatsApp para reservas.
+import WhatsAppReservationChatModal from '../components/WhatsAppReservationChatModal.jsx';
 // Barra de navegación inferior fija para móviles.
 import ClientBottomNav from '../components/ClientBottomNav.jsx';
 
@@ -30,8 +32,10 @@ export default function ClientDashboardPage() {
   // Puntos acumulados de lealtad.
   const points = useRewardsStore((s) => s.points);
 
-  // Estado local para abrir el modal de reservas.
+  // Estado local para abrir el modal de reservas inteligente.
   const [bookingOpen, setBookingOpen] = useState(false);
+  // Estado local para abrir el chat interactivo de WhatsApp de reservas.
+  const [whatsappReservationOpen, setWhatsappReservationOpen] = useState(false);
 
   return (
     <div className="flex flex-col min-h-screen bg-brand-50 text-brand-900">
@@ -65,18 +69,26 @@ export default function ClientDashboardPage() {
             </div>
           </div>
 
-          {/* Botones principales de Escaneo QR y Mesa Virtual */}
+          {/* Botones principales de Escaneo QR, Reservas y Mesa Virtual */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
             <Link
               to="/cliente/scan"
-              className="rounded-2xl bg-sky-500 hover:bg-sky-600 px-5 py-3 text-xs font-extrabold text-white transition active:scale-95 shadow-soft flex items-center justify-center gap-2 cursor-pointer"
+              className="rounded-2xl bg-sky-500 hover:bg-sky-600 px-4 py-3 text-xs font-extrabold text-white transition active:scale-95 shadow-soft flex items-center justify-center gap-2 cursor-pointer"
             >
               <span>📷</span>
               <span>Escanear Mesa</span>
             </Link>
+            <button
+              type="button"
+              onClick={() => setWhatsappReservationOpen(true)}
+              className="rounded-2xl bg-emerald-600 hover:bg-emerald-700 px-4 py-3 text-xs font-extrabold text-white transition active:scale-95 shadow-soft flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <span>📅</span>
+              <span>Reservar</span>
+            </button>
             <Link
               to="/cliente"
-              className="rounded-2xl bg-amber-500 hover:bg-amber-600 px-5 py-3 text-xs font-extrabold text-white transition active:scale-95 shadow-soft flex items-center justify-center gap-2 cursor-pointer"
+              className="rounded-2xl bg-amber-500 hover:bg-amber-600 px-4 py-3 text-xs font-extrabold text-white transition active:scale-95 shadow-soft flex items-center justify-center gap-2 cursor-pointer"
             >
               <span>🍽️</span>
               <span>Ir a Mesa Virtual</span>
@@ -164,7 +176,7 @@ export default function ClientDashboardPage() {
           {/* Tarjeta 3: Asistente de Reservas */}
           <button
             type="button"
-            onClick={() => setBookingOpen(true)}
+            onClick={() => setWhatsappReservationOpen(true)}
             className="group rounded-3xl bg-white p-5 shadow-soft border border-brand-100 hover:border-emerald-300 transition flex flex-col justify-between gap-4 text-left active:scale-98 cursor-pointer"
           >
             <div className="flex items-center justify-between">
@@ -251,8 +263,11 @@ export default function ClientDashboardPage() {
         </div>
       </main>
 
-      {/* Modal de Reservas */}
+      {/* Modal de Reservas Inteligente */}
       <ClientReservationAssistant isOpen={bookingOpen} onClose={() => setBookingOpen(false)} />
+
+      {/* Modal de Chat Interactivo Estilo WhatsApp para Reservas */}
+      <WhatsAppReservationChatModal isOpen={whatsappReservationOpen} onClose={() => setWhatsappReservationOpen(false)} />
 
       {/* Pie de página universal */}
       <AppFooter theme="light" />
