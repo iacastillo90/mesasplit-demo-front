@@ -25,7 +25,7 @@ const STATUSES = {
 };
 
 // Componente de la sección Delivery Omnicanal.
-export default function DeliveryColumn({ orders = [], deliveryOrders = [], focusMode = false }) {
+export default function DeliveryColumn({ orders = [], deliveryOrders = [], focusMode = false, limit = null, onNavigateToDelivery = null }) {
   // Store de tema global para alternar entre claro y oscuro.
   const theme = useThemeStore((s) => s.theme);
   const isDark = theme === 'dark';
@@ -47,6 +47,9 @@ export default function DeliveryColumn({ orders = [], deliveryOrders = [], focus
     if (activeFilter === 'in_prep') return o.status === 'in_prep' || o.status === 'pending';
     return o.status === activeFilter;
   });
+
+  // Limita las tarjetas renderizadas si se especifica el límite (ej. 1 card en resumen).
+  const displayedOrders = limit ? filteredOrders.slice(0, limit) : filteredOrders;
 
   return (
     // Sección contenedora con accesibilidad y tema dinámico.
@@ -102,12 +105,12 @@ export default function DeliveryColumn({ orders = [], deliveryOrders = [], focus
 
       {/* Grilla responsiva de tarjetas de pedidos virtuales. */}
       <div className="grid grid-cols-1 gap-3">
-        {filteredOrders.length === 0 ? (
+        {displayedOrders.length === 0 ? (
           <div className={`p-4 text-center text-xs rounded-xl border italic ${isDark ? 'text-brand-50/50 border-brand-800' : 'text-brand-800/50 border-brand-200'}`}>
             No hay comandas en este estado.
           </div>
         ) : (
-          filteredOrders.map((order) => {
+          displayedOrders.map((order) => {
             // Determina el branding visual de la plataforma.
             const platformKey = (order.platform || 'ubereats').toLowerCase();
             const platform = PLATFORMS[platformKey] ?? PLATFORMS.ubereats;
@@ -163,6 +166,21 @@ export default function DeliveryColumn({ orders = [], deliveryOrders = [], focus
           })
         )}
       </div>
+
+      {/* Botón para ver más comandas de delivery si la vista está limitada */}
+      {limit && filteredOrders.length > limit && (
+        <button
+          type="button"
+          onClick={onNavigateToDelivery}
+          className={`w-full rounded-xl p-2.5 text-xs font-bold transition cursor-pointer border text-center ${
+            isDark
+              ? 'bg-brand-950/60 border-brand-800 text-amber-400 hover:bg-brand-800'
+              : 'bg-brand-50 border-brand-200 text-amber-600 hover:bg-brand-100 shadow-soft'
+          }`}
+        >
+          Ver todas las comandas en Delivery ({filteredOrders.length} activas) ➔
+        </button>
+      )}
     </section>
   );
 }

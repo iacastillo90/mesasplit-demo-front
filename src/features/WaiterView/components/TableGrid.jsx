@@ -15,6 +15,10 @@ const STATUS_VARIANTS = {
   waiting_food: 'bg-semantic-warning/20 text-semantic-warning border-semantic-warning/30',
   // Cuenta solicitada: naranja de urgencia operacional (NO rojo puro).
   bill_requested: 'bg-semantic-urgent/20 text-semantic-urgent border-semantic-urgent/30',
+  // En cobro (cuenta abierta para pagar): celeste informativo.
+  billing: 'bg-sky-500/20 text-sky-700 border-sky-300',
+  // En limpieza (mesa en proceso de sanitización): violeta operacional.
+  cleaning: 'bg-violet-500/20 text-violet-700 border-violet-300',
   // Libre: gris sutil.
   free: 'bg-brand-800 text-brand-50/60 border-brand-800',
 };
@@ -24,6 +28,8 @@ const STATUS_LABELS = {
   occupied: 'Ocupada',
   waiting_food: 'En cocina',
   bill_requested: 'Pidiendo cuenta',
+  billing: 'En cobro',
+  cleaning: 'En limpieza',
   free: 'Libre',
 };
 
@@ -68,8 +74,8 @@ export default function TableGrid({ tables, selectedTableId, onSelectTable }) {
       {viewMode === '3d' ? (
         <IsometricTableGrid3D tables={tables} selectedTableId={selectedTableId} onSelectTable={onSelectTable} />
       ) : (
-        /* Grilla responsiva de tarjetas de mesa 2D. */
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        /* Grilla responsiva de tarjetas de mesa 2D (2/3/4 columnas). */
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
         {tables.map((table) => {
           // Determina si esta mesa está seleccionada activamente.
           const isSelected = table.id === selectedTableId;

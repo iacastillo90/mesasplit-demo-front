@@ -81,7 +81,7 @@ describe('local-admin-radar: Registro de Merma y Botón de Pánico', () => {
     // Renderiza la vista de Radar.
     render(<RadarPage />);
     // Busca el input de registro de mermas e inventario vencido.
-    const mermaInput = screen.getByPlaceholderText(/Registrar merma/i);
+    const mermaInput = screen.getByPlaceholderText(/Tomate San Marzano/i);
     // Escribe una merma de prueba.
     fireEvent.change(mermaInput, { target: { value: '3 kilos de tomate vencido' } });
     // Presiona Enter o el botón de registro.

@@ -167,7 +167,12 @@ export default function RadarPage() {
                     focusMode={focusMode}
                   />
                 </div>
-                <DeliveryColumn orders={deliveryOrders} focusMode={focusMode} />
+                <DeliveryColumn
+                  orders={deliveryOrders}
+                  focusMode={focusMode}
+                  limit={1}
+                  onNavigateToDelivery={() => setActiveTab('delivery')}
+                />
               </div>
               <InventoryMenuManager />
               {!focusMode && <StaffLeaderboard />}
@@ -185,7 +190,12 @@ export default function RadarPage() {
                   focusMode={focusMode}
                 />
               </div>
-              <DeliveryColumn orders={deliveryOrders} focusMode={focusMode} />
+              <DeliveryColumn
+                orders={deliveryOrders}
+                focusMode={focusMode}
+                limit={1}
+                onNavigateToDelivery={() => setActiveTab('delivery')}
+              />
             </div>
           )}
 
