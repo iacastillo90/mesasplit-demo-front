@@ -9,6 +9,8 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
 // Store de ClientView para asertar el carrito.
 import { useClientStore } from './store/useClientStore.js';
+// MemoryRouter para soportar navegaciones en tests.
+import { MemoryRouter } from 'react-router-dom';
 // Página principal de ClientView para probar la integración real.
 import ClientPage from './pages/ClientPage.jsx';
 
@@ -20,8 +22,12 @@ describe('client-onboarding: Guía de bienvenida de primera visita', () => {
   });
 
   it('Scenario 1: Primera visita muestra la guía cuando localStorage está vacío', async () => {
-    // Renderiza la Mesa Virtual del cliente.
-    render(<ClientPage />);
+    // Renderiza la Mesa Virtual del cliente con Router.
+    render(
+      <MemoryRouter>
+        <ClientPage />
+      </MemoryRouter>,
+    );
     // La guía de bienvenida debe estar visible en pantalla con el mensaje de introducción.
     expect(await screen.findByRole('heading', { name: /¡Bienvenido a MesaSplit!/i })).toBeInTheDocument();
     expect(screen.getByText(/Escaneá, pedí y dividí la cuenta/i)).toBeInTheDocument();
@@ -29,7 +35,11 @@ describe('client-onboarding: Guía de bienvenida de primera visita', () => {
 
   it('Scenario 2: Descarte persistido guarda mesasplit-onboarding=true y no vuelve a mostrarse', async () => {
     // Renderiza la Mesa Virtual sin clave en localStorage.
-    render(<ClientPage />);
+    render(
+      <MemoryRouter>
+        <ClientPage />
+      </MemoryRouter>,
+    );
     // Presiona el botón de descarte "Entendido, ¡a comer!".
     const dismissBtn = await screen.findByRole('button', { name: /Entendido/i });
     fireEvent.click(dismissBtn);
@@ -42,7 +52,11 @@ describe('client-onboarding: Guía de bienvenida de primera visita', () => {
 
   it('Scenario 3: La guía no bloquea pedidos — agregar un ítem incrementa el carrito real mientras la guía sigue visible', async () => {
     // Renderiza la Mesa Virtual.
-    render(<ClientPage />);
+    render(
+      <MemoryRouter>
+        <ClientPage />
+      </MemoryRouter>,
+    );
     // Verifica que el banner de bienvenida está presente.
     expect(await screen.findByRole('heading', { name: /¡Bienvenido a MesaSplit!/i })).toBeInTheDocument();
 

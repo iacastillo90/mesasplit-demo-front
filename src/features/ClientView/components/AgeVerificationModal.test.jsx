@@ -7,6 +7,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 // Testing Library: renderizado y simulación.
 import { fireEvent, render, screen } from '@testing-library/react';
+// MemoryRouter para soportar navegaciones en tests.
+import { MemoryRouter } from 'react-router-dom';
 // Store de ClientView.
 import { useClientStore } from '../store/useClientStore.js';
 // Página principal de ClientView para prueba de flujo completo.
@@ -14,8 +16,9 @@ import ClientPage from '../pages/ClientPage.jsx';
 
 describe('client-alcohol-verification: Verificación de edad para ítems alcohólicos', () => {
   beforeEach(() => {
-    // Restablece el store antes de cada prueba.
+    // Restablece el store antes de cada prueba y reemplaza loadClientData por un noop.
     useClientStore.getState().resetDemo();
+    useClientStore.setState({ loadClientData: () => {} });
   });
 
   it('Scenario 1: Ítem alcohólico abre modal y al cancelar el modal se cierra sin agregar al carrito', async () => {
@@ -25,7 +28,7 @@ describe('client-alcohol-verification: Verificación de edad para ítems alcohó
       loading: false,
     });
 
-    render(<ClientPage />);
+    render(<MemoryRouter><ClientPage /></MemoryRouter>);
     const beerCard = await screen.findByText(/Cerveza Artesanal IPA/i);
     const beerAddBtn = beerCard.closest('article').querySelector('button');
     fireEvent.click(beerAddBtn);
@@ -49,7 +52,7 @@ describe('client-alcohol-verification: Verificación de edad para ítems alcohó
       loading: false,
     });
 
-    render(<ClientPage />);
+    render(<MemoryRouter><ClientPage /></MemoryRouter>);
     const beerCard = await screen.findByText(/Cerveza Artesanal IPA/i);
     const beerAddBtn = beerCard.closest('article').querySelector('button');
     fireEvent.click(beerAddBtn);
@@ -72,7 +75,7 @@ describe('client-alcohol-verification: Verificación de edad para ítems alcohó
       loading: false,
     });
 
-    render(<ClientPage />);
+    render(<MemoryRouter><ClientPage /></MemoryRouter>);
     const burgerCard = await screen.findByText(/Hamburguesa Clásica/i);
     const burgerAddBtn = burgerCard.closest('article').querySelector('button');
     fireEvent.click(burgerAddBtn);
