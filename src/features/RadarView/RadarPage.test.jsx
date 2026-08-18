@@ -55,7 +55,7 @@ describe('local-admin-radar: Modo Hora Punta y Exception Feed', () => {
 
   it('activa el Modo Hora Punta mostrando el badge y despliega el Exception Feed', () => {
     // Renderiza la vista de Radar.
-    render(<RadarPage />);
+    const { unmount } = render(<RadarPage />);
     // Encuentra el botón de alternancia de Hora Punta.
     const focusBtn = screen.getByRole('button', { name: /Hora Punta/i });
     // Activa el modo Hora Punta.
@@ -68,7 +68,8 @@ describe('local-admin-radar: Modo Hora Punta y Exception Feed', () => {
     fireEvent.click(auditBtn);
     // Verifica el título del cajón de auditoría síncronamente.
     expect(screen.getByText(/Registro de Excepciones y Auditoría/i)).toBeInTheDocument();
-  }, 15000);
+    unmount();
+  });
 });
 
 describe('local-admin-radar: Registro de Merma y Botón de Pánico', () => {
