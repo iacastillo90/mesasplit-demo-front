@@ -212,18 +212,15 @@ export default function ClientPage() {
 
               {/* Sesión de usuario logueado o botón de inicio de sesión */}
               {user ? (
-                <div className="flex items-center gap-1.5 rounded-full bg-amber-500/10 px-3 py-1 text-xs font-bold text-amber-900 border border-amber-300 shadow-soft">
+                <Link
+                  to="/cliente/perfil"
+                  className="flex items-center gap-1.5 rounded-full bg-amber-500/10 px-3 py-1 text-xs font-bold text-amber-900 border border-amber-300 shadow-soft hover:bg-amber-500/20 transition cursor-pointer"
+                  title="Ver Mi Perfil de Comensal"
+                >
                   <span>{user.avatar || '👤'}</span>
                   <span className="truncate max-w-[110px]">{user.name}</span>
-                  <button
-                    type="button"
-                    onClick={logoutUser}
-                    className="ml-1 text-[10px] text-amber-700 hover:text-amber-950 font-extrabold cursor-pointer"
-                    title="Cerrar Sesión"
-                  >
-                    ✕
-                  </button>
-                </div>
+                  <span className="text-[10px] bg-amber-500 text-white rounded-full px-1.5 py-0.2 font-extrabold">Perfil →</span>
+                </Link>
               ) : (
                 <Link
                   to="/cliente/login"

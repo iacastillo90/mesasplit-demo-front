@@ -19,6 +19,8 @@ import {
   ClientCartView,
   ClientLoginView,
   ClientRegisterView,
+  ClientQrScanView,
+  ClientProfileView,
   KdsView,
   PortalView,
   PosView,
@@ -66,6 +68,16 @@ export const routes = [
   {
     path: '/cliente/registro',
     element: withSuspense(<ClientRegisterView />),
+  },
+  // Ruta del simulador de escaneo QR de mesa.
+  {
+    path: '/cliente/scan',
+    element: withSuspense(<ClientQrScanView />),
+  },
+  // Ruta del Perfil completo de usuario comensal.
+  {
+    path: '/cliente/perfil',
+    element: withSuspense(<ClientProfileView />),
   },
   // Ruta del Waiter (garzón).
   {

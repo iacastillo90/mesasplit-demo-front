@@ -29,8 +29,8 @@ export default function ClientLoginPage() {
     e.preventDefault();
     // Inicia sesión demo con las credenciales ingresadas.
     loginUser({ email, name: email ? email.split('@')[0] : 'Comensal Demo' });
-    // Redirige a la vista principal de la Mesa Virtual.
-    navigate('/cliente');
+    // Redirige al flujo de escaneo QR de mesa.
+    navigate('/cliente/scan');
   };
 
   return (

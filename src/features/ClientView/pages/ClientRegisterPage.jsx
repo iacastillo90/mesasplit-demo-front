@@ -36,7 +36,7 @@ export default function ClientRegisterPage() {
       name: provider === 'apple' ? 'Usuario Apple' : 'Usuario Google',
       email: provider === 'apple' ? 'usuario.apple@icloud.com' : 'usuario.google@gmail.com',
     });
-    navigate('/cliente');
+    navigate('/cliente/scan');
   };
 
   // Maneja el envío del formulario tradicional de registro.
@@ -49,8 +49,8 @@ export default function ClientRegisterPage() {
     setErrorMsg(null);
     // Registra al usuario en el store global.
     registerUser({ name, email });
-    // Redirige a la vista principal del cliente.
-    navigate('/cliente');
+    // Redirige al flujo de escaneo QR de mesa.
+    navigate('/cliente/scan');
   };
 
   return (

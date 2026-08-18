@@ -24,6 +24,12 @@ export const ClientLoginView = lazy(() => import('../features/ClientView/pages/C
 // Vista de Registro de cliente ("/cliente/registro").
 export const ClientRegisterView = lazy(() => import('../features/ClientView/pages/ClientRegisterPage.jsx'));
 
+// Vista de escaneo QR de mesa del cliente ("/cliente/scan").
+export const ClientQrScanView = lazy(() => import('../features/ClientView/pages/ClientQrScanPage.jsx'));
+
+// Vista de Perfil completo del comensal ("/cliente/perfil").
+export const ClientProfileView = lazy(() => import('../features/ClientView/pages/ClientProfilePage.jsx'));
+
 // Vista del garzón ("/garzon"): grilla de mesas y pad de comanda.
 // Slice: src/features/WaiterView (task 2.6).
 export const WaiterView = lazy(() => import('../features/WaiterView/pages/WaiterPage.jsx'));
