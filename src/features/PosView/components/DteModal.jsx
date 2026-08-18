@@ -58,11 +58,11 @@ export default function DteModal({ open, onClose, bill, onEmitDte }) {
           <span className="text-sm font-bold">{formatCurrency(bill.totalAmount)}</span>
         </div>
 
-        {/* Radio selector de Boleta Electrónica vs Factura Electrónica. */}
+        {/* Radio selector de Boleta, Factura, Guía de Despacho o Nota de Crédito. */}
         <div className="flex flex-col gap-2">
-          <label className="text-xs font-bold text-brand-800">Tipo de Documento</label>
-          <div className="grid grid-cols-2 gap-3">
-            <label className="flex cursor-pointer items-center gap-2 rounded-xl bg-white p-3 border border-brand-200 hover:border-brand-500">
+          <label className="text-xs font-bold text-brand-800">Tipo de Documento Tributario (DTE Directo SII)</label>
+          <div className="grid grid-cols-2 gap-2">
+            <label className="flex cursor-pointer items-center gap-2 rounded-xl bg-white p-2.5 border border-brand-200 hover:border-brand-500">
               <input
                 type="radio"
                 name="dteTypeModal"
@@ -71,10 +71,10 @@ export default function DteModal({ open, onClose, bill, onEmitDte }) {
                 onChange={() => setDteType('boleta')}
                 className="text-brand-500 focus:ring-brand-500"
               />
-              <span className="text-xs font-bold">Boleta Electrónica</span>
+              <span className="text-xs font-bold">Boleta Elec. (Tipo 39)</span>
             </label>
 
-            <label className="flex cursor-pointer items-center gap-2 rounded-xl bg-white p-3 border border-brand-200 hover:border-brand-500">
+            <label className="flex cursor-pointer items-center gap-2 rounded-xl bg-white p-2.5 border border-brand-200 hover:border-brand-500">
               <input
                 type="radio"
                 name="dteTypeModal"
@@ -83,7 +83,31 @@ export default function DteModal({ open, onClose, bill, onEmitDte }) {
                 onChange={() => setDteType('factura')}
                 className="text-brand-500 focus:ring-brand-500"
               />
-              <span className="text-xs font-bold">Factura Electrónica</span>
+              <span className="text-xs font-bold">Factura Elec. (Tipo 33)</span>
+            </label>
+
+            <label className="flex cursor-pointer items-center gap-2 rounded-xl bg-white p-2.5 border border-brand-200 hover:border-brand-500">
+              <input
+                type="radio"
+                name="dteTypeModal"
+                value="guia"
+                checked={dteType === 'guia'}
+                onChange={() => setDteType('guia')}
+                className="text-brand-500 focus:ring-brand-500"
+              />
+              <span className="text-xs font-bold">Guía Despacho (Tipo 52)</span>
+            </label>
+
+            <label className="flex cursor-pointer items-center gap-2 rounded-xl bg-white p-2.5 border border-brand-200 hover:border-brand-500">
+              <input
+                type="radio"
+                name="dteTypeModal"
+                value="nota_credito"
+                checked={dteType === 'nota_credito'}
+                onChange={() => setDteType('nota_credito')}
+                className="text-brand-500 focus:ring-brand-500"
+              />
+              <span className="text-xs font-bold">Nota Crédito (Tipo 61)</span>
             </label>
           </div>
         </div>

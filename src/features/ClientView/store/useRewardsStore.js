@@ -28,6 +28,13 @@ export const REWARDS_CATALOG = [
     pointsCost: 1200,
     icon: '🏷️',
   },
+  {
+    id: 'rew-4',
+    title: 'Bono Cumpleaños 🎂',
+    description: '¡Felicidades en tu día! Postre especial gratis de cumpleaños.',
+    pointsCost: 100,
+    icon: '🎂',
+  },
 ];
 
 // Helper para determinar el nivel de lealtad según los puntos acumulados.
