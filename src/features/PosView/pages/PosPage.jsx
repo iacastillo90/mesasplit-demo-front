@@ -130,7 +130,6 @@ export default function PosPage() {
       currentRoute="/admin/caja"
       title="Caja POS"
       subtitle="Punto de Venta"
-      theme="light"
     >
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
         {/* Banner de notificación cuando el turno de caja se cierra exitosamente. */}

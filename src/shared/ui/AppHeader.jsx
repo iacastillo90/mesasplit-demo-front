@@ -6,10 +6,15 @@ import { useState } from 'react';
 import { useAudioSynth } from '../../hooks/useAudioSynth.js';
 import LanguageSelector from '../i18n/LanguageSelector.jsx';
 import ClientDrawerMenu from '../../features/ClientView/components/ClientDrawerMenu.jsx';
+import { useThemeStore } from '../store/useThemeStore.js';
 
-export default function AppHeader({ title = 'MesaSplit', subtitle, currentRoute = '/', theme = 'light' }) {
+export default function AppHeader({ title = 'MesaSplit', subtitle, currentRoute = '/', theme: themeProp }) {
   // Estado local para abrir el menú hamburguesa desplegable.
   const [menuOpen, setMenuOpen] = useState(false);
+  // Store de tema global para alternar entre claro y oscuro.
+  const storeTheme = useThemeStore((s) => s.theme);
+  const toggleTheme = useThemeStore((s) => s.toggleTheme);
+  const effectiveTheme = themeProp || storeTheme;
 
   // Lista de las vistas operacionales del sistema MesaSplit.
   const routes = [
@@ -25,7 +30,7 @@ export default function AppHeader({ title = 'MesaSplit', subtitle, currentRoute 
     { path: '/admin/super', label: '🏢 Super Admin Corporativo', badge: 'Super Admin' },
   ];
 
-  const isDark = theme === 'dark';
+  const isDark = effectiveTheme === 'dark';
   const { isMuted, toggleMute } = useAudioSynth();
   const isClientArea = currentRoute.startsWith('/cliente');
 
@@ -86,22 +91,12 @@ export default function AppHeader({ title = 'MesaSplit', subtitle, currentRoute 
       {/* Lado Derecho: Conexión Realtime e Indicador de Estado */}
       <div className="flex items-center gap-2">
         {/* Selector de idioma dinámico i18n con soporte de tema. */}
-        <LanguageSelector theme={theme} />
+        <LanguageSelector theme={effectiveTheme} />
 
         {/* Botón Toggle de Modo Claro / Oscuro Global */}
         <button
           type="button"
-          onClick={() => {
-            if (typeof window !== 'undefined') {
-              const isCurrentlyDark = document.documentElement.classList.contains('dark');
-              if (isCurrentlyDark) {
-                document.documentElement.classList.remove('dark');
-              } else {
-                document.documentElement.classList.add('dark');
-              }
-              window.dispatchEvent(new CustomEvent('themechange', { detail: !isCurrentlyDark }));
-            }
-          }}
+          onClick={() => toggleTheme()}
           title={isDark ? 'Cambiar a Modo Claro ☀️' : 'Cambiar a Modo Oscuro 🌙'}
           aria-label="Cambiar tema claro u oscuro"
           className={`flex h-8 w-8 items-center justify-center rounded-xl border text-xs transition active:scale-95 cursor-pointer ${

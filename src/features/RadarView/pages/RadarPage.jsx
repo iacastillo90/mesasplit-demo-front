@@ -60,7 +60,6 @@ export default function RadarPage() {
       currentRoute="/admin"
       title="Local Admin"
       subtitle="Radar de Turno"
-      theme="dark"
       sectionTabs={navTabs}
       activeTab={activeTab}
       onSelectTab={setActiveTab}

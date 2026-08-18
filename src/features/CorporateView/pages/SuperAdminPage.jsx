@@ -65,7 +65,6 @@ export default function SuperAdminPage() {
       currentRoute="/admin/super"
       title="Super Admin Corporativo"
       subtitle="Multi-Local"
-      theme="light"
       sectionTabs={navTabs}
       activeTab={activeTab}
       onSelectTab={setActiveTab}

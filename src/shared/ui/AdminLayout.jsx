@@ -7,13 +7,14 @@ import { useState } from 'react';
 import AppHeader from './AppHeader.jsx';
 import AppFooter from './AppFooter.jsx';
 import AdminCMSReportsModal from '../../features/CorporateView/components/AdminCMSReportsModal.jsx';
+import { useThemeStore } from '../store/useThemeStore.js';
 
 export default function AdminLayout({
   children,
   currentRoute = '/admin',
   title = 'Local Admin',
   subtitle = 'Supervisión en vivo',
-  theme = 'dark',
+  theme: themeProp,
   sectionTabs = [],
   activeTab,
   onSelectTab,
@@ -21,7 +22,11 @@ export default function AdminLayout({
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [cmsReportsOpen, setCmsReportsOpen] = useState(false);
-  const isDark = theme === 'dark';
+
+  // Store de tema global para alternar entre claro y oscuro.
+  const storeTheme = useThemeStore((s) => s.theme);
+  const effectiveTheme = themeProp || storeTheme;
+  const isDark = effectiveTheme === 'dark';
 
   // Rutas principales del área administrativa de la empresa.
   const adminRoutes = [
@@ -33,7 +38,7 @@ export default function AdminLayout({
   return (
     <div className={`flex flex-col h-screen overflow-hidden ${isDark ? 'bg-brand-950 text-brand-50' : 'bg-brand-50 text-brand-900'}`}>
       {/* Cabecera universal con menú hamburguesa global */}
-      <AppHeader title={title} subtitle={subtitle} currentRoute={currentRoute} theme={theme} />
+      <AppHeader title={title} subtitle={subtitle} currentRoute={currentRoute} theme={effectiveTheme} />
 
       {/* ÁREA CENTRAL (Sidebar colapsable a la izquierda + Main scrollable) */}
       <div className="flex-1 flex overflow-hidden">
@@ -268,7 +273,7 @@ export default function AdminLayout({
       <AdminCMSReportsModal isOpen={cmsReportsOpen} onClose={() => setCmsReportsOpen(false)} />
 
       {/* PIE DE PÁGINA FIJO */}
-      <AppFooter theme={theme} />
+      <AppFooter theme={effectiveTheme} />
     </div>
   );
 }
