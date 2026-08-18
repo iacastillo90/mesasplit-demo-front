@@ -40,7 +40,6 @@ describe('waiter-pwa: Marcaje de Turno (Ley 40 Horas)', () => {
 
 describe('waiter-pwa: Grilla de Mesas y Semáforos de Estado', () => {
   beforeEach(() => {
-    // Restablece el store antes de cada test.
     useWaiterStore.getState().resetDemo();
   });
 
@@ -57,7 +56,6 @@ describe('waiter-pwa: Grilla de Mesas y Semáforos de Estado', () => {
 
 describe('waiter-pwa: Toma de Pedido con Una Mano y Badges', () => {
   beforeEach(() => {
-    // Restablece el store antes de cada test.
     useWaiterStore.getState().resetDemo();
   });
 
@@ -79,7 +77,6 @@ describe('waiter-pwa: Toma de Pedido con Una Mano y Badges', () => {
 
 describe('waiter-pwa: Escudo de Alergias y Course Control', () => {
   beforeEach(() => {
-    // Restablece el store antes de cada test.
     useWaiterStore.getState().resetDemo();
   });
 
@@ -112,7 +109,6 @@ describe('waiter-pwa: Escudo de Alergias y Course Control', () => {
 
 describe('waiter-pwa: Anulación Protegida con PIN y Liberación de Mesa', () => {
   beforeEach(() => {
-    // Restablece el store antes de cada test.
     useWaiterStore.getState().resetDemo();
   });
 
@@ -151,8 +147,8 @@ describe('sos-waiter-call: Badge de Alerta S.O.S. del Cliente (REQ-03) — waite
   };
 
   beforeEach(() => {
-    // Restablece el store antes de cada test.
     useWaiterStore.getState().resetDemo();
+    useWaiterStore.setState({ loadTables: () => {}, loading: false });
   });
 
   it('muestra el banner de alerta con mesa y motivo al recibir el evento call.waiter', async () => {

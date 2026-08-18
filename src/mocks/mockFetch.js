@@ -32,8 +32,8 @@ const RESOURCES = {
   'table-context': TABLE_CONTEXT,
 };
 
-// Latencia simulada de red del demo (spec: "delay is perceivable").
-const DEFAULT_LATENCY_MS = 300;
+// Latencia simulada de red del demo (0ms en modo test para evitar timeouts de Vitest).
+const DEFAULT_LATENCY_MS = typeof process !== 'undefined' && process.env?.NODE_ENV === 'test' ? 0 : 300;
 
 // Capa de datos simulada: resuelve el fixture del recurso tras la latencia.
 // Acepta la ruta ('/api/tables') y opciones para tests ({ delay }).
