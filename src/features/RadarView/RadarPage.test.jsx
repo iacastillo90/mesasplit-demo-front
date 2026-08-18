@@ -15,8 +15,9 @@ import RadarPage from './pages/RadarPage.jsx';
 
 describe('feature-views: mapa del radar (spec)', () => {
   beforeEach(() => {
-    // Restablece el store de Radar antes de cada prueba.
+    // Restablece el store de Radar antes de cada prueba y fija loading en false.
     useRadarStore.getState().resetDemo();
+    useRadarStore.setState({ loadRadarData: () => {}, loading: false });
   });
 
   it('el conteo del mapa coincide con el fixture de mesas', async () => {
@@ -30,6 +31,7 @@ describe('feature-views: mapa del radar (spec)', () => {
 describe('local-admin-radar: Plano Topológico y Delivery Omnicanal', () => {
   beforeEach(() => {
     useRadarStore.getState().resetDemo();
+    useRadarStore.setState({ loadRadarData: () => {}, loading: false });
   });
 
   it('renderiza filtros por zona (Salón, Terraza, Barra) y tarjetas de Delivery Omnicanal', async () => {
@@ -48,6 +50,7 @@ describe('local-admin-radar: Plano Topológico y Delivery Omnicanal', () => {
 describe('local-admin-radar: Modo Hora Punta y Exception Feed', () => {
   beforeEach(() => {
     useRadarStore.getState().resetDemo();
+    useRadarStore.setState({ loadRadarData: () => {}, loading: false });
   });
 
   it('activa el Modo Hora Punta mostrando el badge y despliega el Exception Feed', async () => {
@@ -71,6 +74,7 @@ describe('local-admin-radar: Modo Hora Punta y Exception Feed', () => {
 describe('local-admin-radar: Registro de Merma y Botón de Pánico', () => {
   beforeEach(() => {
     useRadarStore.getState().resetDemo();
+    useRadarStore.setState({ loadRadarData: () => {}, loading: false });
   });
 
   it('permite ingresar mertas en la barra de comando y activar el Botón de Pánico', async () => {

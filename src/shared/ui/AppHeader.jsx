@@ -59,8 +59,8 @@ export default function AppHeader({ title = 'MesaSplit', subtitle, currentRoute 
 
       {/* Lado Derecho: Conexión Realtime e Indicador de Estado */}
       <div className="flex items-center gap-2">
-        {/* Selector de idioma dinámico i18n */}
-        <LanguageSelector />
+        {/* Selector de idioma dinámico i18n con soporte de tema. */}
+        <LanguageSelector theme={theme} />
 
         {/* Botón Toggle de Silencio Auditivo Global */}
         <button
