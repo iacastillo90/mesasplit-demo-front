@@ -26,6 +26,13 @@ const initialState = {
   tableContext: null,
   // Carrito: arreglo de {id, name, price, qty} agregados por el cliente.
   cart: [],
+  // Usuario logueado en la sesión demo de la app.
+  user: {
+    name: 'Constanza Silva',
+    email: 'constanza@mesasplit.cl',
+    loggedIn: true,
+    avatar: '👩‍💻',
+  },
   // Descuento activo en CLP derivado de recompensas de lealtad.
   activeDiscountAmount: 0,
   // Flag de carga de la primera llamada al servicio.
@@ -46,6 +53,31 @@ export const useClientStore = create(
         const [menu, tableContext] = await Promise.all([getMenu(), getTableContext()]);
         set({ menu, tableContext, loading: false });
       },
+
+      // Inicia sesión de usuario demo con cualquier correo y clave.
+      loginUser: ({ email, name }) =>
+        set({
+          user: {
+            name: name && name.trim() ? name : email?.split('@')[0] || 'Comensal Demo',
+            email: email || 'cliente@mesasplit.cl',
+            loggedIn: true,
+            avatar: '👤',
+          },
+        }),
+
+      // Registra un nuevo usuario con consentimiento de Ley N° 21.716.
+      registerUser: ({ name, email }) =>
+        set({
+          user: {
+            name: name && name.trim() ? name : 'Nuevo Comensal',
+            email: email || 'nuevo@mesasplit.cl',
+            loggedIn: true,
+            avatar: '✨',
+          },
+        }),
+
+      // Cierra la sesión activa del usuario.
+      logoutUser: () => set({ user: null }),
 
       // Agrega un ítem del menú al carrito (o suma 1 si ya estaba).
       addToCart: (item) =>
@@ -98,10 +130,11 @@ export const useClientStore = create(
       name: 'mesasplit-client',
       // Almacenamiento JSON seguro en localStorage.
       storage: createJSONStorage(() => localStorage),
-      // Selecciona únicamente cart y tableContext para persistencia.
+      // Selecciona cart, tableContext y user para persistencia.
       partialize: (state) => ({
         cart: state.cart,
         tableContext: state.tableContext,
+        user: state.user,
       }),
     },
   ),

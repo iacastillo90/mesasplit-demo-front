@@ -104,6 +104,11 @@ export default function ClientPage() {
   const openSplit = useSplitStore((s) => s.openSplit);
   const closeSplit = useSplitStore((s) => s.closeSplit);
 
+  // Usuario logueado en la sesión demo de la app.
+  const user = useClientStore((s) => s.user);
+  // Acción para cerrar sesión.
+  const logoutUser = useClientStore((s) => s.logoutUser);
+
   // Carga el menú y el contexto de mesa UNA vez al montar la vista.
   useEffect(() => {
     // Invoca la acción del store que resuelve menu + contexto del servicio.
@@ -111,10 +116,21 @@ export default function ClientPage() {
     // Sin deps: solo al montar (los datos del demo no cambian en sesión).
   }, [loadMenu]);
 
-  // Agrupa el menú por categoría para ordenarlo en secciones leíbles.
+  // Agrupa el menú por categoría y aplica el filtro dietario seleccionado.
   const menuByCategory = useMemo(() => {
-    // Reduce el menú plano a un mapa {categoría → ítems}.
-    return menu.reduce((groups, item) => {
+    // Filtra el menú plano según el chip de dieta activo.
+    const filtered = menu.filter((item) => {
+      if (activeDietFilter === 'vegano') return item.vegetarian || item.vegan;
+      if (activeDietFilter === 'gluten_free') return item.glutenFree;
+      if (activeDietFilter === 'spicy') return item.spicy;
+      if (activeDietFilter === 'popular') return item.popular;
+      if (activeDietFilter === 'postres') return item.sweet || item.category === 'Postres';
+      if (activeDietFilter === 'bebidas') return item.alcoholic || item.category === 'Barra';
+      return true;
+    });
+
+    // Reduce el menú filtrado a un mapa {categoría → ítems}.
+    return filtered.reduce((groups, item) => {
       // Lee la categoría del ítem o usa "Otros" como grupo por defecto.
       const key = item.category ?? 'Otros';
       // Crea el arreglo del grupo si no existe aún.
@@ -123,9 +139,8 @@ export default function ClientPage() {
       groups[key].push(item);
       // Devuelve el mapa acumulado para la siguiente iteración.
       return groups;
-      // Objeto vacío: acumulador inicial del reduce.
     }, {});
-  }, [menu]);
+  }, [menu, activeDietFilter]);
 
   // Derivados del carrito para el CTA flotante (badge y total).
   const cartCount = useMemo(() => selectCartCount(cart), [cart]);
@@ -219,6 +234,29 @@ export default function ClientPage() {
               </Link>
               {/* Badge con el código QR de la sesión (identidad de la mesa). */}
               <Badge variant="brand">Código {tableContext?.code ?? '••••'}</Badge>
+
+              {/* Sesión de usuario logueado o botón de inicio de sesión */}
+              {user ? (
+                <div className="flex items-center gap-1.5 rounded-full bg-amber-500/10 px-3 py-1 text-xs font-bold text-amber-900 border border-amber-300 shadow-soft">
+                  <span>{user.avatar || '👤'}</span>
+                  <span>{user.name}</span>
+                  <button
+                    type="button"
+                    onClick={logoutUser}
+                    className="ml-1 text-[10px] text-amber-700 hover:text-amber-950 font-extrabold cursor-pointer"
+                    title="Cerrar Sesión"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ) : (
+                <Link
+                  to="/cliente/login"
+                  className="rounded-full bg-amber-500 hover:bg-amber-600 text-white px-3 py-1 text-xs font-bold transition active:scale-95 shadow-soft flex items-center gap-1 cursor-pointer"
+                >
+                  🔑 Iniciar Sesión
+                </Link>
+              )}
             </div>
           </div>
           {/* Detalle de comensales y estado de la cuenta. */}

@@ -111,6 +111,7 @@
     "alcoholic": false,
     "glutenFree": true,
     "vegetarian": true,
+    "vegan": true,
     "cost": 6100
   },
   {
@@ -156,6 +157,7 @@
     "alcoholic": false,
     "glutenFree": true,
     "vegetarian": true,
+    "vegan": true,
     "cost": 3900
   },
   {
@@ -268,5 +270,70 @@
     "alcoholic": false,
     "glutenFree": true,
     "cost": 1100
+  },
+  {
+    "id": "m24",
+    "name": "Bowl Falafel & Hummus Vegano 🌱",
+    "description": "Falafel crocante de garbanzos, hummus de sésamo, pepino y garbanzos asados.",
+    "price": 9400,
+    "category": "Ensaladas",
+    "allergens": ["sésamo"],
+    "alcoholic": false,
+    "glutenFree": true,
+    "vegetarian": true,
+    "vegan": true,
+    "cost": 3900
+  },
+  {
+    "id": "m25",
+    "name": "Tacos de Champiñones al Pastor Vegano 🌱",
+    "description": "Tortillas de maíz sin gluten, champiñones adobados al achiote, piña asada y cilantro.",
+    "price": 8900,
+    "category": "Hamburguesas",
+    "allergens": [],
+    "alcoholic": false,
+    "glutenFree": true,
+    "vegetarian": true,
+    "vegan": true,
+    "cost": 3600
+  },
+  {
+    "id": "m26",
+    "name": "Ceviche Salmón Ají Amarillo Picante 🌶️",
+    "description": "Cubos de salmón austral, leche de tigre con ají amarillo, camote y choclo dulce.",
+    "price": 12900,
+    "category": "Ensaladas",
+    "allergens": ["pescado"],
+    "alcoholic": false,
+    "glutenFree": true,
+    "spicy": true,
+    "popular": true,
+    "cost": 5900
+  },
+  {
+    "id": "m27",
+    "name": "Alitas Buffalo Fuego 🌶️",
+    "description": "Alitas de pollo horneadas y glaseadas en salsa cayenne picante con dip blue cheese.",
+    "price": 9900,
+    "category": "Hamburguesas",
+    "allergens": ["lácteos"],
+    "alcoholic": false,
+    "spicy": true,
+    "popular": true,
+    "cost": 4300
+  },
+  {
+    "id": "m28",
+    "name": "Brownie Vegano & Helado de Coco 🍰",
+    "description": "Brownie artesanal sin lactosa ni gluten con cacao puro 70% y bola de helado de coco.",
+    "price": 5200,
+    "category": "Postres",
+    "allergens": ["frutos secos"],
+    "alcoholic": false,
+    "glutenFree": true,
+    "vegetarian": true,
+    "vegan": true,
+    "sweet": true,
+    "cost": 2100
   }
 ]

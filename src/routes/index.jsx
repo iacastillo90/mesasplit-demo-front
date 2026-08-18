@@ -17,6 +17,8 @@ import NotFoundPage from '../app/NotFoundPage.jsx';
 import {
   ClientView,
   ClientCartView,
+  ClientLoginView,
+  ClientRegisterView,
   KdsView,
   PortalView,
   PosView,
@@ -54,6 +56,16 @@ export const routes = [
   {
     path: '/cliente/carrito',
     element: withSuspense(<ClientCartView />),
+  },
+  // Ruta de inicio de sesión del cliente.
+  {
+    path: '/cliente/login',
+    element: withSuspense(<ClientLoginView />),
+  },
+  // Ruta de registro de nuevo cliente con Ley N° 21.716.
+  {
+    path: '/cliente/registro',
+    element: withSuspense(<ClientRegisterView />),
   },
   // Ruta del Waiter (garzón).
   {
