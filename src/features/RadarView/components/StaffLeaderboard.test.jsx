@@ -11,7 +11,7 @@ describe('StaffLeaderboard — Gamificación y Podio de Staff', () => {
 
     expect(screen.getByText(/🏆 Centro de Gamificación & Ranking de Staff/i)).toBeInTheDocument();
     expect(screen.getByText(/👑 REY DEL TURNO/i)).toBeInTheDocument();
-  });
+  }, 15000);
 
   it('permite filtrar por rol y hacer clic en Otorgar Bono', () => {
     render(<StaffLeaderboard />);

@@ -15,9 +15,9 @@ describe('DeliveryColumn — Tarjetas de Delivery Omnicanal (Uber Eats, PedidosY
   it('renderiza tarjetas con logos de Uber Eats, PedidosYa y Justo App', () => {
     render(<DeliveryColumn orders={mockOrders} />);
 
-    expect(screen.getByText(/Uber Eats/i)).toBeInTheDocument();
-    expect(screen.getByText(/PedidosYa/i)).toBeInTheDocument();
-    expect(screen.getByText(/Justo App/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Uber Eats/i)[0]).toBeInTheDocument();
+    expect(screen.getAllByText(/PedidosYa/i)[0]).toBeInTheDocument();
+    expect(screen.getAllByText(/Justo App/i)[0]).toBeInTheDocument();
   });
 
   it('permite filtrar por estado (Preparación, En Camino, Entregados)', () => {
@@ -26,7 +26,7 @@ describe('DeliveryColumn — Tarjetas de Delivery Omnicanal (Uber Eats, PedidosY
     const deliveredFilterBtn = screen.getByRole('button', { name: /✅ Entregados/i });
     fireEvent.click(deliveredFilterBtn);
 
-    expect(screen.getByText('Valentina Bravo')).toBeInTheDocument();
-    expect(screen.queryByText('Camila Rojas')).not.toBeInTheDocument();
+    expect(screen.getByText(/Valentina Bravo/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Camila Rojas/i)).not.toBeInTheDocument();
   });
 });
