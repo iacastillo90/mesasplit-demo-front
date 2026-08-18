@@ -66,10 +66,12 @@ describe('waiter-pwa: Toma de Pedido con Una Mano y Badges', () => {
     await screen.findByText(/Mis mesas/i, {}, { timeout: 3000 });
     // Selecciona la Mesa 1 para ingresar la comanda.
     fireEvent.click(await screen.findByText(/Mesa 1/i, {}, { timeout: 3000 }));
-    // Espera a que se despliegue el catálogo táctil de la comanda.
-    const itemCards = await screen.findAllByText(/Hamburguesa Clásica/i, {}, { timeout: 3000 });
-    // Toca la tarjeta del catálogo para agregar otra unidad.
-    fireEvent.click(itemCards[0]);
+    // Espera a que se despliegue el catálogo táctil con la carta real (seed m2).
+    const itemCards = await screen.findAllByText(/Hamburguesa Clásica Brioche/i, {}, { timeout: 3000 });
+    // La card del catálogo es la primera coincidencia (el detalle va después).
+    const card = itemCards[0];
+    // Toca la tarjeta del catálogo para agregar otra unidad sobre el seed.
+    fireEvent.click(card);
     // Verifica que la comanda refleje las unidades agregadas (badge + línea de detalle).
     expect(screen.getAllByText(/2x/i).length).toBeGreaterThan(0);
   });

@@ -15,8 +15,8 @@ export const DIET_FILTERS = [
 
 export default function MenuFilterPills({ activeFilter = 'all', onSelectFilter }) {
   return (
-    // Contenedor scrollable horizontal responsivo con chips seleccionables.
-    <div className="flex items-center gap-2 overflow-x-auto pb-2 pt-1 scrollbar-none whitespace-nowrap px-1 w-full touch-pan-x shrink-0">
+    // Contenedor scrollable horizontal responsivo sin recortes de texto ni desbordes en dispositivos móviles.
+    <div className="flex items-center gap-2 overflow-x-auto pb-3 pt-1 scrollbar-none whitespace-nowrap px-1 pr-10 w-full min-w-0 touch-pan-x shrink-0">
       {DIET_FILTERS.map((f) => {
         const isActive = activeFilter === f.id;
         return (
@@ -24,14 +24,14 @@ export default function MenuFilterPills({ activeFilter = 'all', onSelectFilter }
             key={f.id}
             type="button"
             onClick={() => onSelectFilter(f.id)}
-            className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-bold whitespace-nowrap shrink-0 transition-all duration-200 active:scale-95 border cursor-pointer ${
+            className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-extrabold whitespace-nowrap shrink-0 transition-all duration-200 active:scale-95 border cursor-pointer select-none min-w-fit ${
               isActive
                 ? 'bg-brand-500 text-white border-brand-500 shadow-soft scale-105'
                 : 'bg-white text-brand-900 border-brand-200 hover:bg-brand-50 hover:border-brand-300'
             }`}
           >
-            <span className="text-sm">{f.icon}</span>
-            <span>{f.label}</span>
+            <span className="text-sm shrink-0">{f.icon}</span>
+            <span className="shrink-0">{f.label}</span>
           </button>
         );
       })}
