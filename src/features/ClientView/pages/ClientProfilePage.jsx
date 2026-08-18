@@ -60,7 +60,9 @@ export default function ClientProfilePage() {
 
   // Sincroniza la pestaña activa en tiempo real ante cambios de URL o navegación.
   useEffect(() => {
-    const tab = getTargetTab();
+    const searchTab = new URLSearchParams(location.search).get('tab');
+    const stateTab = location.state?.tab;
+    const tab = stateTab || searchTab || 'overview';
     if (tab) {
       setActiveTab(tab);
     }

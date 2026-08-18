@@ -42,18 +42,23 @@ export default function AppHeader({ title = 'MesaSplit', subtitle, currentRoute 
     >
       {/* Lado Izquierdo: Identidad de Marca y Título de la Vista */}
       <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-        {/* Botón Hamburguesa Rápido */}
+        {/* Botón de Menú Principal con el Logo Oficial de MesaSplit (reemplaza la 🍔) */}
         <button
           type="button"
           onClick={() => setMenuOpen(!menuOpen)}
-          aria-label="Abrir menú de navegación"
+          aria-label="Abrir menú de navegación MesaSplit"
+          title="Menú MesaSplit"
           className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border transition active:scale-95 cursor-pointer ${
             isDark
               ? 'bg-brand-900 border-brand-800 text-white hover:bg-brand-800'
               : 'bg-brand-50 border-brand-200 text-brand-900 hover:bg-brand-100'
           }`}
         >
-          <span className="text-lg">🍔</span>
+          <img
+            src="/images/mesasplit_logo.png"
+            alt="Logo MesaSplit"
+            className="h-7 w-7 rounded-lg object-cover shadow-sm border border-amber-500/40"
+          />
         </button>
 
         {/* Botón Volver / Retroceder ⬅️ disponible en vistas operacionales (se omite en la raíz y en la vista de cliente) */}
@@ -78,8 +83,7 @@ export default function AppHeader({ title = 'MesaSplit', subtitle, currentRoute 
         )}
 
         <div className="flex flex-col text-left min-w-0">
-          <div className="flex items-center gap-2 truncate">
-            <img src="/images/mesasplit_logo.png" alt="MesaSplit" className="h-7 w-7 rounded-lg object-cover shadow-sm border border-amber-500/40 shrink-0" />
+          <div className="flex items-center gap-1.5 truncate">
             <span className="text-sm font-extrabold tracking-tight shrink-0">MesaSplit</span>
             <span className="hidden xs:inline-block rounded-full bg-brand-500/10 px-2 py-0.2 text-[10px] font-bold text-brand-500 border border-brand-500/20 shrink-0">
               Gastronomía
