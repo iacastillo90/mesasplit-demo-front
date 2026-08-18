@@ -16,6 +16,7 @@ import WaiterPerformanceCard from '../components/WaiterPerformanceCard.jsx';
 import { useDemoStore } from '../../../store/useDemoStore.js';
 import QuickSplitCalculatorModal from '../components/QuickSplitCalculatorModal.jsx';
 import TapToPayModal from '../components/TapToPayModal.jsx';
+import TableConsumptionModal from '../components/TableConsumptionModal.jsx';
 
 const bus = createRealtimeBus('mesasplit');
 
@@ -51,6 +52,8 @@ export default function WaiterPage({ bus: busProp }) {
   const [sosAlert, setSosAlert] = useState(null);
   const [calcOpen, setCalcOpen] = useState(false);
   const [tapOpen, setTapOpen] = useState(false);
+  // Mesa cuyo consumo se visualiza en el modal read-only (null = cerrado).
+  const [consumptionTable, setConsumptionTable] = useState(null);
 
   useEffect(() => {
     if (shiftStatus === 'clocked_in') {
@@ -80,6 +83,16 @@ export default function WaiterPage({ bus: busProp }) {
   };
 
   const activeTable = tables.find((t) => t.id === selectedTableId) ?? null;
+
+  // Handler unificado del click en mesa (D8): selecciona SIEMPRE y abre el
+  // modal de consumo SOLO si la mesa tiene comanda con líneas (order?.items).
+  const handleTableClick = (id) => {
+    selectTable(id);
+    const table = tables.find((t) => t.id === id);
+    if (table?.order?.items?.length > 0) {
+      setConsumptionTable(table);
+    }
+  };
 
   // Si el turno no está activo, muestra la pantalla de marcaje (Ley 40 Horas).
   if (shiftStatus === 'clocked_out') {
@@ -182,7 +195,7 @@ export default function WaiterPage({ bus: busProp }) {
           <TableGrid
             tables={tables}
             selectedTableId={selectedTableId}
-            onSelectTable={selectTable}
+            onSelectTable={handleTableClick}
           />
 
           <WaiterPerformanceCard
@@ -220,6 +233,14 @@ export default function WaiterPage({ bus: busProp }) {
             onClose={() => setTapOpen(false)}
             tableNumber={activeTable?.number ?? '04'}
           />
+
+          {/* Modal read-only de consumo de la mesa ocupada seleccionada (D7/D8). */}
+          {consumptionTable && (
+            <TableConsumptionModal
+              table={consumptionTable}
+              onClose={() => setConsumptionTable(null)}
+            />
+          )}
         </div>
       </main>
       <AppFooter theme="light" />

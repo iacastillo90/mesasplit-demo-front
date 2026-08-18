@@ -12,6 +12,8 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 import { useWaiterStore } from './store/useWaiterStore.js';
 // Componente principal de la PWA del Garzón.
 import WaiterPage from './pages/WaiterPage.jsx';
+// Helper de formato de moneda para verificar totales y subtotales.
+import { formatCurrency } from '../../shared/utils/index.js';
 
 describe('waiter-pwa: Marcaje de Turno (Ley 40 Horas)', () => {
   beforeEach(() => {
@@ -202,5 +204,55 @@ describe('sos-waiter-call: Badge de Alerta S.O.S. del Cliente (REQ-03) — waite
     fireEvent.click(screen.getByRole('button', { name: /Atendido/i }));
     // El banner desaparece tras descartar la alerta S.O.S.
     expect(screen.queryByTestId('sos-alert-banner')).not.toBeInTheDocument();
+  });
+});
+
+describe('waiter-interactive-tables: Modal de Consumo (consumption-modal + no-order-no-modal)', () => {
+  beforeEach(() => {
+    // Restablece el store a su estado inicial antes de cada test.
+    useWaiterStore.getState().resetDemo();
+  });
+
+  it('consumption-modal sc.1: click en mesa ocupada con comanda abre el modal con las líneas de order', async () => {
+    // Renderiza la PWA del garzón (turno activo por defecto).
+    render(<WaiterPage />);
+    // Espera la grilla de mesas asignadas.
+    await screen.findByText(/Mis mesas/i, {}, { timeout: 3000 });
+    // Verifica que el modal NO exista antes del click (estado inicial).
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    // Click en la Mesa 1 (t1: occupied con order de 2 líneas).
+    fireEvent.click(await screen.findByText('Mesa 1', {}, { timeout: 3000 }));
+    // El modal de consumo se abre (rol dialog con aria-modal).
+    expect(await screen.findByRole('dialog', {}, { timeout: 3000 })).toBeInTheDocument();
+    // Muestra cada línea de order: producto y cantidad.
+    expect(screen.getByText('Hamburguesa Clásica')).toBeInTheDocument();
+    expect(screen.getByText('Limonada Menta')).toBeInTheDocument();
+    // Muestra el total de la comanda (2×8900 + 2×2900 = 23600).
+    expect(screen.getByText(formatCurrency(2 * 8900 + 2 * 2900))).toBeInTheDocument();
+  });
+
+  it('no-order-no-modal sc.1: mesa ocupada SIN comanda no abre modal y el grid sigue interactivo', async () => {
+    // Renderiza la PWA del garzón.
+    render(<WaiterPage />);
+    // Espera la grilla de mesas asignadas.
+    await screen.findByText(/Mis mesas/i, {}, { timeout: 3000 });
+    // Click en la Mesa 7 (t7: occupied pero con order nulo).
+    fireEvent.click(await screen.findByText('Mesa 7', {}, { timeout: 3000 }));
+    // NO se abre ningún modal de consumo.
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    // El grid sigue interactivo: click en la Mesa 1 sí abre el modal.
+    fireEvent.click(await screen.findByText('Mesa 1', {}, { timeout: 3000 }));
+    expect(await screen.findByRole('dialog', {}, { timeout: 3000 })).toBeInTheDocument();
+  });
+
+  it('no-order-no-modal sc.1: mesa libre sin order no abre modal', async () => {
+    // Renderiza la PWA del garzón.
+    render(<WaiterPage />);
+    // Espera la grilla de mesas asignadas.
+    await screen.findByText(/Mis mesas/i, {}, { timeout: 3000 });
+    // Click en la Mesa 3 (t3: free, order nulo).
+    fireEvent.click(await screen.findByText('Mesa 3', {}, { timeout: 3000 }));
+    // NO se abre ningún modal de consumo.
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 });
