@@ -7,3 +7,5 @@
 export { formatCurrency } from './formatCurrency.js';
 // Re-exporta el validador de RUT chileno y su normalizador.
 export { normalizeRut, validateRut } from './validateRut.js';
+// Re-exporta el filtro de carta por dieta (paridad cliente/mozo).
+export { filterMenuByDiet } from './menuFilters.js';

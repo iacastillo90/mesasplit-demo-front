@@ -8,6 +8,10 @@
 import { useMemo, useState } from 'react';
 // Formateador de moneda en CLP.
 import { formatCurrency } from '../../../shared/utils/index.js';
+// Filtro puro de carta por dieta (paridad exacta con la Mesa Virtual).
+import { filterMenuByDiet } from '../../../shared/utils/menuFilters.js';
+// Chips de filtros dietarios reutilizados del cliente (waiter-menu-filters).
+import MenuFilterPills from '../../ClientView/components/MenuFilterPills.jsx';
 // Selector de tiempos (Course Control).
 import CourseControlPicker from './CourseControlPicker.jsx';
 // Modal de autorización por PIN.
@@ -42,13 +46,17 @@ export default function OrderPad({
   const [targetVoidItem, setTargetVoidItem] = useState(null);
   // Estado para controlar la apertura del modal de unión/cesión de mesa.
   const [transferModal, setTransferModal] = useState({ open: false, mode: 'merge' });
+  // Filtro dietario activo de la carta (paridad con los chips de la Mesa Virtual).
+  const [activeDietFilter, setActiveDietFilter] = useState('all');
 
   // Calcula el total general de la comanda en borrador.
   const totalAmount = orderDraft.reduce((acc, line) => acc + line.price * line.qty, 0);
 
-  // Agrupa la carta real por categoría preservando el orden de menu.json.
+  // Filtra la carta real por el chip activo y la agrupa por categoría (orden de menu.json).
   const menuByCategory = useMemo(() => {
-    return (menu ?? []).reduce((acc, item) => {
+    // Aplica el mismo filtro dietario que el cliente (filterMenuByDiet puro).
+    const filtered = filterMenuByDiet(menu ?? [], activeDietFilter);
+    return filtered.reduce((acc, item) => {
       // Categoría del ítem (fallback "Otros" si el fixture no la declara).
       const category = item.category ?? 'Otros';
       // Inicializa el arreglo de la categoría en la primera aparición.
@@ -57,7 +65,7 @@ export default function OrderPad({
       acc[category].push(item);
       return acc;
     }, {});
-  }, [menu]);
+  }, [menu, activeDietFilter]);
 
   // Fallback de imagen: si la foto remota/local falla, muestra el placeholder.
   const handleImgError = (e) => {
@@ -148,6 +156,9 @@ export default function OrderPad({
             onSelectCourse={onSelectCourse}
             onMarchFondo={onMarchFondo}
           />
+
+          {/* Chips de filtros dietarios (misma UI y lógica que la Mesa Virtual). */}
+          <MenuFilterPills activeFilter={activeDietFilter} onSelectFilter={setActiveDietFilter} />
 
           {/* Catálogo táctil de una sola mano con tarjetas compactas (D11). */}
           <div className="flex flex-col gap-3">
