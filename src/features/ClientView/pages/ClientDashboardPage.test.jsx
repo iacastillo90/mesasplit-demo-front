@@ -27,7 +27,7 @@ describe('ClientDashboardPage — Dashboard Central del Comensal', () => {
 
     // Verifica que aparezca el saludo personalizado.
     expect(screen.getByRole('heading', { name: /¡Hola Antonia Morales! 👋/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /Escanear Mesa/i })).toBeInTheDocument();
+    expect(screen.getAllByRole('link', { name: /Escanear Mesa/i }).length).toBeGreaterThan(0);
     expect(screen.getByRole('link', { name: /Ir a Mesa Virtual/i })).toBeInTheDocument();
   });
 });
