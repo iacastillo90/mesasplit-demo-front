@@ -29,8 +29,8 @@ export default function ClientLoginPage() {
     e.preventDefault();
     // Inicia sesión demo con las credenciales ingresadas.
     loginUser({ email, name: email ? email.split('@')[0] : 'Comensal Demo' });
-    // Redirige al flujo de escaneo QR de mesa.
-    navigate('/cliente/scan');
+    // Redirige al Dashboard principal de cliente.
+    navigate('/cliente/dashboard');
   };
 
   return (

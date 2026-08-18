@@ -5,15 +5,19 @@
 import { useState } from 'react';
 import { useAudioSynth } from '../../hooks/useAudioSynth.js';
 import LanguageSelector from '../i18n/LanguageSelector.jsx';
+import ClientDrawerMenu from '../../features/ClientView/components/ClientDrawerMenu.jsx';
 
 export default function AppHeader({ title = 'MesaSplit', subtitle, currentRoute = '/', theme = 'light' }) {
   // Estado local para abrir el menú hamburguesa desplegable.
   const [menuOpen, setMenuOpen] = useState(false);
 
-  // Lista de las 6 vistas operacionales del sistema MesaSplit.
+  // Lista de las vistas operacionales del sistema MesaSplit.
   const routes = [
     { path: '/', label: '🏠 Hub Principal', badge: 'Portal' },
+    { path: '/cliente/dashboard', label: '📊 Dashboard Cliente', badge: 'Dashboard' },
+    { path: '/cliente/scan', label: '📷 Escanear QR', badge: 'QR Scan' },
     { path: '/cliente', label: '📱 Mesa Virtual', badge: 'Cliente' },
+    { path: '/cliente/perfil', label: '👤 Perfil Cliente', badge: 'Perfil' },
     { path: '/garzon', label: '🧑‍🍳 Garzón / Mozo', badge: 'Garzón' },
     { path: '/cocina', label: '📺 Cocina KDS', badge: 'KDS' },
     { path: '/admin/caja', label: '💳 Caja POS', badge: 'Caja' },
@@ -23,6 +27,7 @@ export default function AppHeader({ title = 'MesaSplit', subtitle, currentRoute 
 
   const isDark = theme === 'dark';
   const { isMuted, toggleMute } = useAudioSynth();
+  const isClientArea = currentRoute.startsWith('/cliente');
 
   return (
     <header
@@ -82,63 +87,71 @@ export default function AppHeader({ title = 'MesaSplit', subtitle, currentRoute 
         </span>
       </div>
 
-      {/* Menú Desplegable Hamburguesa (Modal / Overlay) */}
-      {menuOpen && (
-        <div className="fixed inset-0 z-50 flex items-start justify-start bg-brand-950/60 backdrop-blur-xs p-4 animate-in fade-in duration-150">
-          <div
-            className={`w-full max-w-sm rounded-2xl p-5 shadow-2xl border flex flex-col gap-4 animate-in slide-in-from-left duration-200 ${
-              isDark ? 'bg-brand-900 border-brand-800 text-white' : 'bg-white border-brand-200 text-brand-900'
-            }`}
-          >
-            {/* Cabecera del Menú Hamburguesa */}
-            <div className="flex items-center justify-between border-b border-brand-200/20 pb-3">
-              <div className="flex items-center gap-2">
-                <span className="text-xl">🍔</span>
-                <h3 className="font-extrabold text-sm uppercase tracking-wider">Navegación de Vistas</h3>
+      {/* Menú Desplegable Hamburguesa Lateral (ClientDrawerMenu para cliente o modal estándar) */}
+      {isClientArea ? (
+        <ClientDrawerMenu isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
+      ) : (
+        menuOpen && (
+          <div className="fixed inset-0 z-50 flex items-start justify-start bg-brand-950/60 backdrop-blur-xs p-4 animate-in fade-in duration-150">
+            <div
+              className={`w-full max-w-sm rounded-2xl p-5 shadow-2xl border flex flex-col gap-4 animate-in slide-in-from-left duration-200 ${
+                isDark ? 'bg-brand-900 border-brand-800 text-white' : 'bg-white border-brand-200 text-brand-900'
+              }`}
+            >
+              {/* Cabecera del Menú Hamburguesa */}
+              <div className="flex items-center justify-between border-b border-brand-200/20 pb-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">🍔</span>
+                  <h3 className="font-extrabold text-sm uppercase tracking-wider">Navegación de Vistas</h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setMenuOpen(false)}
+                  className="rounded-xl bg-brand-500/10 p-1.5 text-xs font-bold hover:bg-brand-500/20"
+                >
+                  ✕
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => setMenuOpen(false)}
-                className="rounded-xl bg-brand-500/10 p-1.5 text-xs font-bold hover:bg-brand-500/20"
-              >
-                ✕
-              </button>
-            </div>
 
-            {/* Lista de Vistas Seleccionables */}
-            <div className="flex flex-col gap-1.5">
-              {routes.map((r) => {
-                const isCurrent = currentRoute === r.path;
-                return (
-                  <a
-                    key={r.path}
-                    href={r.path}
-                    onClick={(e) => {
-                      if (typeof window !== 'undefined' && window.history?.pushState) {
-                        e.preventDefault();
-                        window.history.pushState({}, '', r.path);
-                        window.dispatchEvent(new PopStateEvent('popstate'));
-                        setMenuOpen(false);
-                      }
-                    }}
-                    className={`flex items-center justify-between rounded-xl p-3 text-xs font-bold transition ${
-                      isCurrent
-                        ? 'bg-brand-500 text-white shadow-soft'
-                        : isDark
-                        ? 'hover:bg-brand-800 text-brand-50/80'
-                        : 'hover:bg-brand-100/80 text-brand-900'
-                    }`}
-                  >
-                    <span>{r.label}</span>
-                    <span className={`text-[10px] font-semibold rounded-md px-2 py-0.5 ${isCurrent ? 'bg-white/20 text-white' : 'bg-brand-500/10 text-brand-500'}`}>
-                      {r.badge}
-                    </span>
-                  </a>
-                );
-              })}
+              {/* Lista de Vistas Seleccionables */}
+              <div className="flex flex-col gap-1.5">
+                {routes.map((r) => {
+                  const isCurrent = currentRoute === r.path;
+                  return (
+                    <a
+                      key={r.path}
+                      href={r.path}
+                      onClick={(e) => {
+                        if (typeof window !== 'undefined' && window.history?.pushState) {
+                          e.preventDefault();
+                          window.history.pushState({}, '', r.path);
+                          window.dispatchEvent(new PopStateEvent('popstate'));
+                          setMenuOpen(false);
+                        }
+                      }}
+                      className={`flex items-center justify-between rounded-xl p-3 text-xs font-bold transition ${
+                        isCurrent
+                          ? 'bg-brand-500 text-white shadow-soft'
+                          : isDark
+                          ? 'hover:bg-brand-800 text-brand-50/80'
+                          : 'hover:bg-brand-100/80 text-brand-900'
+                      }`}
+                    >
+                      <span>{r.label}</span>
+                      <span
+                        className={`text-[10px] font-semibold rounded-md px-2 py-0.5 ${
+                          isCurrent ? 'bg-white/20 text-white' : 'bg-brand-500/10 text-brand-500'
+                        }`}
+                      >
+                        {r.badge}
+                      </span>
+                    </a>
+                  );
+                })}
+              </div>
             </div>
           </div>
-        </div>
+        )
       )}
     </header>
   );

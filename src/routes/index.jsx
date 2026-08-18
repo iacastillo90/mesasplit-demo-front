@@ -21,6 +21,7 @@ import {
   ClientRegisterView,
   ClientQrScanView,
   ClientProfileView,
+  ClientDashboardView,
   KdsView,
   PortalView,
   PosView,
@@ -53,6 +54,11 @@ export const routes = [
   {
     path: '/cliente',
     element: withSuspense(<ClientView />),
+  },
+  // Ruta del Dashboard principal del cliente.
+  {
+    path: '/cliente/dashboard',
+    element: withSuspense(<ClientDashboardView />),
   },
   // Ruta de la comanda y carrito del cliente.
   {
