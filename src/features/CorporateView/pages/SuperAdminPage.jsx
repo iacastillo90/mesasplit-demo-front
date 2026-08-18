@@ -17,6 +17,7 @@ import MenuEngineeringMatrix from '../components/MenuEngineeringMatrix.jsx';
 import RealtimeSalesChart from '../components/RealtimeSalesChart.jsx';
 import FranchiseComparisonWidget from '../components/FranchiseComparisonWidget.jsx';
 import RrhhManagementModal from '../components/RrhhManagementModal.jsx';
+import PlanPricingMatrixModal from '../components/PlanPricingMatrixModal.jsx';
 import { exportToCsv } from '../../../shared/utils/exportToCsv.js';
 import { AdminLayout } from '../../../shared/ui/index.js';
 
@@ -29,6 +30,8 @@ export default function SuperAdminPage() {
   const [activeTab, setActiveTab] = useState('all');
   // Estado para controlar la visibilidad del modal de RRHH & Previred.
   const [rrhhModalOpen, setRrhhModalOpen] = useState(false);
+  // Estado para controlar la visibilidad del modal de Planes & Tarifas SaaS.
+  const [planMatrixOpen, setPlanMatrixOpen] = useState(false);
 
   const loadCorporateData = useCorporateStore((s) => s.loadCorporateData);
   const toggleFeature = useCorporateStore((s) => s.toggleFeature);
@@ -77,6 +80,15 @@ export default function SuperAdminPage() {
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Botón para ver la Matriz de Planes & Tarifas SaaS. */}
+          <button
+            type="button"
+            onClick={() => setPlanMatrixOpen(true)}
+            className="inline-flex items-center gap-1.5 rounded-xl bg-amber-500 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-amber-600 active:scale-95 shadow-soft"
+          >
+            💳 Planes & Tarifas SaaS
+          </button>
+
           {/* Botón para abrir el Módulo de RRHH Completo y Previred. */}
           <button
             type="button"
@@ -255,6 +267,12 @@ export default function SuperAdminPage() {
       <RrhhManagementModal
         open={rrhhModalOpen}
         onClose={() => setRrhhModalOpen(false)}
+      />
+
+      {/* Modal de Planes & Tarifas SaaS. */}
+      <PlanPricingMatrixModal
+        open={planMatrixOpen}
+        onClose={() => setPlanMatrixOpen(false)}
       />
     </AdminLayout>
   );
