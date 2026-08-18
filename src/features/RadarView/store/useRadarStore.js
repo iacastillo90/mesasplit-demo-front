@@ -27,10 +27,13 @@ const INITIAL_EXCEPTIONS = [
   { id: 'ex-2', title: 'Apertura manual de gaveta de dinero', description: 'Apertura de caja sin transacción en POS 1', adminPin: '9921', reason: 'Cambio de sencillo', timestamp: Date.now() - 1200000 },
 ];
 
+// Fixture de mesas del salón.
+import tablesData from '../../../mocks/tables.json';
+
 // Estado inicial del store de Radar.
 const initialState = {
   // Mesas asignadas para el plano topológico.
-  tables: [],
+  tables: tablesData,
   // Zona seleccionada para el filtro ('todos', 'Salón', 'Terraza', 'Barra').
   activeZone: 'todos',
   // Lista de comandas de delivery omnicanal.
@@ -48,7 +51,7 @@ const initialState = {
   // Flag de activación del Botón de Pánico de emergencia.
   panicActive: false,
   // Estado de carga inicial de datos.
-  loading: true,
+  loading: false,
 };
 
 // Selector puro: filtra las mesas en estado crítico (esperando comida o cuenta pedida/pagando).

@@ -20,6 +20,9 @@ export const CURRENT_WAITER_ID = 'pedro-soto';
 // Garzones destino válidos para ceder mesa (demo): u3 = Camila Torres (rol waiter en users.json).
 export const DEMO_WAITERS = ['u3'];
 
+// Fixture de mesas predeterminadas para hidratación síncrona.
+import tablesData from '../../../mocks/tables.json';
+
 // Estado inicial del store de garzón (shiftStatus por defecto 'clocked_in' para navegación fluida).
 const initialState = {
   // Estado del turno: 'clocked_in' (activo por defecto en la demo) o 'clocked_out'.
@@ -27,7 +30,7 @@ const initialState = {
   // Garzón en sesión.
   waiterName: 'Pedro Soto',
   // Lista de mesas asignadas al garzón.
-  tables: [],
+  tables: tablesData,
   // ID de la mesa seleccionada actualmente.
   selectedTableId: null,
   // Borrador de la comanda en preparación para la mesa seleccionada.
@@ -35,7 +38,7 @@ const initialState = {
   // Curso seleccionado por defecto para los nuevos platos.
   selectedCourse: 'entrada',
   // Estado de carga inicial de mesas.
-  loading: true,
+  loading: false,
   // Toast o notificación de confirmación activa.
   toastMessage: null,
   // Registro demo de cesiones de mesa (destino: garzón que recibió la mesa).
