@@ -9,7 +9,7 @@ import { Link, useNavigate } from 'react-router-dom';
 // Store de cliente para datos del usuario logueado.
 import { useClientStore } from '../store/useClientStore.js';
 // Store de recompensas del cliente.
-import { useRewardsStore } from '../store/useRewardsStore.js';
+import { REWARDS_CATALOG, useRewardsStore } from '../store/useRewardsStore.js';
 // Cabecera universal.
 import AppHeader from '../../../shared/ui/AppHeader.jsx';
 // Pie de página universal.
@@ -33,10 +33,10 @@ export default function ClientProfilePage() {
   const logoutUser = useClientStore((s) => s.logoutUser);
   // Puntos acumulados de lealtad.
   const points = useRewardsStore((s) => s.points);
-  // Recompensas activas.
-  const rewards = useRewardsStore((s) => s.rewards);
+  // Recompensas canjeadas en la sesión.
+  const redeemedRewards = useRewardsStore((s) => s.redeemedRewards);
   // Acción para canjear recompensa.
-  const claimReward = useRewardsStore((s) => s.claimReward);
+  const redeemReward = useRewardsStore((s) => s.redeemReward);
 
   // Tab interactiva seleccionada ('overview', 'rewards', 'branches', 'payments', 'reviews', 'referrals', 'support').
   const [activeTab, setActiveTab] = useState('overview');
@@ -253,22 +253,27 @@ export default function ClientProfilePage() {
                 </span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {rewards.map((r) => (
-                  <div key={r.id} className="rounded-2xl bg-brand-50 p-4 border border-brand-200 flex items-center justify-between gap-3">
-                    <div className="flex flex-col gap-1">
-                      <span className="text-sm font-bold text-brand-900">{r.title}</span>
-                      <span className="text-xs font-extrabold text-amber-600">{r.cost} Puntos</span>
+                {(REWARDS_CATALOG || []).map((r) => {
+                  const isClaimed = (redeemedRewards || []).some((item) => item.id === r.id);
+                  const cost = r.pointsCost;
+                  return (
+                    <div key={r.id} className="rounded-2xl bg-brand-50 p-4 border border-brand-200 flex items-center justify-between gap-3">
+                      <div className="flex flex-col gap-1 text-left">
+                        <span className="text-sm font-bold text-brand-900">{r.title}</span>
+                        <span className="text-xs text-brand-800/70">{r.description}</span>
+                        <span className="text-xs font-extrabold text-amber-600">{cost} Puntos</span>
+                      </div>
+                      <button
+                        type="button"
+                        disabled={isClaimed || points < cost}
+                        onClick={() => redeemReward(r.id)}
+                        className="rounded-xl bg-amber-500 hover:bg-amber-600 disabled:opacity-40 px-3.5 py-2 text-xs font-bold text-white transition active:scale-95 cursor-pointer shadow-soft shrink-0"
+                      >
+                        {isClaimed ? 'Canjeado ✓' : 'Canjear Premio 🎁'}
+                      </button>
                     </div>
-                    <button
-                      type="button"
-                      disabled={r.claimed || points < r.cost}
-                      onClick={() => claimReward(r.id)}
-                      className="rounded-xl bg-amber-500 hover:bg-amber-600 disabled:opacity-40 px-3.5 py-2 text-xs font-bold text-white transition active:scale-95 cursor-pointer shadow-soft"
-                    >
-                      {r.claimed ? 'Canjeado ✓' : 'Canjear Premio 🎁'}
-                    </button>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
