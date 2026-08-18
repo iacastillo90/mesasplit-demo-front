@@ -16,8 +16,8 @@ import AppHeader from '../../../shared/ui/AppHeader.jsx';
 import AppFooter from '../../../shared/ui/AppFooter.jsx';
 // Modal de reservas inteligente.
 import ClientReservationAssistant from '../components/ClientReservationAssistant.jsx';
-// Widget de soporte en vivo.
-import ChileanSupportWidget from '../../../shared/ui/ChileanSupportWidget.jsx';
+// Modal de soporte estilo WhatsApp con 4 opciones.
+import ClientSupportChatModal from '../components/ClientSupportChatModal.jsx';
 // Utilidad de formato de moneda CLP.
 import { formatCurrency } from '../../../shared/utils/formatCurrency.js';
 // Barra de navegación inferior fija para móviles.
@@ -188,75 +188,178 @@ export default function ClientProfilePage() {
         {/* Pestaña 1: Resumen General */}
         {activeTab === 'overview' && (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {/* Tarjeta 1: Puntos acumulados */}
-            <div className="rounded-3xl bg-white p-5 shadow-soft border border-brand-100 flex flex-col gap-2">
-              <span className="text-2xl">🏆</span>
+            {/* Tarjeta 1: Puntos acumulados (Click a Puntos de Afiliado abre vista de Premios) */}
+            <button
+              type="button"
+              onClick={() => setActiveTab('rewards')}
+              className="group text-left rounded-3xl bg-white p-5 shadow-soft border border-brand-100 hover:border-amber-300 transition flex flex-col gap-2 cursor-pointer active:scale-98"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-2xl">🏆</span>
+                <span className="text-[10px] font-extrabold bg-amber-500/10 text-amber-600 px-2 py-0.5 rounded-full border border-amber-200 group-hover:translate-x-1 transition-transform">
+                  Ver Premios →
+                </span>
+              </div>
               <h2 className="text-sm font-bold text-brand-800">Puntos de Afiliado</h2>
               <p className="text-2xl font-extrabold text-amber-600">{points} pts</p>
-              <p className="text-[11px] text-brand-800/60">Equivale a $14.500 en cashback directo</p>
-            </div>
+              <p className="text-[11px] text-brand-800/60">Tocá para canjear cashback y promociones</p>
+            </button>
 
-            {/* Tarjeta 2: Visitas realizadas */}
-            <div className="rounded-3xl bg-white p-5 shadow-soft border border-brand-100 flex flex-col gap-2">
-              <span className="text-2xl">📍</span>
+            {/* Tarjeta 2: Locales visitados (Click abre vista de Locales) */}
+            <button
+              type="button"
+              onClick={() => setActiveTab('branches')}
+              className="group text-left rounded-3xl bg-white p-5 shadow-soft border border-brand-100 hover:border-sky-300 transition flex flex-col gap-2 cursor-pointer active:scale-98"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-2xl">📍</span>
+                <span className="text-[10px] font-extrabold bg-sky-500/10 text-sky-600 px-2 py-0.5 rounded-full border border-sky-200 group-hover:translate-x-1 transition-transform">
+                  Ver Locales →
+                </span>
+              </div>
               <h2 className="text-sm font-bold text-brand-800">Locales Visitados</h2>
               <p className="text-2xl font-extrabold text-sky-600">3 Restaurantes</p>
-              <p className="text-[11px] text-brand-800/60">Última visita: Restô Lo Ovalle</p>
-            </div>
+              <p className="text-[11px] text-brand-800/60">Fotos, direcciones y horarios de atención</p>
+            </button>
 
-            {/* Tarjeta 3: Boletas emitidas */}
-            <div className="rounded-3xl bg-white p-5 shadow-soft border border-brand-100 flex flex-col gap-2">
-              <span className="text-2xl">📜</span>
+            {/* Tarjeta 3: Boletas emitidas (Click abre vista de Boletas) */}
+            <button
+              type="button"
+              onClick={() => setActiveTab('payments')}
+              className="group text-left rounded-3xl bg-white p-5 shadow-soft border border-brand-100 hover:border-emerald-300 transition flex flex-col gap-2 cursor-pointer active:scale-98"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-2xl">📜</span>
+                <span className="text-[10px] font-extrabold bg-emerald-500/10 text-emerald-600 px-2 py-0.5 rounded-full border border-emerald-200 group-hover:translate-x-1 transition-transform">
+                  Ver DTEs →
+                </span>
+              </div>
               <h2 className="text-sm font-bold text-brand-800">Boletas DTE Emitidas</h2>
               <p className="text-2xl font-extrabold text-emerald-600">6 Boletas Tipo 39</p>
-              <p className="text-[11px] text-brand-800/60">Validadas en SII Chile</p>
-            </div>
+              <p className="text-[11px] text-brand-800/60">Desglose de consumo pagado del total</p>
+            </button>
           </div>
         )}
 
-        {/* Pestaña 2: Puntos & Premios Canjeables */}
+        {/* Pestaña 2: Puntos & Premios Canjeables, Promociones y Eventos */}
         {activeTab === 'rewards' && (
-          <div className="rounded-3xl bg-white p-6 shadow-soft border border-brand-100 flex flex-col gap-4">
-            <h2 className="text-base font-extrabold text-brand-900">Catálogo de Premios Canjeables</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {rewards.map((r) => (
-                <div key={r.id} className="rounded-2xl bg-brand-50 p-4 border border-brand-200 flex items-center justify-between gap-3">
-                  <div className="flex flex-col gap-1">
-                    <span className="text-sm font-bold text-brand-900">{r.title}</span>
-                    <span className="text-xs font-extrabold text-amber-600">{r.cost} Puntos</span>
+          <div className="flex flex-col gap-6">
+            {/* Catálogo de Premios */}
+            <div className="rounded-3xl bg-white p-6 shadow-soft border border-brand-100 flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-base font-extrabold text-brand-900">Catálogo de Premios Canjeables</h2>
+                <span className="text-xs font-extrabold text-amber-600 bg-amber-50 px-3 py-1 rounded-full border border-amber-200">
+                  Saldo: {points} Puntos
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {rewards.map((r) => (
+                  <div key={r.id} className="rounded-2xl bg-brand-50 p-4 border border-brand-200 flex items-center justify-between gap-3">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-sm font-bold text-brand-900">{r.title}</span>
+                      <span className="text-xs font-extrabold text-amber-600">{r.cost} Puntos</span>
+                    </div>
+                    <button
+                      type="button"
+                      disabled={r.claimed || points < r.cost}
+                      onClick={() => claimReward(r.id)}
+                      className="rounded-xl bg-amber-500 hover:bg-amber-600 disabled:opacity-40 px-3.5 py-2 text-xs font-bold text-white transition active:scale-95 cursor-pointer shadow-soft"
+                    >
+                      {r.claimed ? 'Canjeado ✓' : 'Canjear Premio 🎁'}
+                    </button>
                   </div>
-                  <button
-                    type="button"
-                    disabled={r.claimed || points < r.cost}
-                    onClick={() => claimReward(r.id)}
-                    className="rounded-xl bg-amber-500 hover:bg-amber-600 disabled:opacity-40 px-3.5 py-2 text-xs font-bold text-white transition active:scale-95 cursor-pointer shadow-soft"
-                  >
-                    {r.claimed ? 'Canjeado ✓' : 'Canjear'}
-                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Promociones Vigentes & Eventos Especiales */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="rounded-3xl bg-gradient-to-br from-amber-500 to-amber-600 p-5 text-white shadow-soft flex flex-col justify-between gap-3">
+                <div>
+                  <span className="text-xs font-extrabold uppercase tracking-wider bg-white/20 px-2.5 py-0.5 rounded-full">
+                    Promoción Exclusiva VIP
+                  </span>
+                  <h3 className="text-lg font-extrabold mt-2">🍸 2x1 en Happy Hour Coctelería</h3>
+                  <p className="text-xs text-amber-100 mt-1">Todos los días de 18:00 a 20:30 hrs en todas nuestras sucursales.</p>
                 </div>
-              ))}
+                <span className="text-[11px] font-bold text-white/90">Válido mostrando tu app MesaSplit</span>
+              </div>
+
+              <div className="rounded-3xl bg-gradient-to-br from-purple-900 to-brand-950 p-5 text-white shadow-soft flex flex-col justify-between gap-3 border border-purple-800">
+                <div>
+                  <span className="text-xs font-extrabold uppercase tracking-wider bg-purple-500/30 text-purple-300 px-2.5 py-0.5 rounded-full border border-purple-400/30">
+                    Evento Especial
+                  </span>
+                  <h3 className="text-lg font-extrabold mt-2">🎷 Noche de Jazz & Cata de Vinos</h3>
+                  <p className="text-xs font-purple-200 text-slate-300 mt-1">Este Viernes 20:30 hrs en Restô Vitacura. Maridaje de 4 tiempos.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setBookingModalOpen(true)}
+                  className="rounded-xl bg-purple-500 hover:bg-purple-600 py-2 text-xs font-extrabold text-white transition active:scale-95 cursor-pointer text-center"
+                >
+                  Reservar Entrada VIP 🎟️
+                </button>
+              </div>
             </div>
           </div>
         )}
 
-        {/* Pestaña 3: Locales Registrados & Visitas */}
+        {/* Pestaña 3: Locales Registrados & Visitas con Fotos de Frontis y Horarios */}
         {activeTab === 'branches' && (
           <div className="rounded-3xl bg-white p-6 shadow-soft border border-brand-100 flex flex-col gap-4">
-            <h2 className="text-base font-extrabold text-brand-900">Locales Registrados e Historial de Visitas</h2>
-            <div className="flex flex-col gap-3">
+            <h2 className="text-base font-extrabold text-brand-900">Locales Registrados e Información de Sucursales</h2>
+            <div className="flex flex-col gap-4">
               {[
-                { name: 'Restô Lo Ovalle', city: 'Santiago', date: 'Ayer', total: 34800, rating: '5.0 ⭐' },
-                { name: 'Restô Providencia', city: 'Santiago', date: 'Hace 5 días', total: 28900, rating: '4.9 ⭐' },
-                { name: 'Restô Vitacura', city: 'Santiago', date: 'Hace 2 semanas', total: 52000, rating: '5.0 ⭐' },
+                {
+                  name: 'Restô Lo Ovalle',
+                  address: 'Av. Lo Ovalle 1420, San Miguel',
+                  image: '/images/resto_lo_ovalle_frontis.png',
+                  hours: 'Lun-Dom: 12:00 a 00:00 hrs',
+                  phone: '+56 2 2891 4000',
+                  lastVisit: 'Ayer',
+                  totalSpent: 34800,
+                  rating: '5.0 ⭐',
+                },
+                {
+                  name: 'Restô Providencia',
+                  address: 'Av. Providencia 2150, Providencia',
+                  image: '/images/resto_providencia_frontis.png',
+                  hours: 'Lun-Sáb: 12:30 a 01:00 hrs',
+                  phone: '+56 2 2760 9100',
+                  lastVisit: 'Hace 5 días',
+                  totalSpent: 28900,
+                  rating: '4.9 ⭐',
+                },
+                {
+                  name: 'Restô Vitacura',
+                  address: 'Av. Alonso de Córdova 3890, Vitacura',
+                  image: '/images/resto_vitacura_frontis.png',
+                  hours: 'Lun-Dom: 13:00 a 01:30 hrs',
+                  phone: '+56 2 2955 8820',
+                  lastVisit: 'Hace 2 semanas',
+                  totalSpent: 52000,
+                  rating: '5.0 ⭐',
+                },
               ].map((b, i) => (
-                <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-brand-50 border border-brand-200">
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-sm font-extrabold text-brand-900">{b.name}</span>
-                    <span className="text-xs text-brand-800/70">{b.city} · Última visita: {b.date}</span>
-                  </div>
-                  <div className="flex flex-col items-end gap-1">
-                    <span className="text-xs font-bold text-brand-900">{formatCurrency(b.total)}</span>
-                    <span className="text-[11px] font-bold text-amber-600">{b.rating}</span>
+                <div key={i} className="flex flex-col sm:flex-row items-center gap-4 p-4 rounded-2xl bg-brand-50 border border-brand-200 shadow-soft">
+                  <img
+                    src={b.image}
+                    alt={`Frontis ${b.name}`}
+                    className="h-28 w-full sm:w-36 object-cover rounded-xl border border-brand-200 shrink-0"
+                  />
+                  <div className="flex-1 flex flex-col gap-1 text-left min-w-0 w-full">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-extrabold text-brand-900">{b.name}</span>
+                      <span className="text-xs font-bold text-amber-600">{b.rating}</span>
+                    </div>
+                    <p className="text-xs text-brand-800 font-semibold">📍 {b.address}</p>
+                    <p className="text-xs text-brand-800/70">🕒 {b.hours}</p>
+                    <p className="text-xs text-brand-800/70">📞 {b.phone}</p>
+                    <div className="flex items-center justify-between pt-2 border-t border-brand-200/60 mt-1">
+                      <span className="text-[11px] text-brand-800/60">Última visita: {b.lastVisit}</span>
+                      <span className="text-xs font-extrabold text-emerald-700">Consumo: {formatCurrency(b.totalSpent)}</span>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -264,27 +367,61 @@ export default function ClientProfilePage() {
           </div>
         )}
 
-        {/* Pestaña 4: Historial de Pagos & Boletas */}
+        {/* Pestaña 4: Historial de Pagos & Boletas con Desglose Individual */}
         {activeTab === 'payments' && (
           <div className="rounded-3xl bg-white p-6 shadow-soft border border-brand-100 flex flex-col gap-4">
             <h2 className="text-base font-extrabold text-brand-900">Historial de Pagos & Boletas Electrónicas (DTE)</h2>
             <div className="flex flex-col gap-3">
               {[
-                { id: 'b-101', date: '17/08/2026', total: 34800, doc: 'Boleta Electrónica N° 39102', method: 'Débito Redelcom' },
-                { id: 'b-102', date: '12/08/2026', total: 28900, doc: 'Boleta Electrónica N° 38941', method: 'Flow.cl Webpay' },
-                { id: 'b-103', date: '01/08/2026', total: 52000, doc: 'Factura Electrónica N° 33019', method: 'Transferencia' },
+                {
+                  id: 'b-101',
+                  date: '17/08/2026',
+                  tableTotal: 34800,
+                  myShare: 8900,
+                  doc: 'Boleta Electrónica N° 39102',
+                  method: 'Débito Redelcom',
+                  table: 'Mesa 12',
+                },
+                {
+                  id: 'b-102',
+                  date: '12/08/2026',
+                  tableTotal: 28900,
+                  myShare: 14450,
+                  doc: 'Boleta Electrónica N° 38941',
+                  method: 'Flow.cl Webpay',
+                  table: 'Mesa 05',
+                },
+                {
+                  id: 'b-103',
+                  date: '01/08/2026',
+                  tableTotal: 52000,
+                  myShare: 52000,
+                  doc: 'Factura Electrónica N° 33019',
+                  method: 'Transferencia',
+                  table: 'Mesa 08',
+                },
               ].map((p) => (
-                <div key={p.id} className="flex items-center justify-between p-4 rounded-2xl bg-brand-50 border border-brand-200">
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-xs font-bold text-brand-900">{p.doc}</span>
-                    <span className="text-[11px] text-brand-800/70">{p.date} · {p.method}</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs font-extrabold text-emerald-700">{formatCurrency(p.total)}</span>
-                    <span className="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-bold text-emerald-800 border border-emerald-300">
-                      Emitida SII ✓
+                <div key={p.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-2xl bg-brand-50 border border-brand-200 gap-3">
+                  <div className="flex flex-col gap-1 text-left">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-extrabold text-brand-900">{p.doc}</span>
+                      <span className="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-bold text-emerald-800 border border-emerald-300">
+                        SII Validada ✓
+                      </span>
+                    </div>
+                    <span className="text-xs text-brand-800 font-semibold">{p.table} · {p.date} · {p.method}</span>
+                    <span className="text-[11px] text-brand-800/70">
+                      Total Mesa: {formatCurrency(p.tableTotal)} · <strong className="text-emerald-800">Mi Pago Individual: {formatCurrency(p.myShare)}</strong>
                     </span>
                   </div>
+
+                  <button
+                    type="button"
+                    onClick={() => alert(`Descargando ${p.doc} en PDF formato SII Chile.`)}
+                    className="rounded-xl bg-sky-500 hover:bg-sky-600 px-3.5 py-2 text-xs font-bold text-white transition active:scale-95 cursor-pointer shadow-soft shrink-0"
+                  >
+                    Ver Ticket PDF 📄
+                  </button>
                 </div>
               ))}
             </div>
@@ -384,8 +521,8 @@ export default function ClientProfilePage() {
       {/* Modal de Asistente Inteligente de Reservas */}
       <ClientReservationAssistant isOpen={bookingModalOpen} onClose={() => setBookingModalOpen(false)} />
 
-      {/* Widget de Soporte Flotante */}
-      {supportOpen && <ChileanSupportWidget />}
+      {/* Modal de Chat de Soporte Técnico Estilo WhatsApp con 4 opciones */}
+      <ClientSupportChatModal isOpen={supportOpen} onClose={() => setSupportOpen(false)} />
 
       {/* Pie de página universal */}
       <AppFooter theme="light" />

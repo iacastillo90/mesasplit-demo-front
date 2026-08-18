@@ -57,9 +57,11 @@ export default function WhatsAppReservationChatModal({ isOpen, onClose }) {
   // Referencia para scroll automático en el chat.
   const chatEndRef = useRef(null);
 
-  // Scroll automático al último mensaje.
+  // Scroll automático al último mensaje (con salvaguarda para JSDOM en entorno de tests).
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (typeof chatEndRef.current?.scrollIntoView === 'function') {
+      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [messages]);
 
   // Escucha tecla Escape.

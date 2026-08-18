@@ -10,7 +10,7 @@ export default function AppFooter({ theme = 'light' }) {
 
   return (
     <footer
-      className={`w-full py-5 px-6 border-t transition-colors text-center ${
+      className={`hidden sm:block w-full py-5 px-6 border-t transition-colors text-center ${
         isDark ? 'bg-brand-950 border-brand-800 text-brand-50/60' : 'bg-white border-brand-200 text-brand-800/60'
       }`}
     >

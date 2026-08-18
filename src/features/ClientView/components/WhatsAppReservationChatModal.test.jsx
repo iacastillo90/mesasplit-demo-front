@@ -12,11 +12,11 @@ describe('WhatsAppReservationChatModal — Chat de Reservas Estilo WhatsApp', ()
   it('renderiza la cabecera en línea y la lista de sucursales con tiempo de espera y mesas', () => {
     render(<WhatsAppReservationChatModal isOpen={true} onClose={() => {}} />);
 
-    // Verifica la cabecera de chat de WhatsApp.
+    // Verifica la cabecera de chat de WhatsApp y sucursales.
     expect(screen.getByText(/Asistente MesaSplit 💬/i)).toBeInTheDocument();
-    expect(screen.getByText(/Restô Lo Ovalle/i)).toBeInTheDocument();
-    expect(screen.getByText(/Restô Providencia/i)).toBeInTheDocument();
-    expect(screen.getByText(/Restô Vitacura/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Restô Lo Ovalle/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Restô Providencia/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Restô Vitacura/i).length).toBeGreaterThan(0);
   });
 
   it('permite seleccionar una sucursal y confirma la reserva', () => {
