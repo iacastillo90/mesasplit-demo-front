@@ -1,0 +1,18 @@
+package cl.labtab.api.dtos.response;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.UUID;
+
+public record DishResponse(
+        UUID id,
+        String name,
+        String description,
+        BigDecimal price,
+        String imageUrl,
+        boolean isAvailable,
+        List<String> tags,
+        List<String> allergens,
+        int displayOrder
+) {
+}
