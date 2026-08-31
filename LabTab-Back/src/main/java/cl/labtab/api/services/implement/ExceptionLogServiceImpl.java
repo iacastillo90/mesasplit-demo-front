@@ -2,7 +2,7 @@ package cl.labtab.api.services.implement;
 
 import cl.labtab.api.common.enums.ExceptionEventTypeEnum;
 import cl.labtab.api.dtos.response.ExceptionLogResponse;
-import cl.labtab.api.exception.ResourceNotFoundException;
+import cl.labtab.api.mappers.ExceptionLogMapper;
 import cl.labtab.api.models.ExceptionLog;
 import cl.labtab.api.models.Person;
 import cl.labtab.api.repositories.ExceptionLogRepository;
@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,11 +23,14 @@ public class ExceptionLogServiceImpl implements ExceptionLogService {
 
     private final ExceptionLogRepository exceptionLogRepository;
     private final PersonRepository personRepository;
+    private final ExceptionLogMapper exceptionLogMapper;
 
     public ExceptionLogServiceImpl(ExceptionLogRepository exceptionLogRepository,
-                                   PersonRepository personRepository) {
+                                   PersonRepository personRepository,
+                                   ExceptionLogMapper exceptionLogMapper) {
         this.exceptionLogRepository = exceptionLogRepository;
         this.personRepository = personRepository;
+        this.exceptionLogMapper = exceptionLogMapper;
     }
 
     @Override
@@ -48,19 +50,10 @@ public class ExceptionLogServiceImpl implements ExceptionLogService {
                         page.getContent().stream().map(ExceptionLog::getPersonId).filter(java.util.Objects::nonNull).toList())
                 .stream().collect(Collectors.toMap(Person::getId, Person::getEmail));
 
-        return page.map(log -> toResponse(log, names));
-    }
-
-    private ExceptionLogResponse toResponse(ExceptionLog log, Map<UUID, String> names) {
-        return new ExceptionLogResponse(
-                log.getId(),
-                log.getEventType(),
-                log.getReason(),
-                log.getAmount(),
+        return page.map(log -> exceptionLogMapper.toResponse(
+                log,
                 names.get(log.getPersonId()),
                 names.get(log.getAuthorizedBy()),
-                log.getOrderId(),
-                null,
-                log.getCreatedAt());
+                null));
     }
 }

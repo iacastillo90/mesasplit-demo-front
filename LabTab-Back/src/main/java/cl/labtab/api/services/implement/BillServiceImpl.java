@@ -12,6 +12,8 @@ import cl.labtab.api.dtos.response.BillSummaryByGuestResponse;
 import cl.labtab.api.dtos.response.GuestBillSummaryResponse;
 import cl.labtab.api.exception.BusinessRuleException;
 import cl.labtab.api.exception.ResourceNotFoundException;
+import cl.labtab.api.mappers.BillLineMapper;
+import cl.labtab.api.mappers.BillMapper;
 import cl.labtab.api.models.Bill;
 import cl.labtab.api.models.BillLine;
 import cl.labtab.api.models.DineSession;
@@ -42,19 +44,25 @@ public class BillServiceImpl implements BillService {
     private final OrderLineRepository orderLineRepository;
     private final DineSessionRepository dineSessionRepository;
     private final PinValidationService pinValidationService;
+    private final BillMapper billMapper;
+    private final BillLineMapper billLineMapper;
 
     public BillServiceImpl(BillRepository billRepository,
                            BillLineRepository billLineRepository,
                            OrderRepository orderRepository,
                            OrderLineRepository orderLineRepository,
                            DineSessionRepository dineSessionRepository,
-                           PinValidationService pinValidationService) {
+                           PinValidationService pinValidationService,
+                           BillMapper billMapper,
+                           BillLineMapper billLineMapper) {
         this.billRepository = billRepository;
         this.billLineRepository = billLineRepository;
         this.orderRepository = orderRepository;
         this.orderLineRepository = orderLineRepository;
         this.dineSessionRepository = dineSessionRepository;
         this.pinValidationService = pinValidationService;
+        this.billMapper = billMapper;
+        this.billLineMapper = billLineMapper;
     }
 
     @Override
@@ -100,21 +108,21 @@ public class BillServiceImpl implements BillService {
             billLineRepository.save(billLine);
         }
 
-        return toResponse(bill);
+        return billMapper.toResponse(bill);
     }
 
     @Override
     public BillResponse getBill(UUID billId) {
         Bill bill = billRepository.findByIdAndBranchId(billId, BranchContextHolder.get())
                 .orElseThrow(() -> new ResourceNotFoundException("Cuenta no encontrada"));
-        return toResponse(bill);
+        return billMapper.toResponse(bill);
     }
 
     @Override
     public BillResponse getSessionBill(UUID sessionId) {
         Bill bill = billRepository.findByDineSessionIdAndBranchId(sessionId, BranchContextHolder.get())
                 .orElseThrow(() -> new ResourceNotFoundException("Cuenta no encontrada"));
-        return toResponse(bill);
+        return billMapper.toResponse(bill);
     }
 
     @Override
@@ -131,9 +139,7 @@ public class BillServiceImpl implements BillService {
 
         List<GuestBillSummaryResponse> guests = byGuest.entrySet().stream()
                 .map(entry -> {
-                    List<BillLineResponse> guestLines = entry.getValue().stream()
-                            .map(l -> new BillLineResponse(l.getId(), l.getName(), l.getQuantity(), l.getLineTotal(), l.getPaidAmount()))
-                            .toList();
+                    List<BillLineResponse> guestLines = entry.getValue().stream().map(billLineMapper::toResponse).toList();
                     BigDecimal total = entry.getValue().stream().map(BillLine::getLineTotal).reduce(BigDecimal.ZERO, BigDecimal::add);
                     BigDecimal paid = entry.getValue().stream().map(BillLine::getPaidAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
                     return new GuestBillSummaryResponse(entry.getKey(), null, guestLines, total, paid, total.subtract(paid));
@@ -142,7 +148,7 @@ public class BillServiceImpl implements BillService {
 
         List<BillLineResponse> sharedLines = lines.stream()
                 .filter(l -> l.getDineGuestId() == null)
-                .map(l -> new BillLineResponse(l.getId(), l.getName(), l.getQuantity(), l.getLineTotal(), l.getPaidAmount()))
+                .map(billLineMapper::toResponse)
                 .toList();
 
         return new BillSummaryByGuestResponse(guests, sharedLines);
@@ -169,20 +175,6 @@ public class BillServiceImpl implements BillService {
         bill.setTotalAmount(bill.getTotalAmount().subtract(request.discountAmount()));
         bill.setBalanceDue(bill.getBalanceDue().subtract(request.discountAmount()));
         bill = billRepository.save(bill);
-        return toResponse(bill);
-    }
-
-    private BillResponse toResponse(Bill bill) {
-        return new BillResponse(
-                bill.getId(),
-                bill.getDineSessionId(),
-                bill.getStatus(),
-                bill.getSubtotal(),
-                bill.getServiceChargeAmount(),
-                bill.getTipTotal(),
-                bill.getTotalAmount(),
-                bill.getPaidTotal(),
-                bill.getBalanceDue(),
-                bill.getVersion());
+        return billMapper.toResponse(bill);
     }
 }

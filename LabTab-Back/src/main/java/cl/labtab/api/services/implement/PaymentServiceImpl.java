@@ -6,12 +6,13 @@ import cl.labtab.api.common.enums.PaymentStatusEnum;
 import cl.labtab.api.common.enums.VoidReasonEnum;
 import cl.labtab.api.dtos.request.CreatePaymentRequest;
 import cl.labtab.api.dtos.request.RefundRequest;
-import cl.labtab.api.dtos.response.BillResponse;
 import cl.labtab.api.dtos.response.PaymentResponse;
 import cl.labtab.api.dtos.response.RefundResponse;
 import cl.labtab.api.exception.BusinessRuleException;
 import cl.labtab.api.exception.ConflictException;
 import cl.labtab.api.exception.ResourceNotFoundException;
+import cl.labtab.api.mappers.BillMapper;
+import cl.labtab.api.mappers.PaymentMapper;
 import cl.labtab.api.models.Bill;
 import cl.labtab.api.models.DineSession;
 import cl.labtab.api.models.Payment;
@@ -35,15 +36,21 @@ public class PaymentServiceImpl implements PaymentService {
     private final BillRepository billRepository;
     private final DineSessionRepository dineSessionRepository;
     private final PinValidationService pinValidationService;
+    private final PaymentMapper paymentMapper;
+    private final BillMapper billMapper;
 
     public PaymentServiceImpl(PaymentRepository paymentRepository,
                               BillRepository billRepository,
                               DineSessionRepository dineSessionRepository,
-                              PinValidationService pinValidationService) {
+                              PinValidationService pinValidationService,
+                              PaymentMapper paymentMapper,
+                              BillMapper billMapper) {
         this.paymentRepository = paymentRepository;
         this.billRepository = billRepository;
         this.dineSessionRepository = dineSessionRepository;
         this.pinValidationService = pinValidationService;
+        this.paymentMapper = paymentMapper;
+        this.billMapper = billMapper;
     }
 
     @Override
@@ -90,16 +97,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         bill = billRepository.save(bill);
 
-        return new PaymentResponse(
-                payment.getId(),
-                payment.getBillId(),
-                payment.getAmount(),
-                payment.getTipAmount(),
-                payment.getTotalAmount(),
-                payment.getMethod(),
-                payment.getStatus(),
-                payment.getPaidAt(),
-                toBillResponse(bill));
+        return paymentMapper.toResponse(payment, billMapper.toResponse(bill));
     }
 
     @Override
@@ -107,16 +105,7 @@ public class PaymentServiceImpl implements PaymentService {
         Payment payment = paymentRepository.findByIdAndBranchId(paymentId, BranchContextHolder.get())
                 .orElseThrow(() -> new ResourceNotFoundException("Pago no encontrado"));
         Bill bill = billRepository.findById(payment.getBillId()).orElse(null);
-        return new PaymentResponse(
-                payment.getId(),
-                payment.getBillId(),
-                payment.getAmount(),
-                payment.getTipAmount(),
-                payment.getTotalAmount(),
-                payment.getMethod(),
-                payment.getStatus(),
-                payment.getPaidAt(),
-                bill != null ? toBillResponse(bill) : null);
+        return paymentMapper.toResponse(payment, bill != null ? billMapper.toResponse(bill) : null);
     }
 
     @Override
@@ -145,19 +134,5 @@ public class PaymentServiceImpl implements PaymentService {
                     session.setEndedAt(Instant.now());
                     dineSessionRepository.save(session);
                 });
-    }
-
-    private BillResponse toBillResponse(Bill bill) {
-        return new BillResponse(
-                bill.getId(),
-                bill.getDineSessionId(),
-                bill.getStatus(),
-                bill.getSubtotal(),
-                bill.getServiceChargeAmount(),
-                bill.getTipTotal(),
-                bill.getTotalAmount(),
-                bill.getPaidTotal(),
-                bill.getBalanceDue(),
-                bill.getVersion());
     }
 }
