@@ -8,6 +8,8 @@ import cl.labtab.api.dtos.response.GuestResponse;
 import cl.labtab.api.dtos.response.SessionResponse;
 import cl.labtab.api.exception.ConflictException;
 import cl.labtab.api.exception.ResourceNotFoundException;
+import cl.labtab.api.mappers.DineGuestMapper;
+import cl.labtab.api.mappers.DineSessionMapper;
 import cl.labtab.api.models.Bill;
 import cl.labtab.api.models.DineGuest;
 import cl.labtab.api.models.DineSession;
@@ -36,17 +38,23 @@ public class SessionServiceImpl implements SessionService {
     private final DiningTableRepository diningTableRepository;
     private final PersonProfileRepository personProfileRepository;
     private final BillRepository billRepository;
+    private final DineSessionMapper dineSessionMapper;
+    private final DineGuestMapper dineGuestMapper;
 
     public SessionServiceImpl(DineSessionRepository dineSessionRepository,
                               DineGuestRepository dineGuestRepository,
                               DiningTableRepository diningTableRepository,
                               PersonProfileRepository personProfileRepository,
-                              BillRepository billRepository) {
+                              BillRepository billRepository,
+                              DineSessionMapper dineSessionMapper,
+                              DineGuestMapper dineGuestMapper) {
         this.dineSessionRepository = dineSessionRepository;
         this.dineGuestRepository = dineGuestRepository;
         this.diningTableRepository = diningTableRepository;
         this.personProfileRepository = personProfileRepository;
         this.billRepository = billRepository;
+        this.dineSessionMapper = dineSessionMapper;
+        this.dineGuestMapper = dineGuestMapper;
     }
 
     @Override
@@ -69,7 +77,7 @@ public class SessionServiceImpl implements SessionService {
         session.setStartedAt(Instant.now());
         session = dineSessionRepository.save(session);
 
-        return toResponse(session, table, List.of());
+        return dineSessionMapper.toResponse(session, table.getName(), List.of(), null);
     }
 
     @Override
@@ -78,10 +86,11 @@ public class SessionServiceImpl implements SessionService {
         DineSession session = dineSessionRepository.findByIdAndBranchId(sessionId, branchId)
                 .orElseThrow(() -> new ResourceNotFoundException("Sesión no encontrada"));
         DiningTable table = diningTableRepository.findById(session.getTableId()).orElse(null);
-        List<DineGuest> guests = dineGuestRepository.findByDineSessionId(session.getId());
+        List<GuestResponse> guests = dineGuestRepository.findByDineSessionId(session.getId()).stream()
+                .map(this::toGuest).toList();
         UUID activeBillId = billRepository.findByDineSessionIdAndBranchId(session.getId(), branchId)
                 .map(Bill::getId).orElse(null);
-        return toResponse(session, table, guests.stream().map(this::toGuest).toList(), activeBillId);
+        return dineSessionMapper.toResponse(session, table != null ? table.getName() : null, guests, activeBillId);
     }
 
     @Override
@@ -105,8 +114,9 @@ public class SessionServiceImpl implements SessionService {
         session = dineSessionRepository.save(session);
 
         DiningTable table = diningTableRepository.findById(session.getTableId()).orElse(null);
-        List<DineGuest> guests = dineGuestRepository.findByDineSessionId(session.getId());
-        return toResponse(session, table, guests.stream().map(this::toGuest).toList(), null);
+        List<GuestResponse> guests = dineGuestRepository.findByDineSessionId(session.getId()).stream()
+                .map(this::toGuest).toList();
+        return dineSessionMapper.toResponse(session, table != null ? table.getName() : null, guests, null);
     }
 
     @Override
@@ -132,24 +142,6 @@ public class SessionServiceImpl implements SessionService {
                     .map(PersonProfile::getAllergies)
                     .orElse(List.of());
         }
-        return new GuestResponse(guest.getId(), guest.getDisplayName(), guest.getTempLabel(), allergies);
-    }
-
-    private SessionResponse toResponse(DineSession session, DiningTable table, List<GuestResponse> guests) {
-        return toResponse(session, table, guests, null);
-    }
-
-    private SessionResponse toResponse(DineSession session, DiningTable table, List<GuestResponse> guests, UUID activeBillId) {
-        return new SessionResponse(
-                session.getId(),
-                session.getTableId(),
-                table != null ? table.getName() : null,
-                session.getStatus(),
-                session.getGuestCount(),
-                session.getOpenedBy(),
-                session.getStartedAt(),
-                session.getEndedAt(),
-                guests,
-                activeBillId);
+        return dineGuestMapper.toResponse(guest, allergies);
     }
 }
