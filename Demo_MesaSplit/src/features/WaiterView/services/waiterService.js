@@ -1,23 +1,32 @@
-// src/features/WaiterView/services/waiterService.js — servicio del garzón (task 2.6)
-// Capa de datos del garzón: entrega las mesas asignadas a su cargo.
-// El spec feature-views exige que la grilla consuma las mesas desde la capa de
-// servicios ("table grid sourced from the service layer").
-// PR 4 (task 3.1): los fixtures inline migraron a src/mocks/tables.json y este
-// servicio pasa a la capa mockFetch (~300ms), según el design
-// "service → mockFetch → mocks". La firma no cambia: el store se mantiene igual.
+// src/features/WaiterView/services/waiterService.js — servicio del garzón.
+// Capa de datos del garzón: mesas asignadas + carta. En modo backend
+// (VITE_DEMO_MODE='backend') llama al backend LabTab y adapta la respuesta al
+// shape del front; en modo demo usa mockFetch (fixtures). La firma no cambia:
+// el store se mantiene igual.
 
-// mockFetch: capa de datos simulada con latencia (~300ms) sobre los mocks.
+// mockFetch: capa de datos simulada de la demo (modo same-device).
 import { mockFetch } from '../../../mocks/mockFetch.js';
+// http e isBackendMode: cliente HTTP real + flag de modo.
+import { http, isBackendMode } from '../../../api/httpClient.js';
+// mapTable/mapMenu: adaptadores back → shape del front.
+import { mapTable, mapMenu } from '../../../api/mappers.js';
 
-// Servicio del garzón: devuelve las mesas asignadas con latencia simulada.
+// fetchAssignedTables: mesas del garzón (back o mock según el modo).
 export function fetchAssignedTables() {
-  // Delega en mockFetch: resuelve el fixture tables.json tras ~300ms.
+  // Modo backend: GET /branch/tables y mapeo a la forma del front.
+  if (isBackendMode()) {
+    return http.get('/api/v1/branch/tables').then((tables) => tables.map(mapTable));
+  }
+  // Modo demo: resuelve el fixture tables.json tras ~300ms.
   return mockFetch('/api/tables');
 }
 
-// Servicio del garzón: devuelve la carta real (task 4.2, D10).
-// Espejo de clientService.getMenu: la fuente única de ítems es menu.json.
+// getMenu: carta real (back o mock según el modo).
 export function getMenu() {
-  // Delega en mockFetch: resuelve el fixture menu.json tras ~300ms.
+  // Modo backend: GET /menu/sections y aplana a ítems planos.
+  if (isBackendMode()) {
+    return http.get('/api/v1/menu/sections').then(mapMenu);
+  }
+  // Modo demo: resuelve el fixture menu.json tras ~300ms.
   return mockFetch('/api/menu');
 }
