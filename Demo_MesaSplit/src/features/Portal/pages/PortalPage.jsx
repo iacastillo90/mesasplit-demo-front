@@ -8,6 +8,11 @@
 import { useMemo, useState } from 'react';
 // Tarjeta lanzadora de una vista: navega con Link al destino correspondiente.
 import ViewLauncherCard from '../components/ViewLauncherCard.jsx';
+// Formulario de login contra el backend (modo backend).
+import BackendLogin from '../components/BackendLogin.jsx';
+// authService: persona guardada + logout; httpClient: flag de modo backend.
+import { getStoredUser, logout } from '../../../api/authService';
+import { isBackendMode } from '../../../api/httpClient';
 // Instancia del bus en tiempo real para el controlador de simulación.
 import { createRealtimeBus } from '../../../hooks/useRealtimeBus.js';
 // Toast de notificación de eventos simulados.
@@ -62,6 +67,8 @@ export default function PortalPage() {
   const destinations = useMemo(() => VIEW_DESTINATIONS, []);
   // Estado local para el toast de simulación.
   const [simulationToast, setSimulationToast] = useState(null);
+  // Persona autenticada contra el backend (null = no conectado).
+  const [user, setUser] = useState(getStoredUser);
 
   // Dispara eventos simulados por el bus de tiempo real.
   const triggerSimulation = (topic, payload, message) => {
@@ -88,6 +95,28 @@ export default function PortalPage() {
             Seleccioná una vista para operar en tiempo real entre el salón, la cocina y la gerencia corporativa.
           </p>
         </header>
+
+        {/* Login al backend: solo en modo backend (VITE_DEMO_MODE='backend'). */}
+        {isBackendMode() &&
+          (user ? (
+            <div className="flex items-center justify-between rounded-2xl bg-emerald-50 p-4 border border-emerald-200">
+              <p className="text-sm font-semibold text-emerald-800">
+                ✅ Conectado como {user.fullName} ({user.role})
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  logout();
+                  setUser(null);
+                }}
+                className="text-xs font-bold text-emerald-700 hover:underline"
+              >
+                Cerrar sesión
+              </button>
+            </div>
+          ) : (
+            <BackendLogin onLogin={setUser} />
+          ))}
 
         {/* Control de simulación de eventos multiventana en tiempo real. */}
         <section aria-label="Simulador de eventos" className="flex flex-col gap-3 rounded-2xl bg-white p-5 shadow-soft border border-brand-200">
