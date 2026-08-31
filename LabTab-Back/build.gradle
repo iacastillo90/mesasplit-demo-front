@@ -1,12 +1,11 @@
 plugins {
 	id 'java'
-	id 'org.springframework.boot' version '4.1.1'
+	id 'org.springframework.boot' version '3.5.16'
 	id 'io.spring.dependency-management' version '1.1.7'
-	id 'org.asciidoctor.jvm.convert' version '4.0.5'
 }
 
-group = 'com.LabTab'
-version = '0.0.1-SNAPSHOT'
+group = 'cl.labtab'
+version = '1.0.0-SNAPSHOT'
 
 java {
 	toolchain {
@@ -19,32 +18,62 @@ repositories {
 }
 
 ext {
-	set('snippetsDir', file("build/generated-snippets"))
+	set('mapstructVersion', '1.5.5.Final')
+	set('jjwtVersion', '0.12.6')
+	set('hypersistenceVersion', '3.9.11')
+	set('springdocVersion', '2.6.0')
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-h2console'
-	implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
+	// Web MVC — @RestController, @RequestMapping, HTTP stack
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+
+	// Spring Data JPA + Hibernate
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'org.springframework.boot:spring-boot-starter-data-rest'
-	implementation 'org.springframework.boot:spring-boot-starter-webmvc'
-	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.0'
-	runtimeOnly 'com.h2database:h2'
-	testImplementation 'org.springframework.boot:spring-boot-starter-data-jdbc-test'
-	testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
-	testImplementation 'org.springframework.boot:spring-boot-starter-data-rest-test'
-	testImplementation 'org.springframework.boot:spring-boot-starter-restdocs'
-	testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
-	testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	// Spring Security 6/7
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+
+	// WebSocket + STOMP
+	implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
+	// Bean Validation — @Valid en DTOs de request
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+	// Actuator — /actuator/health para Docker healthcheck
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+	// AOP — @Aspect de auditoría antifraude
+	implementation 'org.springframework.boot:spring-boot-starter-aop'
+
+	// Driver JDBC de PostgreSQL 16
+	runtimeOnly 'org.postgresql:postgresql'
+
+	// Flyway — migraciones de base de datos
+	runtimeOnly 'org.flywaydb:flyway-database-postgresql'
+
+	// Hypersistence Utils — TEXT[] y JSONB nativos de PostgreSQL (Hibernate 6.6)
+	implementation "io.hypersistence:hypersistence-utils-hibernate-63:${hypersistenceVersion}"
+
+	// JJWT — generación y validación de JWT
+	implementation "io.jsonwebtoken:jjwt-api:${jjwtVersion}"
+	runtimeOnly "io.jsonwebtoken:jjwt-impl:${jjwtVersion}"
+	runtimeOnly "io.jsonwebtoken:jjwt-jackson:${jjwtVersion}"
+
+	// MapStruct — mapeo Model ↔ DTO en compilación
+	implementation "org.mapstruct:mapstruct:${mapstructVersion}"
+	annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
+
+	// Springdoc OpenAPI — Swagger UI
+	implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springdocVersion}"
+
+	// Testing — PostgreSQL real vía Testcontainers (nunca H2)
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.security:spring-security-test'
+	testImplementation 'org.testcontainers:postgresql'
+	testImplementation 'org.testcontainers:junit-jupiter'
 }
 
 tasks.named('test') {
-	outputs.dir snippetsDir
 	useJUnitPlatform()
-}
-
-tasks.named('asciidoctor') {
-	inputs.dir snippetsDir
-	dependsOn test
 }
