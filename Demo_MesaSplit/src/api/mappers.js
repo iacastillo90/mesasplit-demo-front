@@ -64,3 +64,34 @@ export function mapMenu(sections) {
     (s.dishes || []).map((d) => mapDish(d, s.name)),
   );
 }
+
+// Mapeo de estado de ticket: enum del back → estado del front (KDS).
+const TICKET_STATUS_MAP = {
+  OPEN: 'pending',
+  IN_PROGRESS: 'cooking',
+  DONE: 'done',
+  CANCELLED: 'cancelled',
+};
+
+// mapTicket: KitchenTicketResponse → shape de ticket del front (KDS).
+export function mapTicket(t) {
+  // tableNumber: se deriva del snapshot tableName ("Mesa 4" → 4).
+  const tableNumber = parseInt(String(t.tableName).replace(/\D/g, ''), 10) || 0;
+  return {
+    id: t.id,
+    tableNumber,
+    // station: el back no expone ruteo por estación en Alfa (es MVP); se fija
+    // una estación genérica para no romper el filtro del KDS.
+    station: 'fuego',
+    status: TICKET_STATUS_MAP[t.status] || 'pending',
+    elapsedSec: t.elapsedSeconds || 0,
+    budgetSec: 600,
+    // items: mapea las líneas del ticket a ítems con qty y alergias.
+    items: (t.lines || []).map((l) => ({
+      id: l.orderLineId,
+      name: l.name,
+      qty: l.quantity,
+      allergens: l.allergyFlags || [],
+    })),
+  };
+}

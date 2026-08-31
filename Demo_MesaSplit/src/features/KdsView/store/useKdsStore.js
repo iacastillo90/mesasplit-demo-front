@@ -8,6 +8,8 @@
 import { create } from 'zustand';
 // Servicio de datos de cocina.
 import { fetchKitchenTickets } from '../services/kdsService.js';
+// http e isBackendMode: cliente real + flag de modo para conectar al back.
+import { http, isBackendMode } from '../../../api/httpClient.js';
 // Instancia pura del bus en tiempo real (no hook React para uso en Zustand).
 import { createRealtimeBus } from '../../../hooks/useRealtimeBus.js';
 
@@ -95,7 +97,15 @@ export const useKdsStore = create((set, get) => ({
   setStation: (activeStation) => set({ activeStation }),
 
   // Marca un ticket completo como despachado ("MARCAR LISTO").
-  completeTicket: (ticketId) => {
+  completeTicket: async (ticketId) => {
+    // Modo backend: marca el ticket como DONE en el backend (PATCH status).
+    if (isBackendMode()) {
+      try {
+        await http.patch(`/api/v1/kitchen/tickets/${ticketId}/status`, { status: 'DONE' });
+      } catch {
+        // Tolera error de red: el estado local se actualiza igual.
+      }
+    }
     const state = get();
     const targetTicket = state.tickets.find((t) => t.id === ticketId);
     if (!targetTicket) return;
@@ -116,7 +126,15 @@ export const useKdsStore = create((set, get) => ({
   },
 
   // Restaura un ticket completado desde la pila de Recall de vuelta a la pantalla.
-  restoreTicket: (ticketId) => {
+  restoreTicket: async (ticketId) => {
+    // Modo backend: recupera el ticket marcado como DONE (POST recall).
+    if (isBackendMode()) {
+      try {
+        await http.post(`/api/v1/kitchen/tickets/${ticketId}/recall`);
+      } catch {
+        // Tolera error de red.
+      }
+    }
     const state = get();
     const ticketToRestore = state.recallStack.find((t) => t.id === ticketId);
     if (!ticketToRestore) return;
@@ -128,9 +146,20 @@ export const useKdsStore = create((set, get) => ({
   },
 
   // Conmuta el estado de disponibilidad de un producto (Lista 86).
-  toggleStock86: (productId, productName) => {
+  toggleStock86: async (productId, productName) => {
     const state = get();
     const isCurrently86 = Boolean(state.stock86[productId]);
+    // Modo backend: sincroniza la Lista 86 (PATCH availability).
+    if (isBackendMode()) {
+      try {
+        await http.patch(`/api/v1/menu/dishes/${productId}/availability`, {
+          isAvailable: isCurrently86,
+          remainingUnits: 0,
+        });
+      } catch {
+        // Tolera error de red.
+      }
+    }
     const newStock86 = { ...state.stock86, [productId]: !isCurrently86 };
 
     set({ stock86: newStock86 });

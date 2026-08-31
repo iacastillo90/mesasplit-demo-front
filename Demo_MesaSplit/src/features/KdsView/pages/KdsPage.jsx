@@ -9,6 +9,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { STATION_ALL, useKdsStore } from '../store/useKdsStore.js';
 // Hook de bus de eventos en tiempo real.
 import { useRealtimeBus } from '../../../hooks/useRealtimeBus.js';
+// Hook de suscripción STOMP al backend (modo backend).
+import { useStompEvents } from '../../../hooks/useStompEvents.js';
 // Cabecera superior del KDS.
 import KdsHeader from '../components/KdsHeader.jsx';
 // Pestañas de filtrado de estación.
@@ -77,6 +79,16 @@ export default function KdsPage() {
   useEffect(() => {
     loadTickets();
   }, [loadTickets]);
+
+  // Modo backend: re-carga tickets cuando llega un evento de cocina por WebSocket
+  // (order.item_added, course.fire, kds.item_ready, kds.stock_86).
+  useStompEvents((event) => {
+    if (
+      ['order.item_added', 'course.fire', 'kds.item_ready', 'kds.stock_86'].includes(event.event)
+    ) {
+      loadTickets();
+    }
+  });
 
   // Suscripción a eventos en tiempo real course.fire desde el bus.
   useEffect(() => {
