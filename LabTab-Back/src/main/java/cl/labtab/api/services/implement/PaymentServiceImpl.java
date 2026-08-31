@@ -1,7 +1,9 @@
 package cl.labtab.api.services.implement;
 
+import cl.labtab.api.audit.Auditable;
 import cl.labtab.api.common.enums.BillStatusEnum;
 import cl.labtab.api.common.enums.DineSessionStatusEnum;
+import cl.labtab.api.common.enums.ExceptionEventTypeEnum;
 import cl.labtab.api.common.enums.PaymentStatusEnum;
 import cl.labtab.api.common.enums.VoidReasonEnum;
 import cl.labtab.api.dtos.request.CreatePaymentRequest;
@@ -110,6 +112,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     @Transactional
+    @Auditable(eventType = ExceptionEventTypeEnum.REFUND_ISSUED)
     public RefundResponse refund(UUID paymentId, RefundRequest request) {
         UUID branchId = BranchContextHolder.get();
         Payment payment = paymentRepository.findByIdAndBranchId(paymentId, branchId)

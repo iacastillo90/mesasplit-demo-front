@@ -8,6 +8,7 @@ import cl.labtab.api.models.Person;
 import cl.labtab.api.repositories.ExceptionLogRepository;
 import cl.labtab.api.repositories.PersonRepository;
 import cl.labtab.api.security.BranchContextHolder;
+import cl.labtab.api.security.SecurityUtils;
 import cl.labtab.api.services.ExceptionLogService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -55,5 +56,22 @@ public class ExceptionLogServiceImpl implements ExceptionLogService {
                 names.get(log.getPersonId()),
                 names.get(log.getAuthorizedBy()),
                 null));
+    }
+
+    @Override
+    public ExceptionLog createLog(ExceptionEventTypeEnum eventType) {
+        ExceptionLog log = new ExceptionLog();
+        log.setBranchId(BranchContextHolder.get());
+        log.setEventType(eventType);
+        log.setPersonId(SecurityUtils.getCurrentPersonId());
+        return exceptionLogRepository.save(log);
+    }
+
+    @Override
+    public void logFailedPin(UUID branchId) {
+        ExceptionLog log = new ExceptionLog();
+        log.setBranchId(branchId);
+        log.setEventType(ExceptionEventTypeEnum.PIN_AUTH_FAILED);
+        exceptionLogRepository.save(log);
     }
 }

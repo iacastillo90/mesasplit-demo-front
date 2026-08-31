@@ -1,7 +1,9 @@
 package cl.labtab.api.services.implement;
 
+import cl.labtab.api.audit.Auditable;
 import cl.labtab.api.common.enums.BillLineStatusEnum;
 import cl.labtab.api.common.enums.BillStatusEnum;
+import cl.labtab.api.common.enums.ExceptionEventTypeEnum;
 import cl.labtab.api.common.enums.OrderLineStatusEnum;
 import cl.labtab.api.common.enums.VoidReasonEnum;
 import cl.labtab.api.dtos.request.ApplyDiscountRequest;
@@ -156,6 +158,7 @@ public class BillServiceImpl implements BillService {
 
     @Override
     @Transactional
+    @Auditable(eventType = ExceptionEventTypeEnum.MANUAL_DISCOUNT)
     public BillResponse applyDiscount(UUID billId, ApplyDiscountRequest request) {
         UUID branchId = BranchContextHolder.get();
         Bill bill = billRepository.findByIdAndBranchId(billId, branchId)

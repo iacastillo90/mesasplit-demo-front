@@ -1,7 +1,9 @@
 package cl.labtab.api.services.implement;
 
+import cl.labtab.api.audit.Auditable;
 import cl.labtab.api.common.enums.CourseStatusEnum;
 import cl.labtab.api.common.enums.DineSessionStatusEnum;
+import cl.labtab.api.common.enums.ExceptionEventTypeEnum;
 import cl.labtab.api.common.enums.KitchenTicketStatusEnum;
 import cl.labtab.api.common.enums.OrderLineStatusEnum;
 import cl.labtab.api.common.enums.OrderStatusEnum;
@@ -178,6 +180,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
+    @Auditable(eventType = ExceptionEventTypeEnum.ITEM_VOID_AFTER_KITCHEN)
     public VoidOrderLineResponse voidOrderLine(UUID orderLineId, VoidOrderLineRequest request) {
         UUID branchId = BranchContextHolder.get();
         OrderLine line = orderLineRepository.findByIdAndBranchId(orderLineId, branchId)
