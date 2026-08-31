@@ -6,6 +6,8 @@
 // Cumple con todas las normas de AGENTS.md (comentarios en español por cada línea).
 
 import { useEffect, useState } from 'react';
+// Hook de suscripción STOMP al backend (modo backend).
+import { useStompEvents } from '../../../hooks/useStompEvents.js';
 import { useRadarStore } from '../store/useRadarStore.js';
 import TopologicalMap from '../components/TopologicalMap.jsx';
 import DeliveryColumn from '../components/DeliveryColumn.jsx';
@@ -45,6 +47,13 @@ export default function RadarPage() {
     const cleanup = setupRealtimeListeners();
     return cleanup;
   }, [loadRadarData, setupRealtimeListeners]);
+
+  // Modo backend: re-carga el radar ante cambio de mesa o alerta de fraude (WS).
+  useStompEvents((event) => {
+    if (event.event === 'table.status_changed' || event.event === 'alert.fraud') {
+      loadRadarData();
+    }
+  });
 
   const navTabs = [
     { id: 'all', label: '🌐 Vista Completa', subtitle: 'Todas las secciones integradas' },

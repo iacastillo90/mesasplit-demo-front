@@ -7,7 +7,7 @@
 // create: fábrica de store de Zustand v5.
 import { create } from 'zustand';
 // Servicio de datos del radar.
-import { fetchRadarOverview } from '../services/radarService.js';
+import { fetchRadarOverview, fetchExceptions } from '../services/radarService.js';
 // Instancia del bus en tiempo real de la aplicación.
 import { createRealtimeBus } from '../../../hooks/useRealtimeBus.js';
 
@@ -84,6 +84,15 @@ export const useRadarStore = create((set, get) => ({
     // Solo actualiza si aún está en estado loading para evitar pisar fixtures inyectados en tests.
     if (get().loading) {
       set({ tables: overview.tables ?? [], loading: false });
+    }
+    // Feed de excepciones desde el backend (modo backend); en demo queda el fixture.
+    try {
+      const exceptions = await fetchExceptions();
+      if (exceptions && exceptions.length > 0) {
+        set({ exceptionLogs: [...exceptions, ...get().exceptionLogs] });
+      }
+    } catch {
+      // Tolera error de red en la carga de excepciones sin romper el radar.
     }
   },
 

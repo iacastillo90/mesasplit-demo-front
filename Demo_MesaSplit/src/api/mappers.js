@@ -117,3 +117,26 @@ export function mapBill(b) {
     items: [],
   };
 }
+
+// Título legible por tipo de evento de auditoría (Radar Local Admin).
+const EXCEPTION_TITLE_MAP = {
+  ITEM_VOID_AFTER_KITCHEN: 'Anulación de plato enviado a cocina',
+  MANUAL_DISCOUNT: 'Descuento manual aplicado',
+  DRAWER_OPENED_NO_SALE: 'Apertura de gaveta sin venta',
+  REFUND_ISSUED: 'Reembolso emitido',
+  PIN_AUTH_FAILED: 'Intento de PIN fallido',
+};
+
+// mapException: ExceptionLogResponse → shape de excepción del front (Radar).
+export function mapException(e) {
+  return {
+    id: e.id,
+    title: EXCEPTION_TITLE_MAP[e.eventType] || 'Evento de auditoría',
+    description: e.reason || e.eventType,
+    // El back no devuelve el PIN (se guarda hasheado); se deja null.
+    adminPin: null,
+    reason: e.reason,
+    // createdAt es ISO (Instant); se convierte a epoch millis como usa el front.
+    timestamp: e.createdAt ? new Date(e.createdAt).getTime() : Date.now(),
+  };
+}
