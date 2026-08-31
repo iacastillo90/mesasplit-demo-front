@@ -9,6 +9,7 @@ import cl.labtab.api.dtos.response.GuestSessionResponse;
 import cl.labtab.api.dtos.response.LogoutResponse;
 import cl.labtab.api.dtos.response.RefreshTokenResponse;
 import cl.labtab.api.services.AuthService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Tag(name = "Autenticación", description = "Login, refresh, logout y onboarding de comensal por QR.")
 @RestController
 @RequestMapping("/api/v1/auth")
 public class AuthController {

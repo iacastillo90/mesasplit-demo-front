@@ -9,6 +9,7 @@ import cl.labtab.api.dtos.request.UpdateMenuSectionRequest;
 import cl.labtab.api.dtos.response.DishResponse;
 import cl.labtab.api.dtos.response.MenuSectionResponse;
 import cl.labtab.api.services.MenuService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.UUID;
 
+@Tag(name = "Menú", description = "Secciones, platos y disponibilidad (Lista 86).")
 @RestController
 @RequestMapping("/api/v1/menu")
 public class MenuController {

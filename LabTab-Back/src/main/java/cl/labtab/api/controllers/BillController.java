@@ -6,6 +6,7 @@ import cl.labtab.api.dtos.request.CreateBillRequest;
 import cl.labtab.api.dtos.response.BillResponse;
 import cl.labtab.api.dtos.response.BillSummaryByGuestResponse;
 import cl.labtab.api.services.BillService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
+@Tag(name = "Cuentas", description = "Cuentas, división por comensal y descuentos con PIN.")
 @RestController
 @RequestMapping("/api/v1")
 public class BillController {

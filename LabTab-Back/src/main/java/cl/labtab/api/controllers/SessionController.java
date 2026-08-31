@@ -7,6 +7,7 @@ import cl.labtab.api.dtos.request.SessionStatusRequest;
 import cl.labtab.api.dtos.response.GuestResponse;
 import cl.labtab.api.dtos.response.SessionResponse;
 import cl.labtab.api.services.SessionService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
+@Tag(name = "Sesiones de Mesa", description = "Abrir, consultar, cerrar sesiones y agregar comensales.")
 @RestController
 @RequestMapping("/api/v1/sessions")
 public class SessionController {

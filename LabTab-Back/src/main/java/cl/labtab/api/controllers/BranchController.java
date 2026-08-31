@@ -6,6 +6,7 @@ import cl.labtab.api.dtos.response.BranchConfigResponse;
 import cl.labtab.api.dtos.response.DiningFloorResponse;
 import cl.labtab.api.dtos.response.DiningTableResponse;
 import cl.labtab.api.services.BranchService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.UUID;
 
+@Tag(name = "Sucursal", description = "Configuración, pisos y mesas de la sucursal.")
 @RestController
 @RequestMapping("/api/v1/branch")
 public class BranchController {

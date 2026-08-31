@@ -4,6 +4,7 @@ import cl.labtab.api.common.ApiResponse;
 import cl.labtab.api.common.enums.ExceptionEventTypeEnum;
 import cl.labtab.api.dtos.response.ExceptionLogResponse;
 import cl.labtab.api.services.ExceptionLogService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.Instant;
 import java.util.List;
 
+@Tag(name = "Auditoría", description = "Feed de excepciones antifraude.")
 @RestController
 @RequestMapping("/api/v1/exceptions")
 public class ExceptionLogController {

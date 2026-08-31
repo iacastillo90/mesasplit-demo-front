@@ -6,6 +6,7 @@ import cl.labtab.api.dtos.request.KitchenTicketStatusRequest;
 import cl.labtab.api.dtos.response.KitchenTicketResponse;
 import cl.labtab.api.dtos.response.RecallTicketResponse;
 import cl.labtab.api.services.KitchenService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,6 +22,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
+@Tag(name = "Cocina (KDS)", description = "Tickets de cocina, estados y recall.")
 @RestController
 @RequestMapping("/api/v1/kitchen")
 public class KitchenController {

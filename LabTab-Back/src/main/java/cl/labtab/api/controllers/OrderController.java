@@ -10,6 +10,7 @@ import cl.labtab.api.dtos.response.OrderLineResponse;
 import cl.labtab.api.dtos.response.OrderResponse;
 import cl.labtab.api.dtos.response.VoidOrderLineResponse;
 import cl.labtab.api.services.OrderService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.UUID;
 
+@Tag(name = "Comandas", description = "Órdenes, estados de línea, anulación con PIN y marchar curso.")
 @RestController
 @RequestMapping("/api/v1")
 public class OrderController {

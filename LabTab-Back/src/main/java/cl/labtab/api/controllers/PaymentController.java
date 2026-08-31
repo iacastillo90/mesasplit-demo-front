@@ -6,6 +6,7 @@ import cl.labtab.api.dtos.request.RefundRequest;
 import cl.labtab.api.dtos.response.PaymentResponse;
 import cl.labtab.api.dtos.response.RefundResponse;
 import cl.labtab.api.services.PaymentService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
+@Tag(name = "Pagos", description = "Pagos, reembolsos y webhook de gateways.")
 @RestController
 @RequestMapping("/api/v1/payments")
 public class PaymentController {
