@@ -42,6 +42,7 @@ export default function OrderPad({
   onIncreaseQty,
   onDecreaseQty,
   onRemoveItem,
+  onSubmitOrder,
 }) {
   // Estado local para controlar la apertura del modal de autorización por PIN.
   const [pinModalOpen, setPinModalOpen] = useState(false);
@@ -358,6 +359,16 @@ export default function OrderPad({
                   <span className="font-bold text-brand-900">Total Comanda:</span>
                   <span className="text-lg font-bold text-brand-900">{formatCurrency(totalAmount)}</span>
                 </div>
+
+                {/* Botón para enviar la comanda: back (POST /orders) o evento local (demo). */}
+                <button
+                  type="button"
+                  onClick={onSubmitOrder}
+                  disabled={orderDraft.length === 0}
+                  className="mt-3 w-full rounded-xl bg-brand-500 px-4 py-3 text-sm font-bold text-white hover:bg-brand-600 transition active:scale-95 disabled:opacity-40"
+                >
+                  Enviar comanda a cocina
+                </button>
               </div>
             )}
           </div>

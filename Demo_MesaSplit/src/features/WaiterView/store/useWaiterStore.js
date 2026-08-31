@@ -24,6 +24,14 @@ export const DEMO_WAITERS = ['u3'];
 
 // Fixture de mesas predeterminadas para hidratación síncrona.
 import tablesData from '../../../mocks/tables.json';
+// http e isBackendMode: cliente real + flag de modo para conectar al back.
+import { http, isBackendMode } from '../../../api/httpClient.js';
+
+// mapCourseToBackend: curso del front ('entrada'/'fondo'/'postre') → enum del back.
+function mapCourseToBackend(course) {
+  // Tabla de traducción; default 'FONDO' si el curso no está declarado.
+  return { entrada: 'ENTRADA', fondo: 'FONDO', postre: 'POSTRE' }[course] || 'FONDO';
+}
 
 // Estado inicial del store de garzón (shiftStatus por defecto 'clocked_in' para navegación fluida).
 const initialState = {
@@ -394,5 +402,59 @@ export const useWaiterStore = create((set, get) => ({
   },
 
   // Restablece el slice a su estado inicial.
+  // Envía la comanda en borrador: en modo backend abre sesión (si falta) y crea
+  // la orden vía POST /sessions + POST /orders; en modo demo emite el evento local.
+  submitOrder: async () => {
+    // Estado actual: mesa seleccionada, borrador y mesas.
+    const { selectedTableId, orderDraft, tables } = get();
+    // Sin mesa seleccionada o sin ítems: no hay nada que enviar.
+    if (!selectedTableId || orderDraft.length === 0) return false;
+
+    // Modo demo: emite el evento local y limpia el borrador (comportamiento actual).
+    if (!isBackendMode()) {
+      bus.publish('order.submitted', { tableId: selectedTableId, items: orderDraft, timestamp: Date.now() });
+      set({ orderDraft: [], toastMessage: 'Comanda enviada a cocina' });
+      setTimeout(() => set({ toastMessage: null }), 2000);
+      return true;
+    }
+
+    try {
+      // Busca la mesa seleccionada para leer seats y la sesión activa.
+      const table = tables.find((t) => String(t.id) === String(selectedTableId));
+      // 1. Sesión: reusa la activa de la mesa o abre una nueva (POST /sessions).
+      let sessionId = table?.activeSessionId || null;
+      if (!sessionId) {
+        const session = await http.post('/api/v1/sessions', {
+          tableId: selectedTableId,
+          guestCount: table?.seats || 4,
+        });
+        sessionId = session.id;
+      }
+      // 2. Mapea el borrador a las líneas de CreateOrderRequest.
+      const lines = orderDraft.map((line) => ({
+        dishId: line.productId,
+        quantity: line.qty,
+        unitPrice: line.price,
+        courseType: mapCourseToBackend(line.course),
+        dineGuestId: null,
+      }));
+      // 3. Crea la comanda (POST /orders).
+      const order = await http.post('/api/v1/orders', {
+        dineSessionId: sessionId,
+        channel: 'staff',
+        lines,
+      });
+      // Limpia el borrador y confirma con un toast.
+      set({ orderDraft: [], toastMessage: `Comanda #${String(order.id).slice(0, 8)} enviada` });
+      setTimeout(() => set({ toastMessage: null }), 2500);
+      return true;
+    } catch (err) {
+      // Error de red o de regla de negocio: lo muestra en el toast.
+      set({ toastMessage: `Error al enviar: ${err.message}` });
+      setTimeout(() => set({ toastMessage: null }), 3000);
+      return false;
+    }
+  },
+
   resetDemo: () => set(initialState),
 }));

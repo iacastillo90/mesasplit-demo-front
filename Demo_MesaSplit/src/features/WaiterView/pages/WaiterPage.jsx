@@ -46,6 +46,7 @@ export default function WaiterPage({ bus: busProp }) {
   const fireCourse = useWaiterStore((s) => s.fireCourse);
   const voidItemWithPin = useWaiterStore((s) => s.voidItemWithPin);
   const releaseTable = useWaiterStore((s) => s.releaseTable);
+  const submitOrder = useWaiterStore((s) => s.submitOrder);
 
   const [pinInput, setPinInput] = useState('');
   const [pinError, setPinError] = useState('');
@@ -218,6 +219,7 @@ export default function WaiterPage({ bus: busProp }) {
             onIncreaseQty={increaseQty}
             onDecreaseQty={decreaseQty}
             onRemoveItem={removeItem}
+            onSubmitOrder={submitOrder}
           />
 
           {/* Modal de calculadora de cobro rápido al paso en mesa */}

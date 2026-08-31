@@ -28,6 +28,9 @@ export function mapTable(b) {
     // se marca con una orden vacía (el detalle se carga bajo demanda en sprints
     // posteriores).
     order: b.activeSessionId ? { items: [] } : null,
+    // activeSessionId: id de la sesión abierta del backend (para reabrir/crear
+    // comanda sin duplicar sesión).
+    activeSessionId: b.activeSessionId || null,
     waiterId: null,
   };
 }
