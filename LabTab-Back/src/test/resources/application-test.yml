@@ -1,0 +1,4 @@
+jwt:
+  secret: NHgAqvIIPq2Qtem/Z6gLjZZvooi3iDxGuUc3/6Dfrko=
+  access-token-expiration: 14400
+  refresh-token-expiration: 604800
