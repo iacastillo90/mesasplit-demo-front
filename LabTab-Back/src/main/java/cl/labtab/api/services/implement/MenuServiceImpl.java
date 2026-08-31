@@ -8,6 +8,8 @@ import cl.labtab.api.dtos.request.UpdateMenuSectionRequest;
 import cl.labtab.api.dtos.response.DishResponse;
 import cl.labtab.api.dtos.response.MenuSectionResponse;
 import cl.labtab.api.exception.ResourceNotFoundException;
+import cl.labtab.api.mappers.DishMapper;
+import cl.labtab.api.mappers.MenuSectionMapper;
 import cl.labtab.api.models.Dish;
 import cl.labtab.api.models.MenuSection;
 import cl.labtab.api.repositories.DishRepository;
@@ -24,24 +26,26 @@ public class MenuServiceImpl implements MenuService {
 
     private final MenuSectionRepository menuSectionRepository;
     private final DishRepository dishRepository;
+    private final MenuSectionMapper menuSectionMapper;
+    private final DishMapper dishMapper;
 
     public MenuServiceImpl(MenuSectionRepository menuSectionRepository,
-                           DishRepository dishRepository) {
+                           DishRepository dishRepository,
+                           MenuSectionMapper menuSectionMapper,
+                           DishMapper dishMapper) {
         this.menuSectionRepository = menuSectionRepository;
         this.dishRepository = dishRepository;
+        this.menuSectionMapper = menuSectionMapper;
+        this.dishMapper = dishMapper;
     }
 
     @Override
     public List<MenuSectionResponse> getSections() {
         UUID branchId = BranchContextHolder.get();
         return menuSectionRepository.findByBranchIdOrderByDisplayOrder(branchId).stream()
-                .map(section -> new MenuSectionResponse(
-                        section.getId(),
-                        section.getName(),
-                        section.getDescription(),
-                        section.getDisplayOrder(),
+                .map(section -> menuSectionMapper.toResponse(section,
                         dishRepository.findBySectionIdAndBranchIdOrderByDisplayOrder(section.getId(), branchId).stream()
-                                .map(this::toDish).toList()))
+                                .map(dishMapper::toResponse).toList()))
                 .toList();
     }
 
@@ -49,7 +53,7 @@ public class MenuServiceImpl implements MenuService {
     public DishResponse getDish(UUID dishId) {
         Dish dish = dishRepository.findByIdAndBranchId(dishId, BranchContextHolder.get())
                 .orElseThrow(() -> new ResourceNotFoundException("Plato no encontrado"));
-        return toDish(dish);
+        return dishMapper.toResponse(dish);
     }
 
     @Override
@@ -58,7 +62,7 @@ public class MenuServiceImpl implements MenuService {
                 .orElseThrow(() -> new ResourceNotFoundException("Plato no encontrado"));
         dish.setAvailable(request.isAvailable());
         dish = dishRepository.save(dish);
-        return toDish(dish);
+        return dishMapper.toResponse(dish);
     }
 
     @Override
@@ -69,7 +73,7 @@ public class MenuServiceImpl implements MenuService {
         section.setDescription(request.description());
         section.setDisplayOrder(request.displayOrder());
         section = menuSectionRepository.save(section);
-        return new MenuSectionResponse(section.getId(), section.getName(), section.getDescription(), section.getDisplayOrder(), List.of());
+        return menuSectionMapper.toResponse(section, List.of());
     }
 
     @Override
@@ -80,7 +84,7 @@ public class MenuServiceImpl implements MenuService {
         section.setDescription(request.description());
         section.setDisplayOrder(request.displayOrder());
         section = menuSectionRepository.save(section);
-        return new MenuSectionResponse(section.getId(), section.getName(), section.getDescription(), section.getDisplayOrder(), List.of());
+        return menuSectionMapper.toResponse(section, List.of());
     }
 
     @Override
@@ -107,7 +111,7 @@ public class MenuServiceImpl implements MenuService {
         dish.setAllergens(request.allergens());
         dish.setDisplayOrder(request.displayOrder());
         dish = dishRepository.save(dish);
-        return toDish(dish);
+        return dishMapper.toResponse(dish);
     }
 
     @Override
@@ -127,7 +131,7 @@ public class MenuServiceImpl implements MenuService {
         dish.setAllergens(request.allergens());
         dish.setDisplayOrder(request.displayOrder());
         dish = dishRepository.save(dish);
-        return toDish(dish);
+        return dishMapper.toResponse(dish);
     }
 
     @Override
@@ -135,18 +139,5 @@ public class MenuServiceImpl implements MenuService {
         Dish dish = dishRepository.findByIdAndBranchId(dishId, BranchContextHolder.get())
                 .orElseThrow(() -> new ResourceNotFoundException("Plato no encontrado"));
         dishRepository.delete(dish);
-    }
-
-    private DishResponse toDish(Dish dish) {
-        return new DishResponse(
-                dish.getId(),
-                dish.getName(),
-                dish.getDescription(),
-                dish.getPrice(),
-                dish.getImageUrl(),
-                dish.isAvailable(),
-                dish.getTags(),
-                dish.getAllergens(),
-                dish.getDisplayOrder());
     }
 }
