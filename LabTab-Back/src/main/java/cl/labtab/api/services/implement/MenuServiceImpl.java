@@ -16,9 +16,11 @@ import cl.labtab.api.repositories.DishRepository;
 import cl.labtab.api.repositories.MenuSectionRepository;
 import cl.labtab.api.security.BranchContextHolder;
 import cl.labtab.api.services.MenuService;
+import cl.labtab.api.websocket.KitchenEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -28,15 +30,18 @@ public class MenuServiceImpl implements MenuService {
     private final DishRepository dishRepository;
     private final MenuSectionMapper menuSectionMapper;
     private final DishMapper dishMapper;
+    private final KitchenEventPublisher kitchenEventPublisher;
 
     public MenuServiceImpl(MenuSectionRepository menuSectionRepository,
                            DishRepository dishRepository,
                            MenuSectionMapper menuSectionMapper,
-                           DishMapper dishMapper) {
+                           DishMapper dishMapper,
+                           KitchenEventPublisher kitchenEventPublisher) {
         this.menuSectionRepository = menuSectionRepository;
         this.dishRepository = dishRepository;
         this.menuSectionMapper = menuSectionMapper;
         this.dishMapper = dishMapper;
+        this.kitchenEventPublisher = kitchenEventPublisher;
     }
 
     @Override
@@ -62,6 +67,9 @@ public class MenuServiceImpl implements MenuService {
                 .orElseThrow(() -> new ResourceNotFoundException("Plato no encontrado"));
         dish.setAvailable(request.isAvailable());
         dish = dishRepository.save(dish);
+        kitchenEventPublisher.publishStock86(BranchContextHolder.get(), Map.of(
+                "dishId", dish.getId(),
+                "status", request.isAvailable() ? "available" : "out_of_stock"));
         return dishMapper.toResponse(dish);
     }
 

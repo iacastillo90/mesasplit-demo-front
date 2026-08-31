@@ -13,12 +13,14 @@ import cl.labtab.api.repositories.KitchenTicketRepository;
 import cl.labtab.api.repositories.OrderLineRepository;
 import cl.labtab.api.security.BranchContextHolder;
 import cl.labtab.api.services.KitchenService;
+import cl.labtab.api.websocket.KitchenEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -27,13 +29,16 @@ public class KitchenServiceImpl implements KitchenService {
     private final KitchenTicketRepository kitchenTicketRepository;
     private final OrderLineRepository orderLineRepository;
     private final KitchenTicketMapper kitchenTicketMapper;
+    private final KitchenEventPublisher kitchenEventPublisher;
 
     public KitchenServiceImpl(KitchenTicketRepository kitchenTicketRepository,
                               OrderLineRepository orderLineRepository,
-                              KitchenTicketMapper kitchenTicketMapper) {
+                              KitchenTicketMapper kitchenTicketMapper,
+                              KitchenEventPublisher kitchenEventPublisher) {
         this.kitchenTicketRepository = kitchenTicketRepository;
         this.orderLineRepository = orderLineRepository;
         this.kitchenTicketMapper = kitchenTicketMapper;
+        this.kitchenEventPublisher = kitchenEventPublisher;
     }
 
     @Override
@@ -54,6 +59,12 @@ public class KitchenServiceImpl implements KitchenService {
             ticket.setCompletedAt(Instant.now());
         }
         ticket = kitchenTicketRepository.save(ticket);
+        if (request.status() == KitchenTicketStatusEnum.DONE) {
+            kitchenEventPublisher.publishItemReady(branchId, Map.of(
+                    "ticketId", ticket.getId(),
+                    "tableName", ticket.getTableName(),
+                    "status", "done"));
+        }
         return toResponse(ticket);
     }
 

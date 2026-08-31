@@ -36,12 +36,16 @@ import cl.labtab.api.repositories.OrderRepository;
 import cl.labtab.api.security.BranchContextHolder;
 import cl.labtab.api.security.SecurityUtils;
 import cl.labtab.api.services.OrderService;
+import cl.labtab.api.websocket.AlertEventPublisher;
+import cl.labtab.api.websocket.KitchenEventPublisher;
+import cl.labtab.api.websocket.OrderEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -56,6 +60,9 @@ public class OrderServiceImpl implements OrderService {
     private final PinValidationService pinValidationService;
     private final OrderMapper orderMapper;
     private final OrderLineMapper orderLineMapper;
+    private final OrderEventPublisher orderEventPublisher;
+    private final KitchenEventPublisher kitchenEventPublisher;
+    private final AlertEventPublisher alertEventPublisher;
 
     public OrderServiceImpl(OrderRepository orderRepository,
                             OrderLineRepository orderLineRepository,
@@ -65,7 +72,10 @@ public class OrderServiceImpl implements OrderService {
                             KitchenTicketRepository kitchenTicketRepository,
                             PinValidationService pinValidationService,
                             OrderMapper orderMapper,
-                            OrderLineMapper orderLineMapper) {
+                            OrderLineMapper orderLineMapper,
+                            OrderEventPublisher orderEventPublisher,
+                            KitchenEventPublisher kitchenEventPublisher,
+                            AlertEventPublisher alertEventPublisher) {
         this.orderRepository = orderRepository;
         this.orderLineRepository = orderLineRepository;
         this.dishRepository = dishRepository;
@@ -75,12 +85,16 @@ public class OrderServiceImpl implements OrderService {
         this.pinValidationService = pinValidationService;
         this.orderMapper = orderMapper;
         this.orderLineMapper = orderLineMapper;
+        this.orderEventPublisher = orderEventPublisher;
+        this.kitchenEventPublisher = kitchenEventPublisher;
+        this.alertEventPublisher = alertEventPublisher;
     }
 
     @Override
     @Transactional
     public OrderResponse createOrder(CreateOrderRequest request) {
         UUID branchId = BranchContextHolder.get();
+        SecurityUtils.enforceGuestSession(request.dineSessionId());
         DineSession session = dineSessionRepository.findByIdAndBranchId(request.dineSessionId(), branchId)
                 .orElseThrow(() -> new ResourceNotFoundException("Sesión no encontrada"));
 
@@ -142,6 +156,11 @@ public class OrderServiceImpl implements OrderService {
         ticket.setItemsSummary(itemCount + " ítems");
         ticket = kitchenTicketRepository.save(ticket);
 
+        orderEventPublisher.publishItemAdded(branchId, Map.of(
+                "orderId", order.getId(),
+                "tableName", ticket.getTableName(),
+                "itemsSummary", ticket.getItemsSummary()));
+
         return orderMapper.toResponse(order, lineResponses, ticket.getId());
     }
 
@@ -158,6 +177,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public List<OrderResponse> getSessionOrders(UUID sessionId) {
         UUID branchId = BranchContextHolder.get();
+        SecurityUtils.enforceGuestSession(sessionId);
         List<Order> orders = orderRepository.findByDineSessionIdAndBranchId(sessionId, branchId);
         List<UUID> orderIds = orders.stream().map(Order::getId).toList();
         List<OrderLine> lines = orderLineRepository.findByOrderIdInAndBranchId(orderIds, branchId);
@@ -175,6 +195,12 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new ResourceNotFoundException("Línea no encontrada"));
         line.setStatus(request.status());
         line = orderLineRepository.save(line);
+        if (request.status() == OrderLineStatusEnum.READY) {
+            kitchenEventPublisher.publishItemReady(branchId, Map.of(
+                    "orderId", line.getOrderId(),
+                    "itemId", line.getId(),
+                    "status", "ready"));
+        }
         return orderLineMapper.toResponse(line);
     }
 
@@ -200,6 +226,11 @@ public class OrderServiceImpl implements OrderService {
         line.setStatus(OrderLineStatusEnum.CANCELLED);
         orderLineRepository.save(line);
 
+        alertEventPublisher.publishFraud(branchId, Map.of(
+                "type", "item_void_after_kitchen",
+                "orderLineId", line.getId(),
+                "reason", request.reason()));
+
         return new VoidOrderLineResponse(true, null);
     }
 
@@ -223,6 +254,10 @@ public class OrderServiceImpl implements OrderService {
                     t.setStatus(KitchenTicketStatusEnum.IN_PROGRESS);
                     kitchenTicketRepository.save(t);
                 });
+
+        orderEventPublisher.publishCourseFire(branchId, Map.of(
+                "orderId", orderId,
+                "courseType", request.courseType()));
 
         return new FireCourseResponse(true);
     }

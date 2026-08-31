@@ -24,11 +24,15 @@ import cl.labtab.api.repositories.PaymentRepository;
 import cl.labtab.api.security.BranchContextHolder;
 import cl.labtab.api.security.SecurityUtils;
 import cl.labtab.api.services.PaymentService;
+import cl.labtab.api.websocket.AlertEventPublisher;
+import cl.labtab.api.websocket.PaymentEventPublisher;
+import cl.labtab.api.websocket.TableEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -40,19 +44,28 @@ public class PaymentServiceImpl implements PaymentService {
     private final PinValidationService pinValidationService;
     private final PaymentMapper paymentMapper;
     private final BillMapper billMapper;
+    private final PaymentEventPublisher paymentEventPublisher;
+    private final TableEventPublisher tableEventPublisher;
+    private final AlertEventPublisher alertEventPublisher;
 
     public PaymentServiceImpl(PaymentRepository paymentRepository,
                               BillRepository billRepository,
                               DineSessionRepository dineSessionRepository,
                               PinValidationService pinValidationService,
                               PaymentMapper paymentMapper,
-                              BillMapper billMapper) {
+                              BillMapper billMapper,
+                              PaymentEventPublisher paymentEventPublisher,
+                              TableEventPublisher tableEventPublisher,
+                              AlertEventPublisher alertEventPublisher) {
         this.paymentRepository = paymentRepository;
         this.billRepository = billRepository;
         this.dineSessionRepository = dineSessionRepository;
         this.pinValidationService = pinValidationService;
         this.paymentMapper = paymentMapper;
         this.billMapper = billMapper;
+        this.paymentEventPublisher = paymentEventPublisher;
+        this.tableEventPublisher = tableEventPublisher;
+        this.alertEventPublisher = alertEventPublisher;
     }
 
     @Override
@@ -69,6 +82,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         Bill bill = billRepository.findByIdAndBranchId(request.billId(), branchId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cuenta no encontrada"));
+        SecurityUtils.enforceGuestSession(bill.getDineSessionId());
 
         if (request.amount().compareTo(bill.getBalanceDue()) > 0) {
             throw new BusinessRuleException("AMOUNT_EXCEEDS_BALANCE", "El monto supera el saldo pendiente");
@@ -99,6 +113,12 @@ public class PaymentServiceImpl implements PaymentService {
 
         bill = billRepository.save(bill);
 
+        paymentEventPublisher.publishQrReceived(branchId, Map.of(
+                "paymentId", payment.getId(),
+                "amount", payment.getAmount(),
+                "method", payment.getMethod().name(),
+                "status", payment.getStatus().name()));
+
         return paymentMapper.toResponse(payment, billMapper.toResponse(bill));
     }
 
@@ -127,6 +147,12 @@ public class PaymentServiceImpl implements PaymentService {
         payment.setStatus(PaymentStatusEnum.REFUNDED);
         paymentRepository.save(payment);
 
+        alertEventPublisher.publishFraud(branchId, Map.of(
+                "type", "refund_issued",
+                "paymentId", payment.getId(),
+                "amount", payment.getTotalAmount(),
+                "reason", request.reason()));
+
         return new RefundResponse(true, payment.getTotalAmount());
     }
 
@@ -136,6 +162,9 @@ public class PaymentServiceImpl implements PaymentService {
                     session.setStatus(DineSessionStatusEnum.CLOSED);
                     session.setEndedAt(Instant.now());
                     dineSessionRepository.save(session);
+                    tableEventPublisher.publishStatusChanged(branchId, Map.of(
+                            "tableId", session.getTableId(),
+                            "status", "free"));
                 });
     }
 }

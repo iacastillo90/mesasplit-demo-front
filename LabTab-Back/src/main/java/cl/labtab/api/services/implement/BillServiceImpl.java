@@ -27,7 +27,9 @@ import cl.labtab.api.repositories.DineSessionRepository;
 import cl.labtab.api.repositories.OrderLineRepository;
 import cl.labtab.api.repositories.OrderRepository;
 import cl.labtab.api.security.BranchContextHolder;
+import cl.labtab.api.security.SecurityUtils;
 import cl.labtab.api.services.BillService;
+import cl.labtab.api.websocket.AlertEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,6 +50,7 @@ public class BillServiceImpl implements BillService {
     private final PinValidationService pinValidationService;
     private final BillMapper billMapper;
     private final BillLineMapper billLineMapper;
+    private final AlertEventPublisher alertEventPublisher;
 
     public BillServiceImpl(BillRepository billRepository,
                            BillLineRepository billLineRepository,
@@ -56,7 +59,8 @@ public class BillServiceImpl implements BillService {
                            DineSessionRepository dineSessionRepository,
                            PinValidationService pinValidationService,
                            BillMapper billMapper,
-                           BillLineMapper billLineMapper) {
+                           BillLineMapper billLineMapper,
+                           AlertEventPublisher alertEventPublisher) {
         this.billRepository = billRepository;
         this.billLineRepository = billLineRepository;
         this.orderRepository = orderRepository;
@@ -65,6 +69,7 @@ public class BillServiceImpl implements BillService {
         this.pinValidationService = pinValidationService;
         this.billMapper = billMapper;
         this.billLineMapper = billLineMapper;
+        this.alertEventPublisher = alertEventPublisher;
     }
 
     @Override
@@ -117,11 +122,13 @@ public class BillServiceImpl implements BillService {
     public BillResponse getBill(UUID billId) {
         Bill bill = billRepository.findByIdAndBranchId(billId, BranchContextHolder.get())
                 .orElseThrow(() -> new ResourceNotFoundException("Cuenta no encontrada"));
+        SecurityUtils.enforceGuestSession(bill.getDineSessionId());
         return billMapper.toResponse(bill);
     }
 
     @Override
     public BillResponse getSessionBill(UUID sessionId) {
+        SecurityUtils.enforceGuestSession(sessionId);
         Bill bill = billRepository.findByDineSessionIdAndBranchId(sessionId, BranchContextHolder.get())
                 .orElseThrow(() -> new ResourceNotFoundException("Cuenta no encontrada"));
         return billMapper.toResponse(bill);
@@ -130,8 +137,9 @@ public class BillServiceImpl implements BillService {
     @Override
     public BillSummaryByGuestResponse getSummaryByGuest(UUID billId) {
         UUID branchId = BranchContextHolder.get();
-        billRepository.findByIdAndBranchId(billId, branchId)
+        Bill bill = billRepository.findByIdAndBranchId(billId, branchId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cuenta no encontrada"));
+        SecurityUtils.enforceGuestSession(bill.getDineSessionId());
 
         List<BillLine> lines = billLineRepository.findByBillIdAndBranchId(billId, branchId);
 
@@ -178,6 +186,13 @@ public class BillServiceImpl implements BillService {
         bill.setTotalAmount(bill.getTotalAmount().subtract(request.discountAmount()));
         bill.setBalanceDue(bill.getBalanceDue().subtract(request.discountAmount()));
         bill = billRepository.save(bill);
+
+        alertEventPublisher.publishFraud(branchId, Map.of(
+                "type", "manual_discount",
+                "billId", bill.getId(),
+                "amount", request.discountAmount(),
+                "reason", request.reason()));
+
         return billMapper.toResponse(bill);
     }
 }

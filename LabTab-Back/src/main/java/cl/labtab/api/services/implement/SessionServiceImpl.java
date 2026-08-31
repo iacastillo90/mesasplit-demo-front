@@ -23,11 +23,13 @@ import cl.labtab.api.repositories.PersonProfileRepository;
 import cl.labtab.api.security.BranchContextHolder;
 import cl.labtab.api.security.SecurityUtils;
 import cl.labtab.api.services.SessionService;
+import cl.labtab.api.websocket.TableEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -40,6 +42,7 @@ public class SessionServiceImpl implements SessionService {
     private final BillRepository billRepository;
     private final DineSessionMapper dineSessionMapper;
     private final DineGuestMapper dineGuestMapper;
+    private final TableEventPublisher tableEventPublisher;
 
     public SessionServiceImpl(DineSessionRepository dineSessionRepository,
                               DineGuestRepository dineGuestRepository,
@@ -47,7 +50,8 @@ public class SessionServiceImpl implements SessionService {
                               PersonProfileRepository personProfileRepository,
                               BillRepository billRepository,
                               DineSessionMapper dineSessionMapper,
-                              DineGuestMapper dineGuestMapper) {
+                              DineGuestMapper dineGuestMapper,
+                              TableEventPublisher tableEventPublisher) {
         this.dineSessionRepository = dineSessionRepository;
         this.dineGuestRepository = dineGuestRepository;
         this.diningTableRepository = diningTableRepository;
@@ -55,6 +59,7 @@ public class SessionServiceImpl implements SessionService {
         this.billRepository = billRepository;
         this.dineSessionMapper = dineSessionMapper;
         this.dineGuestMapper = dineGuestMapper;
+        this.tableEventPublisher = tableEventPublisher;
     }
 
     @Override
@@ -77,12 +82,17 @@ public class SessionServiceImpl implements SessionService {
         session.setStartedAt(Instant.now());
         session = dineSessionRepository.save(session);
 
+        tableEventPublisher.publishStatusChanged(branchId, Map.of(
+                "tableId", table.getId(),
+                "status", "seated"));
+
         return dineSessionMapper.toResponse(session, table.getName(), List.of(), null);
     }
 
     @Override
     public SessionResponse getSession(UUID sessionId) {
         UUID branchId = BranchContextHolder.get();
+        SecurityUtils.enforceGuestSession(sessionId);
         DineSession session = dineSessionRepository.findByIdAndBranchId(sessionId, branchId)
                 .orElseThrow(() -> new ResourceNotFoundException("Sesión no encontrada"));
         DiningTable table = diningTableRepository.findById(session.getTableId()).orElse(null);
@@ -112,6 +122,12 @@ public class SessionServiceImpl implements SessionService {
             session.setEndedAt(Instant.now());
         }
         session = dineSessionRepository.save(session);
+
+        if (request.status() == DineSessionStatusEnum.CLOSED) {
+            tableEventPublisher.publishStatusChanged(branchId, Map.of(
+                    "tableId", session.getTableId(),
+                    "status", "free"));
+        }
 
         DiningTable table = diningTableRepository.findById(session.getTableId()).orElse(null);
         List<GuestResponse> guests = dineGuestRepository.findByDineSessionId(session.getId()).stream()

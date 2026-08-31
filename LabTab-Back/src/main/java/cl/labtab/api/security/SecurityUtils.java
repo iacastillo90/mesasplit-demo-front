@@ -1,5 +1,6 @@
 package cl.labtab.api.security;
 
+import cl.labtab.api.exception.ResourceNotFoundException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -23,5 +24,17 @@ public final class SecurityUtils {
             return UUID.fromString(s);
         }
         return null;
+    }
+
+    public static boolean isGuest() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> "ROLE_GUEST".equals(a.getAuthority()));
+    }
+
+    public static void enforceGuestSession(UUID resourceSessionId) {
+        if (isGuest() && !resourceSessionId.equals(SessionContextHolder.get())) {
+            throw new ResourceNotFoundException("Recurso no encontrado");
+        }
     }
 }

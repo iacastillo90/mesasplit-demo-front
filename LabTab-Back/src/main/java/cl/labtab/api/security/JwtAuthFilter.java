@@ -34,6 +34,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 String role = jwtService.extractRole(token);
                 UUID branchId = jwtService.extractBranchId(token);
                 BranchContextHolder.set(branchId);
+                if ("GUEST".equals(role)) {
+                    SessionContextHolder.set(jwtService.extractSessionId(token));
+                }
 
                 var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
                 var authentication = new UsernamePasswordAuthenticationToken(UUID.fromString(subject), null, authorities);
@@ -46,6 +49,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
         } finally {
             BranchContextHolder.clear();
+            SessionContextHolder.clear();
         }
     }
 }
