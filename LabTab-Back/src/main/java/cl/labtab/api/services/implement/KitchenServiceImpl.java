@@ -6,6 +6,7 @@ import cl.labtab.api.dtos.response.KitchenTicketLineResponse;
 import cl.labtab.api.dtos.response.KitchenTicketResponse;
 import cl.labtab.api.dtos.response.RecallTicketResponse;
 import cl.labtab.api.exception.ResourceNotFoundException;
+import cl.labtab.api.mappers.KitchenTicketMapper;
 import cl.labtab.api.models.KitchenTicket;
 import cl.labtab.api.models.OrderLine;
 import cl.labtab.api.repositories.KitchenTicketRepository;
@@ -25,11 +26,14 @@ public class KitchenServiceImpl implements KitchenService {
 
     private final KitchenTicketRepository kitchenTicketRepository;
     private final OrderLineRepository orderLineRepository;
+    private final KitchenTicketMapper kitchenTicketMapper;
 
     public KitchenServiceImpl(KitchenTicketRepository kitchenTicketRepository,
-                              OrderLineRepository orderLineRepository) {
+                              OrderLineRepository orderLineRepository,
+                              KitchenTicketMapper kitchenTicketMapper) {
         this.kitchenTicketRepository = kitchenTicketRepository;
         this.orderLineRepository = orderLineRepository;
+        this.kitchenTicketMapper = kitchenTicketMapper;
     }
 
     @Override
@@ -72,16 +76,7 @@ public class KitchenServiceImpl implements KitchenService {
         long elapsed = ticket.getStartedAt() != null
                 ? Duration.between(ticket.getStartedAt(), Instant.now()).getSeconds()
                 : 0;
-        return new KitchenTicketResponse(
-                ticket.getId(),
-                ticket.getOrderId(),
-                ticket.getTableName(),
-                ticket.getStatus(),
-                ticket.getPriority(),
-                ticket.getItemsSummary(),
-                ticket.getStartedAt(),
-                elapsed,
-                lines);
+        return kitchenTicketMapper.toResponse(ticket, lines, elapsed);
     }
 
     private KitchenTicketLineResponse toLine(OrderLine line) {

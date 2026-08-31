@@ -17,6 +17,8 @@ import cl.labtab.api.dtos.response.OrderResponse;
 import cl.labtab.api.dtos.response.VoidOrderLineResponse;
 import cl.labtab.api.exception.BusinessRuleException;
 import cl.labtab.api.exception.ResourceNotFoundException;
+import cl.labtab.api.mappers.OrderLineMapper;
+import cl.labtab.api.mappers.OrderMapper;
 import cl.labtab.api.models.DineSession;
 import cl.labtab.api.models.DiningTable;
 import cl.labtab.api.models.Dish;
@@ -50,6 +52,8 @@ public class OrderServiceImpl implements OrderService {
     private final DiningTableRepository diningTableRepository;
     private final KitchenTicketRepository kitchenTicketRepository;
     private final PinValidationService pinValidationService;
+    private final OrderMapper orderMapper;
+    private final OrderLineMapper orderLineMapper;
 
     public OrderServiceImpl(OrderRepository orderRepository,
                             OrderLineRepository orderLineRepository,
@@ -57,7 +61,9 @@ public class OrderServiceImpl implements OrderService {
                             DineSessionRepository dineSessionRepository,
                             DiningTableRepository diningTableRepository,
                             KitchenTicketRepository kitchenTicketRepository,
-                            PinValidationService pinValidationService) {
+                            PinValidationService pinValidationService,
+                            OrderMapper orderMapper,
+                            OrderLineMapper orderLineMapper) {
         this.orderRepository = orderRepository;
         this.orderLineRepository = orderLineRepository;
         this.dishRepository = dishRepository;
@@ -65,6 +71,8 @@ public class OrderServiceImpl implements OrderService {
         this.diningTableRepository = diningTableRepository;
         this.kitchenTicketRepository = kitchenTicketRepository;
         this.pinValidationService = pinValidationService;
+        this.orderMapper = orderMapper;
+        this.orderLineMapper = orderLineMapper;
     }
 
     @Override
@@ -115,7 +123,7 @@ public class OrderServiceImpl implements OrderService {
 
             subtotal = subtotal.add(line.getLineTotal());
             itemCount += lineReq.quantity();
-            lineResponses.add(new OrderLineResponse(line.getId(), line.getName(), line.getQuantity(), line.getStatus()));
+            lineResponses.add(orderLineMapper.toResponse(line));
         }
 
         order.setSubtotal(subtotal);
@@ -132,8 +140,7 @@ public class OrderServiceImpl implements OrderService {
         ticket.setItemsSummary(itemCount + " ítems");
         ticket = kitchenTicketRepository.save(ticket);
 
-        return new OrderResponse(order.getId(), order.getStatus(), order.getSubtotal(), order.getTotal(),
-                order.getItemCount(), lineResponses, ticket.getId());
+        return orderMapper.toResponse(order, lineResponses, ticket.getId());
     }
 
     @Override
@@ -142,9 +149,8 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findByIdAndBranchId(orderId, branchId)
                 .orElseThrow(() -> new ResourceNotFoundException("Orden no encontrada"));
         List<OrderLineResponse> lines = orderLineRepository.findByOrderIdAndBranchId(orderId, branchId).stream()
-                .map(this::toLine).toList();
-        return new OrderResponse(order.getId(), order.getStatus(), order.getSubtotal(), order.getTotal(),
-                order.getItemCount(), lines, null);
+                .map(orderLineMapper::toResponse).toList();
+        return orderMapper.toResponse(order, lines, null);
     }
 
     @Override
@@ -154,13 +160,9 @@ public class OrderServiceImpl implements OrderService {
         List<UUID> orderIds = orders.stream().map(Order::getId).toList();
         List<OrderLine> lines = orderLineRepository.findByOrderIdInAndBranchId(orderIds, branchId);
 
-        return orders.stream().map(order -> new OrderResponse(
-                order.getId(),
-                order.getStatus(),
-                order.getSubtotal(),
-                order.getTotal(),
-                order.getItemCount(),
-                lines.stream().filter(l -> l.getOrderId().equals(order.getId())).map(this::toLine).toList(),
+        return orders.stream().map(order -> orderMapper.toResponse(
+                order,
+                lines.stream().filter(l -> l.getOrderId().equals(order.getId())).map(orderLineMapper::toResponse).toList(),
                 null)).toList();
     }
 
@@ -171,7 +173,7 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new ResourceNotFoundException("Línea no encontrada"));
         line.setStatus(request.status());
         line = orderLineRepository.save(line);
-        return toLine(line);
+        return orderLineMapper.toResponse(line);
     }
 
     @Override
@@ -202,7 +204,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public FireCourseResponse fireCourse(UUID orderId, FireCourseRequest request) {
         UUID branchId = BranchContextHolder.get();
-        Order order = orderRepository.findByIdAndBranchId(orderId, branchId)
+        orderRepository.findByIdAndBranchId(orderId, branchId)
                 .orElseThrow(() -> new ResourceNotFoundException("Orden no encontrada"));
 
         List<OrderLine> lines = orderLineRepository.findByOrderIdAndBranchId(orderId, branchId);
@@ -220,9 +222,5 @@ public class OrderServiceImpl implements OrderService {
                 });
 
         return new FireCourseResponse(true);
-    }
-
-    private OrderLineResponse toLine(OrderLine line) {
-        return new OrderLineResponse(line.getId(), line.getName(), line.getQuantity(), line.getStatus());
     }
 }
