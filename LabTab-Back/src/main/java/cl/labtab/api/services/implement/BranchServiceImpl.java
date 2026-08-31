@@ -5,12 +5,13 @@ import cl.labtab.api.dtos.request.TableStatusRequest;
 import cl.labtab.api.dtos.response.BranchConfigResponse;
 import cl.labtab.api.dtos.response.DiningFloorResponse;
 import cl.labtab.api.dtos.response.DiningTableResponse;
-import cl.labtab.api.dtos.response.MapZoneResponse;
 import cl.labtab.api.exception.ResourceNotFoundException;
+import cl.labtab.api.mappers.BranchMapper;
+import cl.labtab.api.mappers.DiningTableMapper;
+import cl.labtab.api.mappers.MapZoneMapper;
 import cl.labtab.api.models.Branch;
 import cl.labtab.api.models.DineSession;
 import cl.labtab.api.models.DiningTable;
-import cl.labtab.api.models.MapZone;
 import cl.labtab.api.repositories.BranchRepository;
 import cl.labtab.api.repositories.DineSessionRepository;
 import cl.labtab.api.repositories.DiningFloorRepository;
@@ -33,29 +34,33 @@ public class BranchServiceImpl implements BranchService {
     private final MapZoneRepository mapZoneRepository;
     private final DiningTableRepository diningTableRepository;
     private final DineSessionRepository dineSessionRepository;
+    private final BranchMapper branchMapper;
+    private final MapZoneMapper mapZoneMapper;
+    private final DiningTableMapper diningTableMapper;
 
     public BranchServiceImpl(BranchRepository branchRepository,
                              DiningFloorRepository diningFloorRepository,
                              MapZoneRepository mapZoneRepository,
                              DiningTableRepository diningTableRepository,
-                             DineSessionRepository dineSessionRepository) {
+                             DineSessionRepository dineSessionRepository,
+                             BranchMapper branchMapper,
+                             MapZoneMapper mapZoneMapper,
+                             DiningTableMapper diningTableMapper) {
         this.branchRepository = branchRepository;
         this.diningFloorRepository = diningFloorRepository;
         this.mapZoneRepository = mapZoneRepository;
         this.diningTableRepository = diningTableRepository;
         this.dineSessionRepository = dineSessionRepository;
+        this.branchMapper = branchMapper;
+        this.mapZoneMapper = mapZoneMapper;
+        this.diningTableMapper = diningTableMapper;
     }
 
     @Override
     public BranchConfigResponse getConfig() {
         Branch branch = branchRepository.findById(BranchContextHolder.get())
                 .orElseThrow(() -> new ResourceNotFoundException("Branch no encontrada"));
-        return new BranchConfigResponse(
-                branch.getId(),
-                branch.getName(),
-                branch.getServiceChargePct(),
-                branch.getTimezone(),
-                branch.getOpeningHours());
+        return branchMapper.toResponse(branch);
     }
 
     @Override
@@ -66,9 +71,9 @@ public class BranchServiceImpl implements BranchService {
                         floor.getId(),
                         floor.getName(),
                         floor.getDisplayOrder(),
-                        mapZoneRepository.findByFloorId(floor.getId()).stream().map(this::toMapZone).toList(),
+                        mapZoneRepository.findByFloorId(floor.getId()).stream().map(mapZoneMapper::toResponse).toList(),
                         diningTableRepository.findByFloorIdAndBranchId(floor.getId(), branchId).stream()
-                                .map(t -> toTable(t, null)).toList()))
+                                .map(t -> diningTableMapper.toResponse(t, null)).toList()))
                 .toList();
     }
 
@@ -79,7 +84,7 @@ public class BranchServiceImpl implements BranchService {
                 .findByBranchIdAndStatus(branchId, DineSessionStatusEnum.OPEN).stream()
                 .collect(Collectors.toMap(DineSession::getTableId, DineSession::getId));
         return diningTableRepository.findByBranchId(branchId).stream()
-                .map(t -> toTable(t, sessionByTable.get(t.getId())))
+                .map(t -> diningTableMapper.toResponse(t, sessionByTable.get(t.getId())))
                 .toList();
     }
 
@@ -90,33 +95,6 @@ public class BranchServiceImpl implements BranchService {
                 .orElseThrow(() -> new ResourceNotFoundException("Mesa no encontrada"));
         table.setStatus(request.status());
         diningTableRepository.save(table);
-        return toTable(table, null);
-    }
-
-    private MapZoneResponse toMapZone(MapZone zone) {
-        return new MapZoneResponse(
-                zone.getId(),
-                zone.getName(),
-                zone.getX(),
-                zone.getY(),
-                zone.getW(),
-                zone.getH(),
-                zone.getColor(),
-                zone.getZIndex(),
-                zone.isLabelOnly());
-    }
-
-    private DiningTableResponse toTable(DiningTable table, UUID activeSessionId) {
-        return new DiningTableResponse(
-                table.getId(),
-                table.getName(),
-                table.getZone(),
-                table.getCapacity(),
-                table.getStatus(),
-                table.getQrToken(),
-                table.getPositionX(),
-                table.getPositionY(),
-                table.getShape(),
-                activeSessionId);
+        return diningTableMapper.toResponse(table, null);
     }
 }
