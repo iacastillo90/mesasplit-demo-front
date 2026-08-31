@@ -15,6 +15,7 @@ import cl.labtab.api.dtos.response.RefreshTokenResponse;
 import cl.labtab.api.exception.BusinessRuleException;
 import cl.labtab.api.exception.ConflictException;
 import cl.labtab.api.exception.ResourceNotFoundException;
+import cl.labtab.api.mappers.GuestMapper;
 import cl.labtab.api.models.BranchRole;
 import cl.labtab.api.models.CompanyRole;
 import cl.labtab.api.models.DineGuest;
@@ -50,6 +51,7 @@ public class AuthServiceImpl implements AuthService {
     private final DineGuestRepository dineGuestRepository;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
+    private final GuestMapper guestMapper;
 
     public AuthServiceImpl(PersonRepository personRepository,
                            PersonProfileRepository personProfileRepository,
@@ -59,7 +61,8 @@ public class AuthServiceImpl implements AuthService {
                            DineSessionRepository dineSessionRepository,
                            DineGuestRepository dineGuestRepository,
                            JwtService jwtService,
-                           PasswordEncoder passwordEncoder) {
+                           PasswordEncoder passwordEncoder,
+                           GuestMapper guestMapper) {
         this.personRepository = personRepository;
         this.personProfileRepository = personProfileRepository;
         this.companyRoleRepository = companyRoleRepository;
@@ -69,6 +72,7 @@ public class AuthServiceImpl implements AuthService {
         this.dineGuestRepository = dineGuestRepository;
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
+        this.guestMapper = guestMapper;
     }
 
     @Override
@@ -143,7 +147,7 @@ public class AuthServiceImpl implements AuthService {
         return new GuestSessionResponse(
                 accessToken,
                 14400,
-                new GuestAuthResponse(guest.getId(), guest.getDisplayName(), session.getId(), table.getId(), table.getName()));
+                guestMapper.toAuthResponse(guest, session.getId(), table.getId(), table.getName()));
     }
 
     private BranchRole activeBranchRole(UUID personId) {
