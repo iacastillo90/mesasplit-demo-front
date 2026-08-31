@@ -73,6 +73,14 @@ public class BillServiceImpl implements BillService {
     }
 
     @Override
+    public List<BillResponse> getBills() {
+        UUID branchId = BranchContextHolder.get();
+        return billRepository.findByBranchIdAndStatus(branchId, BillStatusEnum.OPEN).stream()
+                .map(billMapper::toResponse)
+                .toList();
+    }
+
+    @Override
     @Transactional
     public BillResponse createBill(CreateBillRequest request) {
         UUID branchId = BranchContextHolder.get();

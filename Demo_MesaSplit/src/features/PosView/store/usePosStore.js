@@ -12,12 +12,22 @@ import { persist } from 'zustand/middleware';
 import { fetchOpenBills } from '../services/posService.js';
 // Instancia del bus en tiempo real.
 import { createRealtimeBus } from '../../../hooks/useRealtimeBus.js';
+// http e isBackendMode: cliente real + flag de modo para conectar al back.
+import { http, isBackendMode } from '../../../api/httpClient.js';
 // Validación de RUT chileno.
 import { validateRut } from '../../../shared/utils/index.js';
 
 // Instancia única del bus para la Caja POS.
 export const posBus = createRealtimeBus('mesasplit');
 const bus = posBus;
+
+// mapPaymentMethod: método de pago del front → enum PaymentMethodEnum del back.
+function mapPaymentMethod(method) {
+  return (
+    { efectivo: 'CASH', tarjeta: 'CARD', transferencia: 'TRANSFER', qr_webpay: 'WEBPAY' }[method] ||
+    'CASH'
+  );
+}
 
 // Fixture canónico inicial de cuentas abiertas para cobro.
 const INITIAL_BILLS = [
@@ -179,9 +189,27 @@ export const usePosStore = create(
       },
 
       // Confirma el cobro de la cuenta activa y emite el evento payment.completed.
-      confirmPayment: (dteData) => {
+      confirmPayment: async (dteData) => {
         const { activeBill, openBills, paymentMethod } = get();
         if (!activeBill) return;
+
+        // Modo backend: registra el pago (POST /payments); si falla, no marca pagada.
+        if (isBackendMode()) {
+          try {
+            await http.post('/api/v1/payments', {
+              billId: activeBill.id,
+              amount: activeBill.totalAmount,
+              tipAmount: 0,
+              totalAmount: activeBill.totalAmount,
+              method: mapPaymentMethod(paymentMethod),
+              provider: 'manual',
+            });
+          } catch (err) {
+            // Error de pago (regla de negocio o red): lo reporta sin mutar el estado.
+            console.error('Pago fallido:', err.message);
+            return;
+          }
+        }
 
         // Actualiza el estado de la cuenta a pagada.
         const updatedBills = openBills.map((b) =>
@@ -231,8 +259,21 @@ export const usePosStore = create(
 
       // Emite una nota de crédito autorizada por PIN de admin ("9921") (pos-credit-note).
       issueCreditNote: (billId, amount, reason, pin, customBus) => {
-        // Si no hay id de venta o el PIN es incorrecto, bloquea.
+        // Sin id de venta: bloquea (no hay cuenta sobre la que descontar).
         if (!billId) return { ok: false, error: 'No hay venta seleccionada' };
+
+        // Modo backend: dispara el descuento (PATCH apply-discount) sin bloquear la
+        // UI; el backend valida el PIN del manager. Se reporta ok optimista.
+        if (isBackendMode()) {
+          http.patch(`/api/v1/bills/${billId}/apply-discount`, {
+            discountAmount: Number(amount),
+            reason: String(reason ?? 'Devolución'),
+            managerPin: String(pin),
+          }).catch((err) => console.error('Descuento fallido:', err.message));
+          return { ok: true };
+        }
+
+        // Modo demo: validación de PIN local (9921).
         if (pin !== '9921') return { ok: false, error: 'PIN de administrador incorrecto' };
 
         const newNote = {

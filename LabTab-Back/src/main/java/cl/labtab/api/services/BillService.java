@@ -5,9 +5,12 @@ import cl.labtab.api.dtos.request.CreateBillRequest;
 import cl.labtab.api.dtos.response.BillResponse;
 import cl.labtab.api.dtos.response.BillSummaryByGuestResponse;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface BillService {
+
+    List<BillResponse> getBills();
 
     BillResponse createBill(CreateBillRequest request);
 

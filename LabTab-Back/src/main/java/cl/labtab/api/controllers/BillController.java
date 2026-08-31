@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.UUID;
 
 @Tag(name = "Cuentas", description = "Cuentas, división por comensal y descuentos con PIN.")
@@ -30,6 +31,12 @@ public class BillController {
 
     public BillController(BillService billService) {
         this.billService = billService;
+    }
+
+    @GetMapping("/bills")
+    @PreAuthorize("hasAnyRole('SUPERADMIN','OWNER','MANAGER','STAFF')")
+    public ApiResponse<List<BillResponse>> getBills() {
+        return ApiResponse.of(billService.getBills());
     }
 
     @PostMapping("/bills")

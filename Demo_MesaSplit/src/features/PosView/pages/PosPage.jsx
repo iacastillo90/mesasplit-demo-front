@@ -5,6 +5,8 @@
 // Cumple con todas las normas obligatorias de AGENTS.md (comentarios por cada línea en español).
 
 import { useEffect, useState } from 'react';
+// Hook de suscripción STOMP al backend (modo backend).
+import { useStompEvents } from '../../../hooks/useStompEvents.js';
 import { formatCurrency } from '../../../shared/utils/index.js';
 import { usePosStore } from '../store/usePosStore.js';
 import PaymentMethodPicker from '../components/PaymentMethodPicker.jsx';
@@ -61,6 +63,13 @@ export default function PosPage() {
     const cleanup = setupRealtimeListeners();
     return cleanup;
   }, [loadPosData, setupRealtimeListeners]);
+
+  // Modo backend: re-carga cuentas ante payment.qr_received (pago QR por WebSocket).
+  useStompEvents((event) => {
+    if (event.event === 'payment.qr_received') {
+      loadPosData();
+    }
+  });
 
   const handleUnlockSubmit = (e) => {
     e.preventDefault();

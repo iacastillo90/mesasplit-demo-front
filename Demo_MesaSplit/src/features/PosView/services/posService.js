@@ -2,7 +2,16 @@
 // Capa de integración de datos para la terminal POS: lectura de cuentas por cobrar y pedidos de retiro con fotos HD.
 // Cumple con las reglas obligatorias de AGENTS.md (comentarios en español por cada línea).
 
+// http e isBackendMode: cliente real + flag de modo; mapBill: adaptador back→front.
+import { http, isBackendMode } from '../../../api/httpClient.js';
+import { mapBill } from '../../../api/mappers.js';
+
 export async function fetchOpenBills() {
+  // Modo backend: lista las cuentas abiertas del back (GET /bills) y las adapta.
+  if (isBackendMode()) {
+    return http.get('/api/v1/bills').then((bills) => bills.map(mapBill));
+  }
+  // Modo demo: fixtures inline de cuentas.
   return [
     {
       id: 'b-1',

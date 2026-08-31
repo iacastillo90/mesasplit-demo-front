@@ -95,3 +95,25 @@ export function mapTicket(t) {
     })),
   };
 }
+
+// Mapeo de estado de cuenta: enum del back → estado del front (POS).
+const BILL_STATUS_MAP = {
+  OPEN: 'pending',
+  PAID: 'paid',
+  VOID: 'void',
+};
+
+// mapBill: BillResponse → shape de cuenta del front (POS).
+export function mapBill(b) {
+  return {
+    id: b.id,
+    // tableNumber: BillResponse no trae la mesa; se rellena con 0 y se resuelve
+    // en sprints posteriores (join sesión → mesa).
+    tableNumber: 0,
+    type: 'table',
+    customerName: null,
+    totalAmount: Number(b.totalAmount),
+    status: BILL_STATUS_MAP[b.status] || 'pending',
+    items: [],
+  };
+}
