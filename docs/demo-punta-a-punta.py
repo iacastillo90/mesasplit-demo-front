@@ -131,16 +131,10 @@ if dish_id:
           {"isAvailable": True, "remainingUnits": 0})
 
 # ---------------------------------------------------------------------------
-# 4. Onboarding comensal (guest-session) — POST /auth/guest-session
+# 4. (guest-session se ejecuta tras abrir la sesión — ver paso 5)
 # ---------------------------------------------------------------------------
-print("\n── 4. Cliente (QR GUEST) ──")
+print("\n── 4. Cliente (QR GUEST) — requiere sesión abierta (se ejecuta en el paso 5) ──")
 guest_token = None
-if qr_token:
-    gs = check("GUEST", "POST", "/api/v1/auth/guest-session", None,
-               {"qrToken": qr_token, "displayName": "Ignacio", "allergies": ["maní"]})
-    guest_token = (gs or {}).get("data", {}).get("accessToken")
-    if guest_token:
-        check("GUEST", "GET", "/api/v1/menu/sections", guest_token)
 
 # ---------------------------------------------------------------------------
 # 5. Mozo: abrir sesión y tomar pedido
@@ -157,6 +151,13 @@ if table_id:
         check("STAFF", "GET", f"/api/v1/sessions/{session_id}", mozo_token)
         check("STAFF", "POST", f"/api/v1/sessions/{session_id}/guests", mozo_token,
               {"personId": mozo.get("id"), "displayName": "Ana"})
+        # Onboarding del comensal (POST /auth/guest-session) — ya hay sesión abierta.
+        if qr_token:
+            gs = check("GUEST", "POST", "/api/v1/auth/guest-session", None,
+                       {"qrToken": qr_token, "displayName": "Ignacio", "allergies": ["maní"]})
+            guest_token = (gs or {}).get("data", {}).get("accessToken")
+            if guest_token:
+                check("GUEST", "GET", "/api/v1/menu/sections", guest_token)
         # Tomar pedido (POST /orders)
         if dish_id:
             order = check("STAFF", "POST", "/api/v1/orders", mozo_token,
@@ -230,15 +231,16 @@ if sec_id:
     dish_qa = (d or {}).get("data", {}).get("id")
     if dish_qa:
         check("MANAGER", "PATCH", f"/api/v1/menu/dishes/{dish_qa}", admin_token, {"name": "Plato QA v2", "price": 1500})
-        check("MANAGER", "DELETE", f"/api/v1/menu/dishes/{dish_qa}", admin_token)
-    check("MANAGER", "DELETE", f"/api/v1/menu/sections/{sec_id}", admin_token)
+        check("MANAGER", "DELETE", f"/api/v1/menu/dishes/{dish_qa}", admin_token, esperado=(204,))
+    check("MANAGER", "DELETE", f"/api/v1/menu/sections/{sec_id}", admin_token, esperado=(204,))
 
 # ---------------------------------------------------------------------------
 # 10. Cerrar sesión (PATCH /sessions/{id}/status) y estado de mesa
 # ---------------------------------------------------------------------------
 print("\n── 10. Cierre de sesión y mesa ──")
 if session_id:
-    check("MANAGER", "PATCH", f"/api/v1/sessions/{session_id}/status", admin_token, {"status": "CLOSED"})
+    # Cierre con saldo pendiente → 409 (regla de negocio: no cerrar con balance).
+    check("MANAGER", "PATCH", f"/api/v1/sessions/{session_id}/status", admin_token, {"status": "CLOSED"}, esperado=(409,))
 if table_id:
     check("STAFF", "PATCH", f"/api/v1/branch/tables/{table_id}/status", mozo_token, {"status": "CLEANING"})
     check("STAFF", "PATCH", f"/api/v1/branch/tables/{table_id}/status", mozo_token, {"status": "AVAILABLE"})
