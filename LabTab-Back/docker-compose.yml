@@ -5,7 +5,7 @@ services:
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-labtab_dev}
       POSTGRES_USER: ${POSTGRES_USER:-labtab}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-labtab}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Se requiere POSTGRES_PASSWORD. Copia .env.example a .env y define un valor.}
     ports:
       - "5432:5432"
     volumes:
@@ -27,8 +27,8 @@ services:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-labtab_dev}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-labtab}
-      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-labtab}
-      JWT_SECRET: ${JWT_SECRET:-NHgAqvIIPq2Qtem/Z6gLjZZvooi3iDxGuUc3/6Dfrko=}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET:?Se requiere JWT_SECRET. Copia .env.example a .env y define un valor.}
     ports:
       - "8080:8080"
     depends_on:
