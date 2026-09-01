@@ -13,6 +13,7 @@ import cl.labtab.api.dtos.response.BillLineResponse;
 import cl.labtab.api.dtos.response.BillResponse;
 import cl.labtab.api.dtos.response.BillSummaryByGuestResponse;
 import cl.labtab.api.dtos.response.GuestBillSummaryResponse;
+import cl.labtab.api.dtos.response.PageResponse;
 import cl.labtab.api.exception.BusinessRuleException;
 import cl.labtab.api.exception.ResourceNotFoundException;
 import cl.labtab.api.mappers.BillLineMapper;
@@ -31,6 +32,8 @@ import cl.labtab.api.security.BranchContextHolder;
 import cl.labtab.api.security.SecurityUtils;
 import cl.labtab.api.services.BillService;
 import cl.labtab.api.websocket.AlertEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -75,11 +78,10 @@ public class BillServiceImpl implements BillService {
     }
 
     @Override
-    public List<BillResponse> getBills() {
+    public PageResponse<BillResponse> getBills(Pageable pageable) {
         UUID branchId = BranchContextHolder.get();
-        return billRepository.findByBranchIdAndStatus(branchId, BillStatusEnum.OPEN).stream()
-                .map(billMapper::toResponse)
-                .toList();
+        Page<Bill> page = billRepository.findByBranchIdAndStatus(branchId, BillStatusEnum.OPEN, pageable);
+        return PageResponse.from(page.map(billMapper::toResponse));
     }
 
     @Override

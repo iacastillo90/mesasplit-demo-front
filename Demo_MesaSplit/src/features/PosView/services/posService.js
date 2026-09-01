@@ -9,7 +9,7 @@ import { mapBill } from '../../../api/mappers.js';
 export async function fetchOpenBills() {
   // Modo backend: lista las cuentas abiertas del back (GET /bills) y las adapta.
   if (isBackendMode()) {
-    return http.get('/api/v1/bills').then((bills) => bills.map(mapBill));
+    return http.get('/api/v1/bills').then((res) => res.content.map(mapBill));
   }
   // Modo demo: fixtures inline de cuentas.
   return [

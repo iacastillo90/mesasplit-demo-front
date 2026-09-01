@@ -14,7 +14,7 @@ import { mapTicket } from '../../../api/mappers.js';
 export function fetchKitchenTickets() {
   // Modo backend: GET /kitchen/tickets y mapeo a la forma del front.
   if (isBackendMode()) {
-    return http.get('/api/v1/kitchen/tickets').then((tickets) => tickets.map(mapTicket));
+    return http.get('/api/v1/kitchen/tickets').then((res) => res.content.map(mapTicket));
   }
   // Modo demo: resuelve el fixture tickets.json tras ~300ms.
   return mockFetch('/api/tickets');

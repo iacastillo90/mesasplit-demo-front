@@ -2,6 +2,7 @@ package cl.labtab.api.services.implement;
 
 import cl.labtab.api.common.enums.ExceptionEventTypeEnum;
 import cl.labtab.api.dtos.response.ExceptionLogResponse;
+import cl.labtab.api.dtos.response.PageResponse;
 import cl.labtab.api.mappers.ExceptionLogMapper;
 import cl.labtab.api.models.ExceptionLog;
 import cl.labtab.api.models.Person;
@@ -36,7 +37,7 @@ public class ExceptionLogServiceImpl implements ExceptionLogService {
     }
 
     @Override
-    public Page<ExceptionLogResponse> list(Instant from, Instant to, ExceptionEventTypeEnum eventType, Pageable pageable) {
+    public PageResponse<ExceptionLogResponse> list(Instant from, Instant to, ExceptionEventTypeEnum eventType, Pageable pageable) {
         UUID branchId = BranchContextHolder.get();
 
         Page<ExceptionLog> page;
@@ -57,11 +58,11 @@ public class ExceptionLogServiceImpl implements ExceptionLogService {
         Map<UUID, String> names = personRepository.findAllById(personIds)
                 .stream().collect(Collectors.toMap(Person::getId, Person::getEmail));
 
-        return page.map(log -> exceptionLogMapper.toResponse(
+        return PageResponse.from(page.map(log -> exceptionLogMapper.toResponse(
                 log,
                 names.get(log.getPersonId()),
                 names.get(log.getAuthorizedBy()),
-                null));
+                null)));
     }
 
     @Override

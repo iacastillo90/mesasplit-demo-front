@@ -5,9 +5,13 @@ import cl.labtab.api.dtos.request.ApplyDiscountRequest;
 import cl.labtab.api.dtos.request.CreateBillRequest;
 import cl.labtab.api.dtos.response.BillResponse;
 import cl.labtab.api.dtos.response.BillSummaryByGuestResponse;
+import cl.labtab.api.dtos.response.PageResponse;
 import cl.labtab.api.services.BillService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,7 +23,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
 import java.util.UUID;
 
 @Tag(name = "Cuentas", description = "Cuentas, división por comensal y descuentos con PIN.")
@@ -35,8 +38,9 @@ public class BillController {
 
     @GetMapping("/bills")
     @PreAuthorize("hasAnyRole('SUPERADMIN','OWNER','MANAGER','STAFF')")
-    public ApiResponse<List<BillResponse>> getBills() {
-        return ApiResponse.of(billService.getBills());
+    public ApiResponse<PageResponse<BillResponse>> getBills(
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ApiResponse.of(billService.getBills(pageable));
     }
 
     @PostMapping("/bills")

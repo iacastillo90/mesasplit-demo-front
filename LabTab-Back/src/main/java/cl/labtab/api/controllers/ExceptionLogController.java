@@ -3,6 +3,7 @@ package cl.labtab.api.controllers;
 import cl.labtab.api.common.ApiResponse;
 import cl.labtab.api.common.enums.ExceptionEventTypeEnum;
 import cl.labtab.api.dtos.response.ExceptionLogResponse;
+import cl.labtab.api.dtos.response.PageResponse;
 import cl.labtab.api.services.ExceptionLogService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.data.domain.Pageable;
@@ -15,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Instant;
-import java.util.List;
 
 @Tag(name = "Auditoría", description = "Feed de excepciones antifraude.")
 @RestController
@@ -30,11 +30,11 @@ public class ExceptionLogController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('SUPERADMIN','OWNER','MANAGER')")
-    public ApiResponse<List<ExceptionLogResponse>> list(
+    public ApiResponse<PageResponse<ExceptionLogResponse>> list(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant from,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant to,
             @RequestParam(required = false) ExceptionEventTypeEnum eventType,
             @PageableDefault(size = 20) Pageable pageable) {
-        return ApiResponse.of(exceptionLogService.list(from, to, eventType, pageable).getContent());
+        return ApiResponse.of(exceptionLogService.list(from, to, eventType, pageable));
     }
 }

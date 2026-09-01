@@ -4,13 +4,14 @@ import cl.labtab.api.dtos.request.ApplyDiscountRequest;
 import cl.labtab.api.dtos.request.CreateBillRequest;
 import cl.labtab.api.dtos.response.BillResponse;
 import cl.labtab.api.dtos.response.BillSummaryByGuestResponse;
+import cl.labtab.api.dtos.response.PageResponse;
+import org.springframework.data.domain.Pageable;
 
-import java.util.List;
 import java.util.UUID;
 
 public interface BillService {
 
-    List<BillResponse> getBills();
+    PageResponse<BillResponse> getBills(Pageable pageable);
 
     BillResponse createBill(CreateBillRequest request);
 

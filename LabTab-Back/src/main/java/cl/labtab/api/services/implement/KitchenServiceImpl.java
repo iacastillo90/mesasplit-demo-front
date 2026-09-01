@@ -4,6 +4,7 @@ import cl.labtab.api.common.enums.KitchenTicketStatusEnum;
 import cl.labtab.api.dtos.request.KitchenTicketStatusRequest;
 import cl.labtab.api.dtos.response.KitchenTicketLineResponse;
 import cl.labtab.api.dtos.response.KitchenTicketResponse;
+import cl.labtab.api.dtos.response.PageResponse;
 import cl.labtab.api.dtos.response.RecallTicketResponse;
 import cl.labtab.api.exception.ResourceNotFoundException;
 import cl.labtab.api.mappers.KitchenTicketMapper;
@@ -14,11 +15,12 @@ import cl.labtab.api.repositories.OrderLineRepository;
 import cl.labtab.api.security.BranchContextHolder;
 import cl.labtab.api.services.KitchenService;
 import cl.labtab.api.websocket.KitchenEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -42,11 +44,10 @@ public class KitchenServiceImpl implements KitchenService {
     }
 
     @Override
-    public List<KitchenTicketResponse> getTickets(Collection<KitchenTicketStatusEnum> statuses) {
+    public PageResponse<KitchenTicketResponse> getTickets(List<KitchenTicketStatusEnum> statuses, Pageable pageable) {
         UUID branchId = BranchContextHolder.get();
-        return kitchenTicketRepository.findByBranchIdAndStatusIn(branchId, statuses).stream()
-                .map(this::toResponse)
-                .toList();
+        Page<KitchenTicket> page = kitchenTicketRepository.findByBranchIdAndStatusIn(branchId, statuses, pageable);
+        return PageResponse.from(page.map(this::toResponse));
     }
 
     @Override
