@@ -12,8 +12,6 @@ import java.util.UUID;
 @Repository
 public interface BranchRoleRepository extends JpaRepository<BranchRole, UUID> {
 
-    Optional<BranchRole> findByBranchIdAndPersonId(UUID branchId, UUID personId);
-
     Optional<BranchRole> findByBranchIdAndRole(UUID branchId, BranchRoleEnum role);
 
     List<BranchRole> findByPersonId(UUID personId);

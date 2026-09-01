@@ -12,8 +12,6 @@ import java.util.UUID;
 @Repository
 public interface DishRepository extends JpaRepository<Dish, UUID> {
 
-    List<Dish> findByBranchIdAndAvailableTrueOrderByDisplayOrder(UUID branchId);
-
     List<Dish> findBySectionIdAndBranchIdOrderByDisplayOrder(UUID sectionId, UUID branchId);
 
     List<Dish> findAllBySectionIdInAndBranchIdOrderByDisplayOrder(Collection<UUID> sectionIds, UUID branchId);

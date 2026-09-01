@@ -13,7 +13,5 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
 
     List<Order> findByDineSessionIdAndBranchId(UUID dineSessionId, UUID branchId);
 
-    List<Order> findByBranchId(UUID branchId);
-
     Optional<Order> findByIdAndBranchId(UUID id, UUID branchId);
 }

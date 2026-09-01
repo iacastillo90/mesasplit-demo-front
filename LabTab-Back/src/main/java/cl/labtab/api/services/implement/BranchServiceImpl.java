@@ -92,7 +92,7 @@ public class BranchServiceImpl implements BranchService {
         UUID branchId = BranchContextHolder.get();
         Map<UUID, UUID> sessionByTable = dineSessionRepository
                 .findByBranchIdAndStatus(branchId, DineSessionStatusEnum.OPEN).stream()
-                .collect(Collectors.toMap(DineSession::getTableId, DineSession::getId));
+                .collect(Collectors.toMap(DineSession::getTableId, DineSession::getId, (a, b) -> a));
         return diningTableRepository.findByBranchId(branchId).stream()
                 .map(t -> diningTableMapper.toResponse(t, sessionByTable.get(t.getId())))
                 .toList();

@@ -11,6 +11,4 @@ import java.util.UUID;
 public interface BillLineRepository extends JpaRepository<BillLine, UUID> {
 
     List<BillLine> findByBillIdAndBranchId(UUID billId, UUID branchId);
-
-    List<BillLine> findByBillIdAndDineGuestId(UUID billId, UUID dineGuestId);
 }

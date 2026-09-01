@@ -20,7 +20,5 @@ public interface DiningTableRepository extends JpaRepository<DiningTable, UUID> 
 
     List<DiningTable> findAllByFloorIdInAndBranchId(Collection<UUID> floorIds, UUID branchId);
 
-    Optional<DiningTable> findByQrTokenAndBranchId(String qrToken, UUID branchId);
-
     Optional<DiningTable> findByQrToken(String qrToken);
 }

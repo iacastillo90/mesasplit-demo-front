@@ -1,6 +1,7 @@
 package cl.labtab.api.services.implement;
 
 import cl.labtab.api.audit.Auditable;
+import cl.labtab.api.common.BillingConstants;
 import cl.labtab.api.common.enums.BillLineStatusEnum;
 import cl.labtab.api.common.enums.BillStatusEnum;
 import cl.labtab.api.common.enums.ExceptionEventTypeEnum;
@@ -101,7 +102,7 @@ public class BillServiceImpl implements BillService {
         bill.setDineSessionId(session.getId());
         bill.setBranchId(branchId);
         bill.setStatus(BillStatusEnum.OPEN);
-        bill.setServiceChargePct(request.serviceChargePct() != null ? request.serviceChargePct() : new BigDecimal("10.00"));
+        bill.setServiceChargePct(request.serviceChargePct() != null ? request.serviceChargePct() : BillingConstants.DEFAULT_SERVICE_CHARGE_PCT);
         bill.setSubtotal(subtotal);
         BigDecimal serviceCharge = subtotal.multiply(bill.getServiceChargePct().divide(BigDecimal.valueOf(100)));
         bill.setServiceChargeAmount(serviceCharge);

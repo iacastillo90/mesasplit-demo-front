@@ -1,5 +1,6 @@
 package cl.labtab.api.models;
 
+import cl.labtab.api.common.BillingConstants;
 import cl.labtab.api.common.OpeningHoursDTO;
 import cl.labtab.api.common.converters.OpeningHoursConverter;
 import jakarta.persistence.Column;
@@ -53,7 +54,7 @@ public class Branch extends BaseEntity {
     private boolean active = true;
 
     @Column(name = "service_charge_pct", nullable = false, precision = 12, scale = 2)
-    private BigDecimal serviceChargePct = new BigDecimal("10.00");
+    private BigDecimal serviceChargePct = BillingConstants.DEFAULT_SERVICE_CHARGE_PCT;
 
     @Column(name = "timezone", length = 50)
     private String timezone = "America/Santiago";

@@ -1,5 +1,6 @@
 package cl.labtab.api.models;
 
+import cl.labtab.api.common.BillingConstants;
 import cl.labtab.api.common.enums.BillStatusEnum;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -36,7 +37,7 @@ public class Bill extends BaseEntity {
     private BigDecimal subtotal = BigDecimal.ZERO;
 
     @Column(name = "service_charge_pct", nullable = false, precision = 12, scale = 2)
-    private BigDecimal serviceChargePct = new BigDecimal("10.00");
+    private BigDecimal serviceChargePct = BillingConstants.DEFAULT_SERVICE_CHARGE_PCT;
 
     @Column(name = "service_charge_amount", nullable = false, precision = 12, scale = 2)
     private BigDecimal serviceChargeAmount = BigDecimal.ZERO;

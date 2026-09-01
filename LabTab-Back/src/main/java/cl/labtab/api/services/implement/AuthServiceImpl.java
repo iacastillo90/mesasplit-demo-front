@@ -103,7 +103,7 @@ public class AuthServiceImpl implements AuthService {
         return new AuthResponse(
                 accessToken,
                 refreshToken,
-                14400,
+                jwtService.getAccessTokenExpiration(),
                 new PersonAuthResponse(
                         person.getId(),
                         person.getEmail(),
@@ -142,7 +142,7 @@ public class AuthServiceImpl implements AuthService {
         revokedTokenRepository.deleteByExpiresAtBefore(Instant.now());
         revokedTokenRepository.save(new RevokedToken(jwtService.extractJti(token), jwtService.getExpiration(token).toInstant()));
 
-        return new RefreshTokenResponse(accessToken, 14400, newRefresh);
+        return new RefreshTokenResponse(accessToken, jwtService.getAccessTokenExpiration(), newRefresh);
     }
 
     @Override
@@ -176,7 +176,7 @@ public class AuthServiceImpl implements AuthService {
 
         return new GuestSessionResponse(
                 accessToken,
-                14400,
+                jwtService.getAccessTokenExpiration(),
                 guestMapper.toAuthResponse(guest, session.getId(), table.getId(), table.getName()));
     }
 

@@ -28,6 +28,10 @@ public class JwtService {
         this.refreshTokenExpiration = refreshTokenExpiration;
     }
 
+    public long getAccessTokenExpiration() {
+        return this.accessTokenExpiration;
+    }
+
     public String generateAccessToken(Person person, UUID branchId, String role) {
         return Jwts.builder()
                 .subject(person.getId().toString())
@@ -67,10 +71,6 @@ public class JwtService {
                 .compact();
     }
 
-    public UUID extractPersonId(String token) {
-        return UUID.fromString(getClaims(token).get("personId", String.class));
-    }
-
     public UUID extractBranchId(String token) {
         return UUID.fromString(getClaims(token).get("branchId", String.class));
     }
@@ -101,12 +101,6 @@ public class JwtService {
 
     public Date getExpiration(String token) {
         return getClaims(token).getExpiration();
-    }
-
-    public boolean isTokenValid(String token, Person person) {
-        Claims claims = getClaims(token);
-        return person.getId().toString().equals(claims.getSubject())
-                && claims.getExpiration().after(new Date());
     }
 
     private Claims getClaims(String token) {
