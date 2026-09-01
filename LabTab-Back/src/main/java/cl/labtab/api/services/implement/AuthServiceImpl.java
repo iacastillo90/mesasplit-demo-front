@@ -34,6 +34,7 @@ import cl.labtab.api.repositories.PersonProfileRepository;
 import cl.labtab.api.repositories.PersonRepository;
 import cl.labtab.api.repositories.RevokedTokenRepository;
 import cl.labtab.api.security.JwtService;
+import cl.labtab.api.security.RateLimitService;
 import cl.labtab.api.services.AuthService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -56,6 +57,7 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final GuestMapper guestMapper;
     private final RevokedTokenRepository revokedTokenRepository;
+    private final RateLimitService rateLimitService;
 
     public AuthServiceImpl(PersonRepository personRepository,
                            PersonProfileRepository personProfileRepository,
@@ -67,7 +69,8 @@ public class AuthServiceImpl implements AuthService {
                            JwtService jwtService,
                            PasswordEncoder passwordEncoder,
                            GuestMapper guestMapper,
-                           RevokedTokenRepository revokedTokenRepository) {
+                           RevokedTokenRepository revokedTokenRepository,
+                           RateLimitService rateLimitService) {
         this.personRepository = personRepository;
         this.personProfileRepository = personProfileRepository;
         this.companyRoleRepository = companyRoleRepository;
@@ -79,16 +82,23 @@ public class AuthServiceImpl implements AuthService {
         this.passwordEncoder = passwordEncoder;
         this.guestMapper = guestMapper;
         this.revokedTokenRepository = revokedTokenRepository;
+        this.rateLimitService = rateLimitService;
     }
 
     @Override
     public AuthResponse login(LoginRequest request) {
         Person person = personRepository.findByEmail(request.email())
-                .orElseThrow(() -> new BusinessRuleException("INVALID_CREDENTIALS", "Credenciales inválidas"));
+                .orElseThrow(() -> {
+                    rateLimitService.onFailure("login:" + request.email());
+                    return new BusinessRuleException("INVALID_CREDENTIALS", "Credenciales inválidas");
+                });
 
         if (!passwordEncoder.matches(request.password(), person.getPasswordHash())) {
+            rateLimitService.onFailure("login:" + request.email());
             throw new BusinessRuleException("INVALID_CREDENTIALS", "Credenciales inválidas");
         }
+
+        rateLimitService.onSuccess("login:" + request.email());
 
         if (!person.isActive()) {
             throw new BusinessRuleException("ACCOUNT_INACTIVE", "Cuenta inactiva");

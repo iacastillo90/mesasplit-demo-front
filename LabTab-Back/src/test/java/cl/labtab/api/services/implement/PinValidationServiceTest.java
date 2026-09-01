@@ -4,6 +4,7 @@ import cl.labtab.api.common.enums.BranchRoleEnum;
 import cl.labtab.api.exception.UnauthorizedPinException;
 import cl.labtab.api.models.BranchRole;
 import cl.labtab.api.repositories.BranchRoleRepository;
+import cl.labtab.api.security.RateLimitService;
 import cl.labtab.api.services.ExceptionLogService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,6 +32,8 @@ class PinValidationServiceTest {
     PasswordEncoder passwordEncoder;
     @Mock
     ExceptionLogService exceptionLogService;
+    @Mock
+    RateLimitService rateLimitService;
     @InjectMocks
     PinValidationService pinValidationService;
 

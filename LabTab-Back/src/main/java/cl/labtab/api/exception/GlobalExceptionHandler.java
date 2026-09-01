@@ -32,6 +32,12 @@ public class GlobalExceptionHandler {
                 .body(new ApiErrorResponse(ApiError.of(e.getErrorCode(), e.getMessage())));
     }
 
+    @ExceptionHandler(RateLimitExceededException.class)
+    public ResponseEntity<ApiErrorResponse> handleRateLimitExceeded(RateLimitExceededException e) {
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .body(new ApiErrorResponse(ApiError.of("RATE_LIMIT_EXCEEDED", e.getMessage())));
+    }
+
     @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
     public ResponseEntity<ApiErrorResponse> handleOptimisticLock(ObjectOptimisticLockingFailureException e) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
