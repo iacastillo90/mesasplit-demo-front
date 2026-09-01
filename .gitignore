@@ -29,3 +29,7 @@ yarn-error.log*
 .DS_Store
 .idea/
 .vscode/
+
+# Python (script de evidencia)
+__pycache__/
+*.pyc
