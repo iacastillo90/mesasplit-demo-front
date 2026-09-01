@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -115,9 +116,20 @@ public class OrderServiceImpl implements OrderService {
         int itemCount = 0;
         List<OrderLineResponse> lineResponses = new ArrayList<>();
 
+        Map<UUID, Dish> dishesById = dishRepository
+                .findAllByIdInAndBranchId(request.lines().stream()
+                        .map(CreateOrderLineRequest::dishId)
+                        .distinct()
+                        .toList(), branchId)
+                .stream()
+                .collect(Collectors.toMap(Dish::getId, dish -> dish));
+
+        List<OrderLine> lines = new ArrayList<>();
         for (CreateOrderLineRequest lineReq : request.lines()) {
-            Dish dish = dishRepository.findByIdAndBranchId(lineReq.dishId(), branchId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Plato no encontrado"));
+            Dish dish = dishesById.get(lineReq.dishId());
+            if (dish == null) {
+                throw new ResourceNotFoundException("Plato no encontrado");
+            }
             if (!dish.isAvailable()) {
                 throw new BusinessRuleException("DISH_UNAVAILABLE", "Plato no disponible (Lista 86)");
             }
@@ -135,10 +147,14 @@ public class OrderServiceImpl implements OrderService {
             line.setStatus(OrderLineStatusEnum.QUEUED);
             line.setDineGuestId(lineReq.dineGuestId());
             line.setCourseType(lineReq.courseType());
-            line = orderLineRepository.save(line);
+            lines.add(line);
 
             subtotal = subtotal.add(line.getLineTotal());
             itemCount += lineReq.quantity();
+        }
+
+        lines = orderLineRepository.saveAll(lines);
+        for (OrderLine line : lines) {
             lineResponses.add(orderLineMapper.toResponse(line));
         }
 
@@ -243,12 +259,11 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new ResourceNotFoundException("Orden no encontrada"));
 
         List<OrderLine> lines = orderLineRepository.findByOrderIdAndBranchId(orderId, branchId);
-        lines.stream()
+        List<OrderLine> toFire = lines.stream()
                 .filter(l -> l.getCourseType() == request.courseType())
-                .forEach(l -> {
-                    l.setCourseStatus(CourseStatusEnum.MARCHING);
-                    orderLineRepository.save(l);
-                });
+                .toList();
+        toFire.forEach(l -> l.setCourseStatus(CourseStatusEnum.MARCHING));
+        orderLineRepository.saveAll(toFire);
 
         kitchenTicketRepository.findByOrderIdAndBranchId(orderId, branchId)
                 .ifPresent(t -> {

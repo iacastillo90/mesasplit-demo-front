@@ -165,9 +165,10 @@ public class AuthServiceImpl implements AuthService {
                 .orElseThrow(() -> new ConflictException("SESSION_NOT_OPEN", "La mesa no tiene una sesión activa", null));
 
         DineGuest guest = new DineGuest();
+        long nextGuestNumber = dineGuestRepository.countByDineSessionId(session.getId()) + 1;
         guest.setDineSessionId(session.getId());
-        guest.setDisplayName(request.displayName() != null ? request.displayName() : "Cliente " + (dineGuestRepository.countByDineSessionId(session.getId()) + 1));
-        guest.setTempLabel("Cliente " + (dineGuestRepository.countByDineSessionId(session.getId()) + 1));
+        guest.setDisplayName(request.displayName() != null ? request.displayName() : "Cliente " + nextGuestNumber);
+        guest.setTempLabel("Cliente " + nextGuestNumber);
         guest.setJoinedAt(Instant.now());
         guest = dineGuestRepository.save(guest);
 

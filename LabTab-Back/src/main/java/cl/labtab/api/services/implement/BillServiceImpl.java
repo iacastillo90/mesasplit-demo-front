@@ -34,6 +34,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -108,6 +109,7 @@ public class BillServiceImpl implements BillService {
         bill.setBalanceDue(bill.getTotalAmount());
         bill = billRepository.save(bill);
 
+        List<BillLine> billLines = new ArrayList<>();
         for (OrderLine line : lines) {
             BillLine billLine = new BillLine();
             billLine.setBillId(bill.getId());
@@ -120,8 +122,9 @@ public class BillServiceImpl implements BillService {
             billLine.setUnitPrice(line.getUnitPrice());
             billLine.setLineTotal(line.getLineTotal());
             billLine.setStatus(BillLineStatusEnum.ACTIVE);
-            billLineRepository.save(billLine);
+            billLines.add(billLine);
         }
+        billLineRepository.saveAll(billLines);
 
         return billMapper.toResponse(bill);
     }

@@ -11,7 +11,9 @@ import cl.labtab.api.mappers.DiningTableMapper;
 import cl.labtab.api.mappers.MapZoneMapper;
 import cl.labtab.api.models.Branch;
 import cl.labtab.api.models.DineSession;
+import cl.labtab.api.models.DiningFloor;
 import cl.labtab.api.models.DiningTable;
+import cl.labtab.api.models.MapZone;
 import cl.labtab.api.repositories.BranchRepository;
 import cl.labtab.api.repositories.DineSessionRepository;
 import cl.labtab.api.repositories.DiningFloorRepository;
@@ -66,13 +68,21 @@ public class BranchServiceImpl implements BranchService {
     @Override
     public List<DiningFloorResponse> getFloors() {
         UUID branchId = BranchContextHolder.get();
-        return diningFloorRepository.findByBranchIdOrderByDisplayOrder(branchId).stream()
+        List<DiningFloor> floors = diningFloorRepository.findByBranchIdOrderByDisplayOrder(branchId);
+        List<UUID> floorIds = floors.stream().map(DiningFloor::getId).toList();
+
+        Map<UUID, List<MapZone>> zonesByFloor = mapZoneRepository.findAllByFloorIdIn(floorIds).stream()
+                .collect(Collectors.groupingBy(MapZone::getFloorId));
+        Map<UUID, List<DiningTable>> tablesByFloor = diningTableRepository.findAllByFloorIdInAndBranchId(floorIds, branchId).stream()
+                .collect(Collectors.groupingBy(DiningTable::getFloorId));
+
+        return floors.stream()
                 .map(floor -> new DiningFloorResponse(
                         floor.getId(),
                         floor.getName(),
                         floor.getDisplayOrder(),
-                        mapZoneRepository.findByFloorId(floor.getId()).stream().map(mapZoneMapper::toResponse).toList(),
-                        diningTableRepository.findByFloorIdAndBranchId(floor.getId(), branchId).stream()
+                        zonesByFloor.getOrDefault(floor.getId(), List.of()).stream().map(mapZoneMapper::toResponse).toList(),
+                        tablesByFloor.getOrDefault(floor.getId(), List.of()).stream()
                                 .map(t -> diningTableMapper.toResponse(t, null)).toList()))
                 .toList();
     }

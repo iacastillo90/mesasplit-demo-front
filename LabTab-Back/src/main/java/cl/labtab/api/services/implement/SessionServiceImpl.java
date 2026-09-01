@@ -30,7 +30,9 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class SessionServiceImpl implements SessionService {
@@ -96,8 +98,10 @@ public class SessionServiceImpl implements SessionService {
         DineSession session = dineSessionRepository.findByIdAndBranchId(sessionId, branchId)
                 .orElseThrow(() -> new ResourceNotFoundException("Sesión no encontrada"));
         DiningTable table = diningTableRepository.findById(session.getTableId()).orElse(null);
-        List<GuestResponse> guests = dineGuestRepository.findByDineSessionId(session.getId()).stream()
-                .map(this::toGuest).toList();
+        List<DineGuest> dineGuests = dineGuestRepository.findByDineSessionId(session.getId());
+        Map<UUID, PersonProfile> profilesByPersonId = loadProfilesByPersonId(dineGuests);
+        List<GuestResponse> guests = dineGuests.stream()
+                .map(g -> toGuest(g, profilesByPersonId)).toList();
         UUID activeBillId = billRepository.findByDineSessionIdAndBranchId(session.getId(), branchId)
                 .map(Bill::getId).orElse(null);
         return dineSessionMapper.toResponse(session, table != null ? table.getName() : null, guests, activeBillId);
@@ -130,8 +134,10 @@ public class SessionServiceImpl implements SessionService {
         }
 
         DiningTable table = diningTableRepository.findById(session.getTableId()).orElse(null);
-        List<GuestResponse> guests = dineGuestRepository.findByDineSessionId(session.getId()).stream()
-                .map(this::toGuest).toList();
+        List<DineGuest> dineGuests = dineGuestRepository.findByDineSessionId(session.getId());
+        Map<UUID, PersonProfile> profilesByPersonId = loadProfilesByPersonId(dineGuests);
+        List<GuestResponse> guests = dineGuests.stream()
+                .map(g -> toGuest(g, profilesByPersonId)).toList();
         return dineSessionMapper.toResponse(session, table != null ? table.getName() : null, guests, null);
     }
 
@@ -148,16 +154,30 @@ public class SessionServiceImpl implements SessionService {
         guest.setJoinedAt(Instant.now());
         guest = dineGuestRepository.save(guest);
 
-        return toGuest(guest);
+        return toGuest(guest, loadProfilesByPersonId(List.of(guest)));
     }
 
-    private GuestResponse toGuest(DineGuest guest) {
+    private GuestResponse toGuest(DineGuest guest, Map<UUID, PersonProfile> profilesByPersonId) {
         List<String> allergies = List.of();
         if (guest.getPersonId() != null) {
-            allergies = personProfileRepository.findByPersonId(guest.getPersonId())
-                    .map(PersonProfile::getAllergies)
-                    .orElse(List.of());
+            PersonProfile profile = profilesByPersonId.get(guest.getPersonId());
+            if (profile != null && profile.getAllergies() != null) {
+                allergies = profile.getAllergies();
+            }
         }
         return dineGuestMapper.toResponse(guest, allergies);
+    }
+
+    private Map<UUID, PersonProfile> loadProfilesByPersonId(List<DineGuest> guests) {
+        List<UUID> personIds = guests.stream()
+                .map(DineGuest::getPersonId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+        if (personIds.isEmpty()) {
+            return Map.of();
+        }
+        return personProfileRepository.findAllByPersonIdIn(personIds).stream()
+                .collect(Collectors.toMap(PersonProfile::getPersonId, p -> p, (a, b) -> a));
     }
 }

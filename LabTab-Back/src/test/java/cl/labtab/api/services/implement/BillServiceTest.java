@@ -80,12 +80,14 @@ class BillServiceTest {
         when(orderLineRepository.findByOrderIdInAndBranchId(anyCollection(), eq(branchId))).thenReturn(List.of(line));
 
         when(billRepository.save(any(Bill.class))).thenAnswer(inv -> inv.getArgument(0));
-        when(billLineRepository.save(any(BillLine.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(billLineRepository.saveAll(anyCollection())).thenAnswer(inv -> inv.getArgument(0));
 
         billService.createBill(new CreateBillRequest(sessionId, new BigDecimal("10")));
 
-        ArgumentCaptor<BillLine> captor = ArgumentCaptor.forClass(BillLine.class);
-        verify(billLineRepository).save(captor.capture());
-        assertThat(captor.getValue().getDineGuestId()).isEqualTo(guestId);
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<List<BillLine>> captor = ArgumentCaptor.forClass(List.class);
+        verify(billLineRepository).saveAll(captor.capture());
+        assertThat(captor.getValue()).hasSize(1);
+        assertThat(captor.getValue().get(0).getDineGuestId()).isEqualTo(guestId);
     }
 }

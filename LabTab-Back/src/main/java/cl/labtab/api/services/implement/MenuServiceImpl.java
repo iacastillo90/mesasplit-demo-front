@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class MenuServiceImpl implements MenuService {
@@ -47,9 +48,15 @@ public class MenuServiceImpl implements MenuService {
     @Override
     public List<MenuSectionResponse> getSections() {
         UUID branchId = BranchContextHolder.get();
-        return menuSectionRepository.findByBranchIdOrderByDisplayOrder(branchId).stream()
+        List<MenuSection> sections = menuSectionRepository.findByBranchIdOrderByDisplayOrder(branchId);
+        Map<UUID, List<Dish>> dishesBySection = dishRepository
+                .findAllBySectionIdInAndBranchIdOrderByDisplayOrder(sections.stream().map(MenuSection::getId).toList(), branchId)
+                .stream()
+                .collect(Collectors.groupingBy(Dish::getSectionId));
+
+        return sections.stream()
                 .map(section -> menuSectionMapper.toResponse(section,
-                        dishRepository.findBySectionIdAndBranchIdOrderByDisplayOrder(section.getId(), branchId).stream()
+                        dishesBySection.getOrDefault(section.getId(), List.of()).stream()
                                 .map(dishMapper::toResponse).toList()))
                 .toList();
     }
