@@ -1,5 +1,6 @@
 package cl.labtab.api.services.implement;
 
+import cl.labtab.api.common.BranchScoping;
 import cl.labtab.api.common.enums.DineSessionStatusEnum;
 import cl.labtab.api.dtos.request.TableStatusRequest;
 import cl.labtab.api.dtos.response.BranchConfigResponse;
@@ -101,8 +102,7 @@ public class BranchServiceImpl implements BranchService {
     @Override
     public DiningTableResponse updateTableStatus(UUID tableId, TableStatusRequest request) {
         UUID branchId = BranchContextHolder.get();
-        DiningTable table = diningTableRepository.findByIdAndBranchId(tableId, branchId)
-                .orElseThrow(() -> new ResourceNotFoundException("Mesa no encontrada"));
+        DiningTable table = BranchScoping.find(diningTableRepository::findByIdAndBranchId, tableId, branchId, "Mesa no encontrada");
         table.setStatus(request.status());
         diningTableRepository.save(table);
         return diningTableMapper.toResponse(table, null);

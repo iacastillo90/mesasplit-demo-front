@@ -1,12 +1,12 @@
 package cl.labtab.api.services.implement;
 
+import cl.labtab.api.common.BranchScoping;
 import cl.labtab.api.common.enums.KitchenTicketStatusEnum;
 import cl.labtab.api.dtos.request.KitchenTicketStatusRequest;
 import cl.labtab.api.dtos.response.KitchenTicketLineResponse;
 import cl.labtab.api.dtos.response.KitchenTicketResponse;
 import cl.labtab.api.dtos.response.PageResponse;
 import cl.labtab.api.dtos.response.RecallTicketResponse;
-import cl.labtab.api.exception.ResourceNotFoundException;
 import cl.labtab.api.mappers.KitchenTicketMapper;
 import cl.labtab.api.models.KitchenTicket;
 import cl.labtab.api.models.OrderLine;
@@ -53,8 +53,7 @@ public class KitchenServiceImpl implements KitchenService {
     @Override
     public KitchenTicketResponse updateTicketStatus(UUID ticketId, KitchenTicketStatusRequest request) {
         UUID branchId = BranchContextHolder.get();
-        KitchenTicket ticket = kitchenTicketRepository.findByIdAndBranchId(ticketId, branchId)
-                .orElseThrow(() -> new ResourceNotFoundException("Ticket no encontrado"));
+        KitchenTicket ticket = BranchScoping.find(kitchenTicketRepository::findByIdAndBranchId, ticketId, branchId, "Ticket no encontrado");
         ticket.setStatus(request.status());
         if (request.status() == KitchenTicketStatusEnum.DONE) {
             ticket.setCompletedAt(Instant.now());
@@ -72,8 +71,7 @@ public class KitchenServiceImpl implements KitchenService {
     @Override
     public RecallTicketResponse recallTicket(UUID ticketId) {
         UUID branchId = BranchContextHolder.get();
-        KitchenTicket ticket = kitchenTicketRepository.findByIdAndBranchId(ticketId, branchId)
-                .orElseThrow(() -> new ResourceNotFoundException("Ticket no encontrado"));
+        KitchenTicket ticket = BranchScoping.find(kitchenTicketRepository::findByIdAndBranchId, ticketId, branchId, "Ticket no encontrado");
         ticket.setStatus(KitchenTicketStatusEnum.IN_PROGRESS);
         ticket.setCompletedAt(null);
         ticket = kitchenTicketRepository.save(ticket);

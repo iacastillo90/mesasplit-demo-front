@@ -1,6 +1,7 @@
 package cl.labtab.api.services.implement;
 
 import cl.labtab.api.audit.Auditable;
+import cl.labtab.api.common.BranchScoping;
 import cl.labtab.api.common.enums.BillStatusEnum;
 import cl.labtab.api.common.enums.DineSessionStatusEnum;
 import cl.labtab.api.common.enums.ExceptionEventTypeEnum;
@@ -12,7 +13,6 @@ import cl.labtab.api.dtos.response.PaymentResponse;
 import cl.labtab.api.dtos.response.RefundResponse;
 import cl.labtab.api.exception.BusinessRuleException;
 import cl.labtab.api.exception.ConflictException;
-import cl.labtab.api.exception.ResourceNotFoundException;
 import cl.labtab.api.mappers.BillMapper;
 import cl.labtab.api.mappers.PaymentMapper;
 import cl.labtab.api.models.Bill;
@@ -80,8 +80,7 @@ public class PaymentServiceImpl implements PaymentService {
                     });
         }
 
-        Bill bill = billRepository.findByIdAndBranchId(request.billId(), branchId)
-                .orElseThrow(() -> new ResourceNotFoundException("Cuenta no encontrada"));
+        Bill bill = BranchScoping.find(billRepository::findByIdAndBranchId, request.billId(), branchId, "Cuenta no encontrada");
         SecurityUtils.enforceGuestSession(bill.getDineSessionId());
 
         if (request.amount().compareTo(bill.getBalanceDue()) > 0) {
@@ -124,8 +123,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public PaymentResponse getPayment(UUID paymentId) {
-        Payment payment = paymentRepository.findByIdAndBranchId(paymentId, BranchContextHolder.get())
-                .orElseThrow(() -> new ResourceNotFoundException("Pago no encontrado"));
+        Payment payment = BranchScoping.find(paymentRepository::findByIdAndBranchId, paymentId, BranchContextHolder.get(), "Pago no encontrado");
         Bill bill = billRepository.findById(payment.getBillId()).orElse(null);
         return paymentMapper.toResponse(payment, bill != null ? billMapper.toResponse(bill) : null);
     }
@@ -135,8 +133,7 @@ public class PaymentServiceImpl implements PaymentService {
     @Auditable(eventType = ExceptionEventTypeEnum.REFUND_ISSUED)
     public RefundResponse refund(UUID paymentId, RefundRequest request) {
         UUID branchId = BranchContextHolder.get();
-        Payment payment = paymentRepository.findByIdAndBranchId(paymentId, branchId)
-                .orElseThrow(() -> new ResourceNotFoundException("Pago no encontrado"));
+        Payment payment = BranchScoping.find(paymentRepository::findByIdAndBranchId, paymentId, branchId, "Pago no encontrado");
 
         if (!VoidReasonEnum.isValid(request.reason())) {
             throw new BusinessRuleException("REASON_INVALID", "Motivo fuera de la lista cerrada");

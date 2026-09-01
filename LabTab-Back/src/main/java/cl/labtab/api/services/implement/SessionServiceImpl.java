@@ -1,5 +1,6 @@
 package cl.labtab.api.services.implement;
 
+import cl.labtab.api.common.BranchScoping;
 import cl.labtab.api.common.enums.DineSessionStatusEnum;
 import cl.labtab.api.dtos.request.AddGuestRequest;
 import cl.labtab.api.dtos.request.CreateSessionRequest;
@@ -7,7 +8,6 @@ import cl.labtab.api.dtos.request.SessionStatusRequest;
 import cl.labtab.api.dtos.response.GuestResponse;
 import cl.labtab.api.dtos.response.SessionResponse;
 import cl.labtab.api.exception.ConflictException;
-import cl.labtab.api.exception.ResourceNotFoundException;
 import cl.labtab.api.mappers.DineGuestMapper;
 import cl.labtab.api.mappers.DineSessionMapper;
 import cl.labtab.api.models.Bill;
@@ -69,8 +69,7 @@ public class SessionServiceImpl implements SessionService {
     @Transactional
     public SessionResponse createSession(CreateSessionRequest request) {
         UUID branchId = BranchContextHolder.get();
-        DiningTable table = diningTableRepository.findByIdAndBranchId(request.tableId(), branchId)
-                .orElseThrow(() -> new ResourceNotFoundException("Mesa no encontrada"));
+        DiningTable table = BranchScoping.find(diningTableRepository::findByIdAndBranchId, request.tableId(), branchId, "Mesa no encontrada");
 
         dineSessionRepository.findByTableIdAndStatus(table.getId(), DineSessionStatusEnum.OPEN)
                 .ifPresent(s -> {
@@ -97,8 +96,7 @@ public class SessionServiceImpl implements SessionService {
     public SessionResponse getSession(UUID sessionId) {
         UUID branchId = BranchContextHolder.get();
         SecurityUtils.enforceGuestSession(sessionId);
-        DineSession session = dineSessionRepository.findByIdAndBranchId(sessionId, branchId)
-                .orElseThrow(() -> new ResourceNotFoundException("Sesión no encontrada"));
+        DineSession session = BranchScoping.find(dineSessionRepository::findByIdAndBranchId, sessionId, branchId, "Sesión no encontrada");
         DiningTable table = diningTableRepository.findById(session.getTableId()).orElse(null);
         List<DineGuest> dineGuests = dineGuestRepository.findByDineSessionId(session.getId());
         Map<UUID, PersonProfile> profilesByPersonId = loadProfilesByPersonId(dineGuests);
@@ -112,8 +110,7 @@ public class SessionServiceImpl implements SessionService {
     @Override
     public SessionResponse updateSessionStatus(UUID sessionId, SessionStatusRequest request) {
         UUID branchId = BranchContextHolder.get();
-        DineSession session = dineSessionRepository.findByIdAndBranchId(sessionId, branchId)
-                .orElseThrow(() -> new ResourceNotFoundException("Sesión no encontrada"));
+        DineSession session = BranchScoping.find(dineSessionRepository::findByIdAndBranchId, sessionId, branchId, "Sesión no encontrada");
 
         if (request.status() == DineSessionStatusEnum.CLOSED) {
             billRepository.findByDineSessionIdAndBranchId(session.getId(), branchId)
@@ -146,8 +143,7 @@ public class SessionServiceImpl implements SessionService {
     @Override
     public GuestResponse addGuest(UUID sessionId, AddGuestRequest request) {
         UUID branchId = BranchContextHolder.get();
-        DineSession session = dineSessionRepository.findByIdAndBranchId(sessionId, branchId)
-                .orElseThrow(() -> new ResourceNotFoundException("Sesión no encontrada"));
+        DineSession session = BranchScoping.find(dineSessionRepository::findByIdAndBranchId, sessionId, branchId, "Sesión no encontrada");
 
         DineGuest guest = new DineGuest();
         guest.setDineSessionId(session.getId());

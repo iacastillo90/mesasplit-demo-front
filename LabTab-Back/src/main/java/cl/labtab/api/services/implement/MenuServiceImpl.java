@@ -1,5 +1,6 @@
 package cl.labtab.api.services.implement;
 
+import cl.labtab.api.common.BranchScoping;
 import cl.labtab.api.dtos.request.CreateDishRequest;
 import cl.labtab.api.dtos.request.CreateMenuSectionRequest;
 import cl.labtab.api.dtos.request.DishAvailabilityRequest;
@@ -7,7 +8,6 @@ import cl.labtab.api.dtos.request.UpdateDishRequest;
 import cl.labtab.api.dtos.request.UpdateMenuSectionRequest;
 import cl.labtab.api.dtos.response.DishResponse;
 import cl.labtab.api.dtos.response.MenuSectionResponse;
-import cl.labtab.api.exception.ResourceNotFoundException;
 import cl.labtab.api.mappers.DishMapper;
 import cl.labtab.api.mappers.MenuSectionMapper;
 import cl.labtab.api.models.Dish;
@@ -63,15 +63,13 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     public DishResponse getDish(UUID dishId) {
-        Dish dish = dishRepository.findByIdAndBranchId(dishId, BranchContextHolder.get())
-                .orElseThrow(() -> new ResourceNotFoundException("Plato no encontrado"));
+        Dish dish = BranchScoping.find(dishRepository::findByIdAndBranchId, dishId, BranchContextHolder.get(), "Plato no encontrado");
         return dishMapper.toResponse(dish);
     }
 
     @Override
     public DishResponse updateDishAvailability(UUID dishId, DishAvailabilityRequest request) {
-        Dish dish = dishRepository.findByIdAndBranchId(dishId, BranchContextHolder.get())
-                .orElseThrow(() -> new ResourceNotFoundException("Plato no encontrado"));
+        Dish dish = BranchScoping.find(dishRepository::findByIdAndBranchId, dishId, BranchContextHolder.get(), "Plato no encontrado");
         dish.setAvailable(request.isAvailable());
         dish = dishRepository.save(dish);
         kitchenEventPublisher.publishStock86(BranchContextHolder.get(), Map.of(
@@ -93,8 +91,7 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     public MenuSectionResponse updateSection(UUID sectionId, UpdateMenuSectionRequest request) {
-        MenuSection section = menuSectionRepository.findByIdAndBranchId(sectionId, BranchContextHolder.get())
-                .orElseThrow(() -> new ResourceNotFoundException("Sección no encontrada"));
+        MenuSection section = BranchScoping.find(menuSectionRepository::findByIdAndBranchId, sectionId, BranchContextHolder.get(), "Sección no encontrada");
         section.setName(request.name());
         section.setDescription(request.description());
         section.setDisplayOrder(request.displayOrder());
@@ -104,16 +101,14 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     public void deleteSection(UUID sectionId) {
-        MenuSection section = menuSectionRepository.findByIdAndBranchId(sectionId, BranchContextHolder.get())
-                .orElseThrow(() -> new ResourceNotFoundException("Sección no encontrada"));
+        MenuSection section = BranchScoping.find(menuSectionRepository::findByIdAndBranchId, sectionId, BranchContextHolder.get(), "Sección no encontrada");
         menuSectionRepository.delete(section);
     }
 
     @Override
     public DishResponse createDish(CreateDishRequest request) {
         UUID branchId = BranchContextHolder.get();
-        menuSectionRepository.findByIdAndBranchId(request.sectionId(), branchId)
-                .orElseThrow(() -> new ResourceNotFoundException("Sección no encontrada"));
+        BranchScoping.find(menuSectionRepository::findByIdAndBranchId, request.sectionId(), branchId, "Sección no encontrada");
 
         Dish dish = new Dish();
         dish.setSectionId(request.sectionId());
@@ -131,8 +126,7 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     public DishResponse updateDish(UUID dishId, UpdateDishRequest request) {
-        Dish dish = dishRepository.findByIdAndBranchId(dishId, BranchContextHolder.get())
-                .orElseThrow(() -> new ResourceNotFoundException("Plato no encontrado"));
+        Dish dish = BranchScoping.find(dishRepository::findByIdAndBranchId, dishId, BranchContextHolder.get(), "Plato no encontrado");
         dish.setName(request.name());
         dish.setDescription(request.description());
         if (request.price() != null) {
@@ -151,8 +145,7 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     public void deleteDish(UUID dishId) {
-        Dish dish = dishRepository.findByIdAndBranchId(dishId, BranchContextHolder.get())
-                .orElseThrow(() -> new ResourceNotFoundException("Plato no encontrado"));
+        Dish dish = BranchScoping.find(dishRepository::findByIdAndBranchId, dishId, BranchContextHolder.get(), "Plato no encontrado");
         dishRepository.delete(dish);
     }
 }

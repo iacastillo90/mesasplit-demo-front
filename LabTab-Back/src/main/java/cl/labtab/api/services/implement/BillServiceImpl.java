@@ -2,6 +2,7 @@ package cl.labtab.api.services.implement;
 
 import cl.labtab.api.audit.Auditable;
 import cl.labtab.api.common.BillingConstants;
+import cl.labtab.api.common.BranchScoping;
 import cl.labtab.api.common.enums.BillLineStatusEnum;
 import cl.labtab.api.common.enums.BillStatusEnum;
 import cl.labtab.api.common.enums.ExceptionEventTypeEnum;
@@ -88,8 +89,7 @@ public class BillServiceImpl implements BillService {
     @Transactional
     public BillResponse createBill(CreateBillRequest request) {
         UUID branchId = BranchContextHolder.get();
-        DineSession session = dineSessionRepository.findByIdAndBranchId(request.dineSessionId(), branchId)
-                .orElseThrow(() -> new ResourceNotFoundException("Sesión no encontrada"));
+        DineSession session = BranchScoping.find(dineSessionRepository::findByIdAndBranchId, request.dineSessionId(), branchId, "Sesión no encontrada");
 
         List<UUID> orderIds = orderRepository.findByDineSessionIdAndBranchId(session.getId(), branchId).stream()
                 .map(Order::getId).toList();
@@ -134,8 +134,7 @@ public class BillServiceImpl implements BillService {
 
     @Override
     public BillResponse getBill(UUID billId) {
-        Bill bill = billRepository.findByIdAndBranchId(billId, BranchContextHolder.get())
-                .orElseThrow(() -> new ResourceNotFoundException("Cuenta no encontrada"));
+        Bill bill = BranchScoping.find(billRepository::findByIdAndBranchId, billId, BranchContextHolder.get(), "Cuenta no encontrada");
         SecurityUtils.enforceGuestSession(bill.getDineSessionId());
         return billMapper.toResponse(bill);
     }
@@ -151,8 +150,7 @@ public class BillServiceImpl implements BillService {
     @Override
     public BillSummaryByGuestResponse getSummaryByGuest(UUID billId) {
         UUID branchId = BranchContextHolder.get();
-        Bill bill = billRepository.findByIdAndBranchId(billId, branchId)
-                .orElseThrow(() -> new ResourceNotFoundException("Cuenta no encontrada"));
+        Bill bill = BranchScoping.find(billRepository::findByIdAndBranchId, billId, branchId, "Cuenta no encontrada");
         SecurityUtils.enforceGuestSession(bill.getDineSessionId());
 
         List<BillLine> lines = billLineRepository.findByBillIdAndBranchId(billId, branchId);
@@ -183,8 +181,7 @@ public class BillServiceImpl implements BillService {
     @Auditable(eventType = ExceptionEventTypeEnum.MANUAL_DISCOUNT)
     public BillResponse applyDiscount(UUID billId, ApplyDiscountRequest request) {
         UUID branchId = BranchContextHolder.get();
-        Bill bill = billRepository.findByIdAndBranchId(billId, branchId)
-                .orElseThrow(() -> new ResourceNotFoundException("Cuenta no encontrada"));
+        Bill bill = BranchScoping.find(billRepository::findByIdAndBranchId, billId, branchId, "Cuenta no encontrada");
 
         if (!VoidReasonEnum.isValid(request.reason())) {
             throw new BusinessRuleException("REASON_INVALID", "Motivo fuera de la lista cerrada");

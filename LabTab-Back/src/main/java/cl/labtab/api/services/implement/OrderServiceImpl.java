@@ -1,5 +1,6 @@
 package cl.labtab.api.services.implement;
 
+import cl.labtab.api.common.BranchScoping;
 import cl.labtab.api.common.enums.CourseStatusEnum;
 import cl.labtab.api.common.enums.DineSessionStatusEnum;
 import cl.labtab.api.common.enums.ExceptionEventTypeEnum;
@@ -99,8 +100,7 @@ public class OrderServiceImpl implements OrderService {
     public OrderResponse createOrder(CreateOrderRequest request) {
         UUID branchId = BranchContextHolder.get();
         SecurityUtils.enforceGuestSession(request.dineSessionId());
-        DineSession session = dineSessionRepository.findByIdAndBranchId(request.dineSessionId(), branchId)
-                .orElseThrow(() -> new ResourceNotFoundException("Sesión no encontrada"));
+        DineSession session = BranchScoping.find(dineSessionRepository::findByIdAndBranchId, request.dineSessionId(), branchId, "Sesión no encontrada");
 
         if (session.getStatus() != DineSessionStatusEnum.OPEN) {
             throw new BusinessRuleException("SESSION_CLOSED", "La sesión está cerrada");
@@ -186,8 +186,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderResponse getOrder(UUID orderId) {
         UUID branchId = BranchContextHolder.get();
-        Order order = orderRepository.findByIdAndBranchId(orderId, branchId)
-                .orElseThrow(() -> new ResourceNotFoundException("Orden no encontrada"));
+        Order order = BranchScoping.find(orderRepository::findByIdAndBranchId, orderId, branchId, "Orden no encontrada");
         SecurityUtils.enforceGuestSession(order.getDineSessionId());
         List<OrderLineResponse> lines = orderLineRepository.findByOrderIdAndBranchId(orderId, branchId).stream()
                 .map(orderLineMapper::toResponse).toList();
@@ -211,8 +210,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderLineResponse updateOrderLineStatus(UUID orderLineId, OrderLineStatusRequest request) {
         UUID branchId = BranchContextHolder.get();
-        OrderLine line = orderLineRepository.findByIdAndBranchId(orderLineId, branchId)
-                .orElseThrow(() -> new ResourceNotFoundException("Línea no encontrada"));
+        OrderLine line = BranchScoping.find(orderLineRepository::findByIdAndBranchId, orderLineId, branchId, "Línea no encontrada");
         line.setStatus(request.status());
         line = orderLineRepository.save(line);
         if (request.status() == OrderLineStatusEnum.READY) {
@@ -228,8 +226,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public VoidOrderLineResponse voidOrderLine(UUID orderLineId, VoidOrderLineRequest request) {
         UUID branchId = BranchContextHolder.get();
-        OrderLine line = orderLineRepository.findByIdAndBranchId(orderLineId, branchId)
-                .orElseThrow(() -> new ResourceNotFoundException("Línea no encontrada"));
+        OrderLine line = BranchScoping.find(orderLineRepository::findByIdAndBranchId, orderLineId, branchId, "Línea no encontrada");
 
         if (!VoidReasonEnum.isValid(request.reason())) {
             throw new BusinessRuleException("REASON_INVALID", "Motivo fuera de la lista cerrada");
@@ -261,8 +258,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public FireCourseResponse fireCourse(UUID orderId, FireCourseRequest request) {
         UUID branchId = BranchContextHolder.get();
-        orderRepository.findByIdAndBranchId(orderId, branchId)
-                .orElseThrow(() -> new ResourceNotFoundException("Orden no encontrada"));
+        BranchScoping.find(orderRepository::findByIdAndBranchId, orderId, branchId, "Orden no encontrada");
 
         List<OrderLine> lines = orderLineRepository.findByOrderIdAndBranchId(orderId, branchId);
         List<OrderLine> toFire = lines.stream()

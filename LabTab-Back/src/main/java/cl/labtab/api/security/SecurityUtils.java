@@ -32,6 +32,8 @@ public final class SecurityUtils {
                 .anyMatch(a -> "ROLE_GUEST".equals(a.getAuthority()));
     }
 
+    // Returns 404 (not 403) when a guest accesses another table's session to avoid
+    // leaking the existence of that session (anti-enumeration).
     public static void enforceGuestSession(UUID resourceSessionId) {
         if (isGuest() && !resourceSessionId.equals(SessionContextHolder.get())) {
             throw new ResourceNotFoundException("Recurso no encontrado");
