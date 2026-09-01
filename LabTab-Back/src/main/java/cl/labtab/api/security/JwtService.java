@@ -2,6 +2,7 @@ package cl.labtab.api.security;
 
 import cl.labtab.api.models.Person;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -34,6 +35,7 @@ public class JwtService {
                 .claim("branchId", branchId.toString())
                 .claim("role", role)
                 .claim("email", person.getEmail())
+                .claim("type", "access")
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + accessTokenExpiration * 1000))
                 .signWith(getSigningKey())
@@ -43,6 +45,8 @@ public class JwtService {
     public String generateRefreshToken(Person person) {
         return Jwts.builder()
                 .subject(person.getId().toString())
+                .claim("type", "refresh")
+                .id(UUID.randomUUID().toString())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + refreshTokenExpiration * 1000))
                 .signWith(getSigningKey())
@@ -56,6 +60,7 @@ public class JwtService {
                 .claim("sessionId", sessionId.toString())
                 .claim("branchId", branchId.toString())
                 .claim("role", "GUEST")
+                .claim("type", "access")
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + accessTokenExpiration * 1000))
                 .signWith(getSigningKey())
@@ -82,6 +87,22 @@ public class JwtService {
         return getClaims(token).getSubject();
     }
 
+    public String extractType(String token) {
+        return getClaims(token).get("type", String.class);
+    }
+
+    public String extractJti(String token) {
+        return getClaims(token).getId();
+    }
+
+    public boolean isTokenExpired(String token) {
+        return getClaims(token).getExpiration().before(new Date());
+    }
+
+    public Date getExpiration(String token) {
+        return getClaims(token).getExpiration();
+    }
+
     public boolean isTokenValid(String token, Person person) {
         Claims claims = getClaims(token);
         return person.getId().toString().equals(claims.getSubject())
@@ -89,11 +110,15 @@ public class JwtService {
     }
 
     private Claims getClaims(String token) {
-        return Jwts.parser()
-                .verifyWith(getSigningKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
+        try {
+            return Jwts.parser()
+                    .verifyWith(getSigningKey())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+        } catch (ExpiredJwtException e) {
+            return e.getClaims();
+        }
     }
 
     private SecretKey getSigningKey() {

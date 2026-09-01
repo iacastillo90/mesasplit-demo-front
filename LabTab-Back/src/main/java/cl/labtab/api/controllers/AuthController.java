@@ -3,6 +3,7 @@ package cl.labtab.api.controllers;
 import cl.labtab.api.common.ApiResponse;
 import cl.labtab.api.dtos.request.GuestSessionRequest;
 import cl.labtab.api.dtos.request.LoginRequest;
+import cl.labtab.api.dtos.request.LogoutRequest;
 import cl.labtab.api.dtos.request.RefreshTokenRequest;
 import cl.labtab.api.dtos.response.AuthResponse;
 import cl.labtab.api.dtos.response.GuestSessionResponse;
@@ -40,8 +41,8 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<ApiResponse<LogoutResponse>> logout() {
-        return ResponseEntity.ok(ApiResponse.of(authService.logout()));
+    public ResponseEntity<ApiResponse<LogoutResponse>> logout(@RequestBody(required = false) LogoutRequest request) {
+        return ResponseEntity.ok(ApiResponse.of(authService.logout(request)));
     }
 
     @PostMapping("/guest-session")

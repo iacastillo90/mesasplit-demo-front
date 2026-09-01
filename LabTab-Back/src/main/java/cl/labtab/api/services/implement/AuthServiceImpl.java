@@ -5,6 +5,7 @@ import cl.labtab.api.common.enums.CompanyRoleEnum;
 import cl.labtab.api.common.enums.DineSessionStatusEnum;
 import cl.labtab.api.dtos.request.GuestSessionRequest;
 import cl.labtab.api.dtos.request.LoginRequest;
+import cl.labtab.api.dtos.request.LogoutRequest;
 import cl.labtab.api.dtos.request.RefreshTokenRequest;
 import cl.labtab.api.dtos.response.AuthResponse;
 import cl.labtab.api.dtos.response.GuestAuthResponse;
@@ -23,6 +24,7 @@ import cl.labtab.api.models.DineSession;
 import cl.labtab.api.models.DiningTable;
 import cl.labtab.api.models.Person;
 import cl.labtab.api.models.PersonProfile;
+import cl.labtab.api.models.RevokedToken;
 import cl.labtab.api.repositories.BranchRoleRepository;
 import cl.labtab.api.repositories.CompanyRoleRepository;
 import cl.labtab.api.repositories.DineGuestRepository;
@@ -30,6 +32,7 @@ import cl.labtab.api.repositories.DineSessionRepository;
 import cl.labtab.api.repositories.DiningTableRepository;
 import cl.labtab.api.repositories.PersonProfileRepository;
 import cl.labtab.api.repositories.PersonRepository;
+import cl.labtab.api.repositories.RevokedTokenRepository;
 import cl.labtab.api.security.JwtService;
 import cl.labtab.api.services.AuthService;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -52,6 +55,7 @@ public class AuthServiceImpl implements AuthService {
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
     private final GuestMapper guestMapper;
+    private final RevokedTokenRepository revokedTokenRepository;
 
     public AuthServiceImpl(PersonRepository personRepository,
                            PersonProfileRepository personProfileRepository,
@@ -62,7 +66,8 @@ public class AuthServiceImpl implements AuthService {
                            DineGuestRepository dineGuestRepository,
                            JwtService jwtService,
                            PasswordEncoder passwordEncoder,
-                           GuestMapper guestMapper) {
+                           GuestMapper guestMapper,
+                           RevokedTokenRepository revokedTokenRepository) {
         this.personRepository = personRepository;
         this.personProfileRepository = personProfileRepository;
         this.companyRoleRepository = companyRoleRepository;
@@ -73,6 +78,7 @@ public class AuthServiceImpl implements AuthService {
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
         this.guestMapper = guestMapper;
+        this.revokedTokenRepository = revokedTokenRepository;
     }
 
     @Override
@@ -109,7 +115,19 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public RefreshTokenResponse refresh(RefreshTokenRequest request) {
-        UUID personId = UUID.fromString(jwtService.extractSubject(request.refreshToken()));
+        String token = request.refreshToken();
+
+        if (!"refresh".equals(jwtService.extractType(token))) {
+            throw new BusinessRuleException("INVALID_REFRESH", "Refresh token inválido");
+        }
+        if (jwtService.isTokenExpired(token)) {
+            throw new BusinessRuleException("INVALID_REFRESH", "Refresh token inválido");
+        }
+        if (revokedTokenRepository.existsById(jwtService.extractJti(token))) {
+            throw new BusinessRuleException("REVOKED_REFRESH", "Refresh token revocado");
+        }
+
+        UUID personId = UUID.fromString(jwtService.extractSubject(token));
         Person person = personRepository.findById(personId)
                 .orElseThrow(() -> new BusinessRuleException("INVALID_REFRESH", "Refresh token inválido"));
 
@@ -119,11 +137,22 @@ public class AuthServiceImpl implements AuthService {
 
         BranchRole branchRole = activeBranchRole(person.getId());
         String accessToken = jwtService.generateAccessToken(person, branchRole.getBranchId(), resolveRole(person.getId(), branchRole));
-        return new RefreshTokenResponse(accessToken, 14400);
+        String newRefresh = jwtService.generateRefreshToken(person);
+
+        revokedTokenRepository.deleteByExpiresAtBefore(Instant.now());
+        revokedTokenRepository.save(new RevokedToken(jwtService.extractJti(token), jwtService.getExpiration(token).toInstant()));
+
+        return new RefreshTokenResponse(accessToken, 14400, newRefresh);
     }
 
     @Override
-    public LogoutResponse logout() {
+    public LogoutResponse logout(LogoutRequest request) {
+        if (request != null && request.refreshToken() != null) {
+            String token = request.refreshToken();
+            if ("refresh".equals(jwtService.extractType(token)) && !jwtService.isTokenExpired(token)) {
+                revokedTokenRepository.save(new RevokedToken(jwtService.extractJti(token), jwtService.getExpiration(token).toInstant()));
+            }
+        }
         return new LogoutResponse("Sesión cerrada.");
     }
 

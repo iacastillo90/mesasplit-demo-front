@@ -169,6 +169,7 @@ public class OrderServiceImpl implements OrderService {
         UUID branchId = BranchContextHolder.get();
         Order order = orderRepository.findByIdAndBranchId(orderId, branchId)
                 .orElseThrow(() -> new ResourceNotFoundException("Orden no encontrada"));
+        SecurityUtils.enforceGuestSession(order.getDineSessionId());
         List<OrderLineResponse> lines = orderLineRepository.findByOrderIdAndBranchId(orderId, branchId).stream()
                 .map(orderLineMapper::toResponse).toList();
         return orderMapper.toResponse(order, lines, null);
