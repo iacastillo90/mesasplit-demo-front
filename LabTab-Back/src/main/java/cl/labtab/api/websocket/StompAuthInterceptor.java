@@ -11,6 +11,7 @@ import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
+import java.util.Set;
 import java.util.UUID;
 
 @Component
@@ -18,6 +19,8 @@ public class StompAuthInterceptor implements ChannelInterceptor {
 
     private static final String BRANCH_ID_ATTR = "branchId";
     private static final String ROLE_ATTR = "role";
+
+    private static final Set<String> STAFF_ROLES = Set.of("STAFF", "MANAGER", "OWNER", "SUPERADMIN");
 
     private final JwtService jwtService;
 
@@ -35,6 +38,9 @@ public class StompAuthInterceptor implements ChannelInterceptor {
         if (StompCommand.CONNECT.equals(accessor.getCommand())) {
             String token = extractToken(accessor.getFirstNativeHeader("Authorization"));
             try {
+                if (jwtService.isTokenExpired(token)) {
+                    throw new MessagingException("Token expirado en CONNECT");
+                }
                 UUID branchId = jwtService.extractBranchId(token);
                 String role = jwtService.extractRole(token);
                 if (accessor.getSessionAttributes() == null) {
@@ -42,6 +48,8 @@ public class StompAuthInterceptor implements ChannelInterceptor {
                 }
                 accessor.getSessionAttributes().put(BRANCH_ID_ATTR, branchId);
                 accessor.getSessionAttributes().put(ROLE_ATTR, role);
+            } catch (MessagingException e) {
+                throw e;
             } catch (Exception e) {
                 throw new MessagingException("Token inválido en CONNECT");
             }
@@ -62,6 +70,41 @@ public class StompAuthInterceptor implements ChannelInterceptor {
         if (topicBranchId != null && !topicBranchId.equals(jwtBranchId)) {
             throw new MessagingException("Acceso denegado al topic: " + destination);
         }
+
+        String role = accessor.getSessionAttributes() != null
+                ? (String) accessor.getSessionAttributes().get(ROLE_ATTR)
+                : null;
+        if (!isRoleAllowed(role, destination)) {
+            throw new MessagingException("Rol no autorizado para el topic: " + destination);
+        }
+    }
+
+    private boolean isRoleAllowed(String role, String destination) {
+        if (destination == null) {
+            return true;
+        }
+        if ("GUEST".equals(role)) {
+            return !destination.startsWith("/topic/branch/");
+        }
+        if (role == null || role.isBlank()) {
+            return true;
+        }
+        if (destination.startsWith("/topic/branch/")) {
+            String subtopic = extractSubtopic(destination);
+            if ("kitchen".equals(subtopic)) {
+                return "KITCHEN".equals(role) || STAFF_ROLES.contains(role);
+            }
+            return STAFF_ROLES.contains(role);
+        }
+        return true;
+    }
+
+    private String extractSubtopic(String destination) {
+        String[] parts = destination.split("/");
+        if (parts.length >= 5 && "topic".equals(parts[1]) && "branch".equals(parts[2])) {
+            return parts[4];
+        }
+        return null;
     }
 
     private String extractToken(String header) {

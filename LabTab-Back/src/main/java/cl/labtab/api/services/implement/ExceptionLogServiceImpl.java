@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -47,8 +48,13 @@ public class ExceptionLogServiceImpl implements ExceptionLogService {
             page = exceptionLogRepository.findByBranchId(branchId, pageable);
         }
 
-        Map<UUID, String> names = personRepository.findAllById(
-                        page.getContent().stream().map(ExceptionLog::getPersonId).filter(java.util.Objects::nonNull).toList())
+        List<UUID> personIds = page.getContent().stream()
+                .flatMap(log -> java.util.stream.Stream.of(log.getPersonId(), log.getAuthorizedBy()))
+                .filter(java.util.Objects::nonNull)
+                .distinct()
+                .toList();
+
+        Map<UUID, String> names = personRepository.findAllById(personIds)
                 .stream().collect(Collectors.toMap(Person::getId, Person::getEmail));
 
         return page.map(log -> exceptionLogMapper.toResponse(

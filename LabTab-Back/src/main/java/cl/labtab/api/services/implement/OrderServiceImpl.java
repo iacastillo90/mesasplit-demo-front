@@ -1,6 +1,5 @@
 package cl.labtab.api.services.implement;
 
-import cl.labtab.api.audit.Auditable;
 import cl.labtab.api.common.enums.CourseStatusEnum;
 import cl.labtab.api.common.enums.DineSessionStatusEnum;
 import cl.labtab.api.common.enums.ExceptionEventTypeEnum;
@@ -35,6 +34,7 @@ import cl.labtab.api.repositories.OrderLineRepository;
 import cl.labtab.api.repositories.OrderRepository;
 import cl.labtab.api.security.BranchContextHolder;
 import cl.labtab.api.security.SecurityUtils;
+import cl.labtab.api.services.ExceptionLogService;
 import cl.labtab.api.services.OrderService;
 import cl.labtab.api.websocket.AlertEventPublisher;
 import cl.labtab.api.websocket.KitchenEventPublisher;
@@ -64,6 +64,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderEventPublisher orderEventPublisher;
     private final KitchenEventPublisher kitchenEventPublisher;
     private final AlertEventPublisher alertEventPublisher;
+    private final ExceptionLogService exceptionLogService;
 
     public OrderServiceImpl(OrderRepository orderRepository,
                             OrderLineRepository orderLineRepository,
@@ -76,7 +77,8 @@ public class OrderServiceImpl implements OrderService {
                             OrderLineMapper orderLineMapper,
                             OrderEventPublisher orderEventPublisher,
                             KitchenEventPublisher kitchenEventPublisher,
-                            AlertEventPublisher alertEventPublisher) {
+                            AlertEventPublisher alertEventPublisher,
+                            ExceptionLogService exceptionLogService) {
         this.orderRepository = orderRepository;
         this.orderLineRepository = orderLineRepository;
         this.dishRepository = dishRepository;
@@ -89,6 +91,7 @@ public class OrderServiceImpl implements OrderService {
         this.orderEventPublisher = orderEventPublisher;
         this.kitchenEventPublisher = kitchenEventPublisher;
         this.alertEventPublisher = alertEventPublisher;
+        this.exceptionLogService = exceptionLogService;
     }
 
     @Override
@@ -223,7 +226,6 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    @Auditable(eventType = ExceptionEventTypeEnum.ITEM_VOID_AFTER_KITCHEN)
     public VoidOrderLineResponse voidOrderLine(UUID orderLineId, VoidOrderLineRequest request) {
         UUID branchId = BranchContextHolder.get();
         OrderLine line = orderLineRepository.findByIdAndBranchId(orderLineId, branchId)
@@ -243,8 +245,12 @@ public class OrderServiceImpl implements OrderService {
         line.setStatus(OrderLineStatusEnum.CANCELLED);
         orderLineRepository.save(line);
 
+        exceptionLogService.createLog(sentToKitchen
+                ? ExceptionEventTypeEnum.ITEM_VOID_AFTER_KITCHEN
+                : ExceptionEventTypeEnum.ITEM_VOID_PRE_KITCHEN);
+
         alertEventPublisher.publishFraud(branchId, Map.of(
-                "type", "item_void_after_kitchen",
+                "type", sentToKitchen ? "item_void_after_kitchen" : "item_void_pre_kitchen",
                 "orderLineId", line.getId(),
                 "reason", request.reason()));
 

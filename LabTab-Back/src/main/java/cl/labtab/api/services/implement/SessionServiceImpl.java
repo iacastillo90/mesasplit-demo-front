@@ -25,6 +25,7 @@ import cl.labtab.api.security.SecurityUtils;
 import cl.labtab.api.services.SessionService;
 import cl.labtab.api.websocket.TableEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -65,6 +66,7 @@ public class SessionServiceImpl implements SessionService {
     }
 
     @Override
+    @Transactional
     public SessionResponse createSession(CreateSessionRequest request) {
         UUID branchId = BranchContextHolder.get();
         DiningTable table = diningTableRepository.findByIdAndBranchId(request.tableId(), branchId)
