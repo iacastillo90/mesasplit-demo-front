@@ -1,11 +1,12 @@
 package cl.labtab.api.models;
 
 import cl.labtab.api.common.ModifierOption;
+import cl.labtab.api.common.converters.ModifierOptionListConverter;
 import cl.labtab.api.common.enums.CourseStatusEnum;
 import cl.labtab.api.common.enums.CourseTypeEnum;
 import cl.labtab.api.common.enums.OrderLineStatusEnum;
-import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -13,7 +14,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -51,7 +53,8 @@ public class OrderLine extends BaseEntity {
     @Column(name = "item_notes")
     private String itemNotes;
 
-    @Type(JsonType.class)
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Convert(converter = ModifierOptionListConverter.class)
     @Column(name = "modifiers", columnDefinition = "jsonb")
     private List<ModifierOption> modifiers;
 

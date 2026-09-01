@@ -1,14 +1,14 @@
 package cl.labtab.api.models;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.util.UUID;
 
@@ -26,7 +26,7 @@ public class DiningFloor extends BaseEntity {
     @Column(name = "name", nullable = false, length = 255)
     private String name = "Principal";
 
-    @Type(JsonType.class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "layout", columnDefinition = "jsonb")
     private JsonNode layout;
 

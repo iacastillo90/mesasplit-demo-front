@@ -1,15 +1,15 @@
 package cl.labtab.api.models;
 
 import cl.labtab.api.common.OpeningHoursDTO;
-import io.hypersistence.utils.hibernate.type.json.JsonType;
+import cl.labtab.api.common.converters.OpeningHoursConverter;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.annotations.Type;
 import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
@@ -58,7 +58,8 @@ public class Branch extends BaseEntity {
     @Column(name = "timezone", length = 50)
     private String timezone = "America/Santiago";
 
-    @Type(JsonType.class)
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Convert(converter = OpeningHoursConverter.class)
     @Column(name = "opening_hours", columnDefinition = "jsonb")
     private OpeningHoursDTO openingHours;
 

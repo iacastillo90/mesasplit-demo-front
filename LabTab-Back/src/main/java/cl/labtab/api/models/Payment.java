@@ -3,7 +3,6 @@ package cl.labtab.api.models;
 import cl.labtab.api.common.enums.PaymentMethodEnum;
 import cl.labtab.api.common.enums.PaymentStatusEnum;
 import com.fasterxml.jackson.databind.JsonNode;
-import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -12,7 +11,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -64,7 +64,7 @@ public class Payment extends BaseEntity {
     @Column(name = "external_transaction_id", unique = true, length = 255)
     private String externalTransactionId;
 
-    @Type(JsonType.class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "gateway_response_json", columnDefinition = "jsonb")
     private JsonNode gatewayResponseJson;
 

@@ -20,7 +20,6 @@ repositories {
 ext {
 	set('mapstructVersion', '1.5.5.Final')
 	set('jjwtVersion', '0.12.6')
-	set('hypersistenceVersion', '3.9.11')
 	set('springdocVersion', '2.6.0')
 }
 
@@ -51,9 +50,6 @@ dependencies {
 
 	// Flyway — migraciones de base de datos
 	runtimeOnly 'org.flywaydb:flyway-database-postgresql'
-
-	// Hypersistence Utils — TEXT[] y JSONB nativos de PostgreSQL (Hibernate 6.6)
-	implementation "io.hypersistence:hypersistence-utils-hibernate-63:${hypersistenceVersion}"
 
 	// JJWT — generación y validación de JWT
 	implementation "io.jsonwebtoken:jjwt-api:${jjwtVersion}"
