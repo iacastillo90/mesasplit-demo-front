@@ -8,7 +8,9 @@ import { create } from 'zustand';
 // createJSONStorage y persist: middleware de persistencia en localStorage.
 import { createJSONStorage, persist } from 'zustand/middleware';
 // Servicio de la capa de datos del cliente (menú + contexto de mesa).
-import { getMenu, getTableContext } from '../services/clientService.js';
+import { getMenu, getTableContext, guestSession } from '../services/clientService.js';
+// setToken e isBackendMode: persiste el JWT y consulta el flag de modo.
+import { setToken, isBackendMode } from '../../../api/httpClient.js';
 
 // Selector puro: suma la cantidad de ítems del carrito (badge del CTA).
 export const selectCartCount = (cart = []) =>
@@ -54,8 +56,31 @@ export const useClientStore = create(
         set({ menu, tableContext, loading: false });
       },
 
-      // Inicia sesión de usuario demo con cualquier correo y clave.
-      loginUser: ({ email, name }) =>
+      // Inicia sesión de usuario: en backend hace onboarding QR (guest-session);
+      // en demo crea un usuario local con cualquier correo y clave.
+      loginUser: async ({ email, name }) => {
+        // Modo backend: onboarding QR del comensal (POST /auth/guest-session).
+        if (isBackendMode()) {
+          try {
+            // qrToken de demo (Mesa 4 del seed); displayName = nombre ingresado.
+            const session = await guestSession('tok_mesa_4', name, []);
+            // Persiste el JWT GUEST para las llamadas siguientes.
+            setToken(session.accessToken);
+            set({
+              user: {
+                name: session.guest?.displayName || name,
+                email: email || 'guest@labtab.cl',
+                loggedIn: true,
+                avatar: '👤',
+              },
+            });
+          } catch (err) {
+            // Onboarding fallido (sin sesión abierta o QR inválido).
+            console.error('Onboarding fallido:', err.message);
+          }
+          return;
+        }
+        // Modo demo: login local.
         set({
           user: {
             name: name && name.trim() ? name : email?.split('@')[0] || 'Comensal Demo',
@@ -63,7 +88,8 @@ export const useClientStore = create(
             loggedIn: true,
             avatar: '👤',
           },
-        }),
+        });
+      },
 
       // Registra un nuevo usuario con consentimiento de Ley N° 21.716.
       registerUser: ({ name, email }) =>
