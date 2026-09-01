@@ -224,7 +224,7 @@ export const useWaiterStore = create((set, get) => ({
     // Emite el evento en tiempo real course.fire por el bus (payload estrictamente primitivo).
     bus.publish('course.fire', {
       tableId: selectedTableId ? String(selectedTableId) : 't1',
-      courseType: String(courseType),
+      courseType: mapCourseToBackend(courseType),
       timestamp: Date.now(),
     });
 
