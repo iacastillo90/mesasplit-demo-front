@@ -10,6 +10,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -38,7 +39,7 @@ public class PersonProfile extends BaseEntity {
 
     @JdbcTypeCode(SqlTypes.ARRAY)
     @Column(name = "allergies", columnDefinition = "text[]")
-    private List<String> allergies;
+    private List<String> allergies = new ArrayList<>();
 
     @Column(name = "preferred_payment", length = 50)
     private String preferredPayment;

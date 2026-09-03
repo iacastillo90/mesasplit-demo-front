@@ -11,6 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -123,5 +124,11 @@ public class Order extends BaseEntity {
 
     public void setChannel(String channel) {
         this.channel = channel;
+    }
+
+    public void calculateTotals(List<OrderLine> lines) {
+        this.subtotal = lines.stream().map(OrderLine::getLineTotal).reduce(BigDecimal.ZERO, BigDecimal::add);
+        this.itemCount = lines.stream().mapToInt(OrderLine::getQuantity).sum();
+        this.total = this.subtotal;
     }
 }

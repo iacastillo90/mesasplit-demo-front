@@ -14,6 +14,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -45,7 +46,7 @@ public class Branch extends BaseEntity {
 
     @JdbcTypeCode(SqlTypes.ARRAY)
     @Column(name = "cuisine_tags", columnDefinition = "text[]")
-    private List<String> cuisineTags;
+    private List<String> cuisineTags = new ArrayList<>();
 
     @Column(name = "cover_image_url")
     private String coverImageUrl;

@@ -156,4 +156,34 @@ public class Bill extends BaseEntity {
     public Long getVersion() {
         return version;
     }
+
+    public void applyServiceCharge(BigDecimal subtotal) {
+        this.serviceChargeAmount = subtotal.multiply(this.serviceChargePct.divide(BigDecimal.valueOf(100)));
+    }
+
+    public void recomputeTotal() {
+        this.totalAmount = this.subtotal.add(this.serviceChargeAmount).add(this.tipTotal).subtract(this.discountAmount);
+    }
+
+    public void settleBalance() {
+        this.balanceDue = this.totalAmount.subtract(this.paidTotal);
+    }
+
+    public void applyPayment(BigDecimal amount) {
+        this.paidTotal = this.paidTotal.add(amount);
+        this.balanceDue = this.balanceDue.subtract(amount);
+        if (this.balanceDue.compareTo(BigDecimal.ZERO) == 0) {
+            this.status = BillStatusEnum.PAID;
+        }
+    }
+
+    public void applyDiscount(BigDecimal amount) {
+        this.discountAmount = amount;
+        this.totalAmount = this.totalAmount.subtract(amount);
+        this.balanceDue = this.balanceDue.subtract(amount);
+    }
+
+    public boolean isFullyPaid() {
+        return this.balanceDue.compareTo(BigDecimal.ZERO) == 0;
+    }
 }

@@ -1,7 +1,6 @@
 package cl.labtab.api.services.implement;
 
 import cl.labtab.api.common.BranchScoping;
-import cl.labtab.api.common.enums.CourseStatusEnum;
 import cl.labtab.api.common.enums.DineSessionStatusEnum;
 import cl.labtab.api.common.enums.ExceptionEventTypeEnum;
 import cl.labtab.api.common.enums.KitchenTicketStatusEnum;
@@ -43,7 +42,6 @@ import cl.labtab.api.websocket.OrderEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -115,8 +113,6 @@ public class OrderServiceImpl implements OrderService {
         order.setNotes(request.notes());
         order = orderRepository.save(order);
 
-        BigDecimal subtotal = BigDecimal.ZERO;
-        int itemCount = 0;
         List<OrderLineResponse> lineResponses = new ArrayList<>();
 
         Map<UUID, Dish> dishesById = dishRepository
@@ -144,16 +140,13 @@ public class OrderServiceImpl implements OrderService {
             line.setName(dish.getName());
             line.setUnitPrice(dish.getPrice());
             line.setQuantity(lineReq.quantity());
-            line.setLineTotal(dish.getPrice().multiply(BigDecimal.valueOf(lineReq.quantity())));
+            line.calculateLineTotal();
             line.setItemNotes(lineReq.itemNotes());
             line.setModifiers(lineReq.modifiers());
             line.setStatus(OrderLineStatusEnum.QUEUED);
             line.setDineGuestId(lineReq.dineGuestId());
             line.setCourseType(lineReq.courseType());
             lines.add(line);
-
-            subtotal = subtotal.add(line.getLineTotal());
-            itemCount += lineReq.quantity();
         }
 
         lines = orderLineRepository.saveAll(lines);
@@ -161,9 +154,7 @@ public class OrderServiceImpl implements OrderService {
             lineResponses.add(orderLineMapper.toResponse(line));
         }
 
-        order.setSubtotal(subtotal);
-        order.setTotal(subtotal);
-        order.setItemCount(itemCount);
+        order.calculateTotals(lines);
         order = orderRepository.save(order);
 
         DiningTable table = diningTableRepository.findById(session.getTableId()).orElse(null);
@@ -172,7 +163,7 @@ public class OrderServiceImpl implements OrderService {
         ticket.setBranchId(branchId);
         ticket.setTableName(table != null ? table.getName() : "Mesa");
         ticket.setStatus(KitchenTicketStatusEnum.OPEN);
-        ticket.setItemsSummary(itemCount + " ítems");
+        ticket.setItemsSummary(order.getItemCount() + " ítems");
         ticket = kitchenTicketRepository.save(ticket);
 
         orderEventPublisher.publishItemAdded(branchId, Map.of(
@@ -211,7 +202,7 @@ public class OrderServiceImpl implements OrderService {
     public OrderLineResponse updateOrderLineStatus(UUID orderLineId, OrderLineStatusRequest request) {
         UUID branchId = BranchContextHolder.get();
         OrderLine line = BranchScoping.find(orderLineRepository::findByIdAndBranchId, orderLineId, branchId, "Línea no encontrada");
-        line.setStatus(request.status());
+        line.transitionTo(request.status());
         line = orderLineRepository.save(line);
         if (request.status() == OrderLineStatusEnum.READY) {
             kitchenEventPublisher.publishItemReady(branchId, Map.of(
@@ -239,7 +230,7 @@ public class OrderServiceImpl implements OrderService {
             pinValidationService.validateManagerPin(branchId, request.managerPin());
         }
 
-        line.setStatus(OrderLineStatusEnum.CANCELLED);
+        line.cancel();
         orderLineRepository.save(line);
 
         exceptionLogService.createLog(sentToKitchen
@@ -264,7 +255,7 @@ public class OrderServiceImpl implements OrderService {
         List<OrderLine> toFire = lines.stream()
                 .filter(l -> l.getCourseType() == request.courseType())
                 .toList();
-        toFire.forEach(l -> l.setCourseStatus(CourseStatusEnum.MARCHING));
+        toFire.forEach(OrderLine::markCourseAsMarching);
         orderLineRepository.saveAll(toFire);
 
         kitchenTicketRepository.findByOrderIdAndBranchId(orderId, branchId)

@@ -103,13 +103,11 @@ public class BillServiceImpl implements BillService {
         Bill bill = new Bill();
         bill.setDineSessionId(session.getId());
         bill.setBranchId(branchId);
-        bill.setStatus(BillStatusEnum.OPEN);
         bill.setServiceChargePct(request.serviceChargePct() != null ? request.serviceChargePct() : BillingConstants.DEFAULT_SERVICE_CHARGE_PCT);
         bill.setSubtotal(subtotal);
-        BigDecimal serviceCharge = subtotal.multiply(bill.getServiceChargePct().divide(BigDecimal.valueOf(100)));
-        bill.setServiceChargeAmount(serviceCharge);
-        bill.setTotalAmount(subtotal.add(serviceCharge));
-        bill.setBalanceDue(bill.getTotalAmount());
+        bill.applyServiceCharge(subtotal);
+        bill.recomputeTotal();
+        bill.settleBalance();
         bill = billRepository.save(bill);
 
         List<BillLine> billLines = new ArrayList<>();
@@ -193,9 +191,7 @@ public class BillServiceImpl implements BillService {
             throw new BusinessRuleException("DISCOUNT_EXCEEDS_SUBTOTAL", "El descuento supera el subtotal");
         }
 
-        bill.setDiscountAmount(request.discountAmount());
-        bill.setTotalAmount(bill.getTotalAmount().subtract(request.discountAmount()));
-        bill.setBalanceDue(bill.getBalanceDue().subtract(request.discountAmount()));
+        bill.applyDiscount(request.discountAmount());
         bill = billRepository.save(bill);
 
         alertEventPublisher.publishFraud(branchId, Map.of(

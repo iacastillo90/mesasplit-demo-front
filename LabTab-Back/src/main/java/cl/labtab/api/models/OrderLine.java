@@ -18,6 +18,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -56,7 +57,7 @@ public class OrderLine extends BaseEntity {
     @JdbcTypeCode(SqlTypes.JSON)
     @Convert(converter = ModifierOptionListConverter.class)
     @Column(name = "modifiers", columnDefinition = "jsonb")
-    private List<ModifierOption> modifiers;
+    private List<ModifierOption> modifiers = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 50)
@@ -190,5 +191,25 @@ public class OrderLine extends BaseEntity {
 
     public void setCourseStatus(CourseStatusEnum courseStatus) {
         this.courseStatus = courseStatus;
+    }
+
+    public void calculateLineTotal() {
+        this.lineTotal = this.unitPrice.multiply(BigDecimal.valueOf(this.quantity));
+    }
+
+    public void transitionTo(OrderLineStatusEnum newStatus) {
+        this.status = newStatus;
+    }
+
+    public void markReady() {
+        this.status = OrderLineStatusEnum.READY;
+    }
+
+    public void cancel() {
+        this.status = OrderLineStatusEnum.CANCELLED;
+    }
+
+    public void markCourseAsMarching() {
+        this.courseStatus = CourseStatusEnum.MARCHING;
     }
 }

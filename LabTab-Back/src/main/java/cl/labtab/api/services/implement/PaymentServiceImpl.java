@@ -2,7 +2,6 @@ package cl.labtab.api.services.implement;
 
 import cl.labtab.api.audit.Auditable;
 import cl.labtab.api.common.BranchScoping;
-import cl.labtab.api.common.enums.BillStatusEnum;
 import cl.labtab.api.common.enums.DineSessionStatusEnum;
 import cl.labtab.api.common.enums.ExceptionEventTypeEnum;
 import cl.labtab.api.common.enums.PaymentStatusEnum;
@@ -102,11 +101,8 @@ public class PaymentServiceImpl implements PaymentService {
         payment.setPaidAt(Instant.now());
         payment = paymentRepository.save(payment);
 
-        bill.setPaidTotal(bill.getPaidTotal().add(request.amount()));
-        bill.setBalanceDue(bill.getBalanceDue().subtract(request.amount()));
-
-        if (bill.getBalanceDue().compareTo(BigDecimal.ZERO) == 0) {
-            bill.setStatus(BillStatusEnum.PAID);
+        bill.applyPayment(request.amount());
+        if (bill.isFullyPaid()) {
             closeSession(bill.getDineSessionId(), branchId);
         }
 

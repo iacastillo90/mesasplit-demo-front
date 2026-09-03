@@ -10,6 +10,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -44,11 +45,11 @@ public class Dish extends BaseEntity {
 
     @JdbcTypeCode(SqlTypes.ARRAY)
     @Column(name = "tags", columnDefinition = "text[]")
-    private List<String> tags;
+    private List<String> tags = new ArrayList<>();
 
     @JdbcTypeCode(SqlTypes.ARRAY)
     @Column(name = "allergens", columnDefinition = "text[]")
-    private List<String> allergens;
+    private List<String> allergens = new ArrayList<>();
 
     @Column(name = "display_order", nullable = false)
     private int displayOrder;
