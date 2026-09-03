@@ -16,9 +16,5 @@ public interface ExceptionLogService {
 
     ExceptionLog createLog(ExceptionEventTypeEnum eventType, String reason, BigDecimal amount, UUID orderLineId, UUID authorizedBy);
 
-    default ExceptionLog createLog(ExceptionEventTypeEnum eventType) {
-        return createLog(eventType, null, null, null, null);
-    }
-
     void logFailedPin(UUID branchId);
 }
