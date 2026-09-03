@@ -20,6 +20,7 @@ import cl.labtab.api.exception.BusinessRuleException;
 import cl.labtab.api.exception.ResourceNotFoundException;
 import cl.labtab.api.mappers.OrderLineMapper;
 import cl.labtab.api.mappers.OrderMapper;
+import cl.labtab.api.models.BranchRole;
 import cl.labtab.api.models.DineSession;
 import cl.labtab.api.models.DiningTable;
 import cl.labtab.api.models.Dish;
@@ -226,8 +227,10 @@ public class OrderServiceImpl implements OrderService {
         boolean sentToKitchen = line.getStatus() == OrderLineStatusEnum.PREPARING
                 || line.getStatus() == OrderLineStatusEnum.READY
                 || line.getStatus() == OrderLineStatusEnum.SERVED;
+        UUID authorizedBy = null;
         if (sentToKitchen) {
-            pinValidationService.validateManagerPin(branchId, request.managerPin());
+            BranchRole authorizer = pinValidationService.validateManagerPin(branchId, request.managerPin());
+            authorizedBy = authorizer.getPersonId();
         }
 
         line.cancel();
@@ -235,7 +238,8 @@ public class OrderServiceImpl implements OrderService {
 
         exceptionLogService.createLog(sentToKitchen
                 ? ExceptionEventTypeEnum.ITEM_VOID_AFTER_KITCHEN
-                : ExceptionEventTypeEnum.ITEM_VOID_PRE_KITCHEN);
+                : ExceptionEventTypeEnum.ITEM_VOID_PRE_KITCHEN,
+                request.reason(), null, line.getId(), authorizedBy);
 
         alertEventPublisher.publishFraud(branchId, Map.of(
                 "type", sentToKitchen ? "item_void_after_kitchen" : "item_void_pre_kitchen",

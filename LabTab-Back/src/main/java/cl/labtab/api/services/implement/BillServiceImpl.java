@@ -1,6 +1,5 @@
 package cl.labtab.api.services.implement;
 
-import cl.labtab.api.audit.Auditable;
 import cl.labtab.api.common.BillingConstants;
 import cl.labtab.api.common.BranchScoping;
 import cl.labtab.api.common.enums.BillLineStatusEnum;
@@ -21,6 +20,7 @@ import cl.labtab.api.mappers.BillLineMapper;
 import cl.labtab.api.mappers.BillMapper;
 import cl.labtab.api.models.Bill;
 import cl.labtab.api.models.BillLine;
+import cl.labtab.api.models.BranchRole;
 import cl.labtab.api.models.DineSession;
 import cl.labtab.api.models.Order;
 import cl.labtab.api.models.OrderLine;
@@ -32,6 +32,7 @@ import cl.labtab.api.repositories.OrderRepository;
 import cl.labtab.api.security.BranchContextHolder;
 import cl.labtab.api.security.SecurityUtils;
 import cl.labtab.api.services.BillService;
+import cl.labtab.api.services.ExceptionLogService;
 import cl.labtab.api.websocket.AlertEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -57,6 +58,7 @@ public class BillServiceImpl implements BillService {
     private final BillMapper billMapper;
     private final BillLineMapper billLineMapper;
     private final AlertEventPublisher alertEventPublisher;
+    private final ExceptionLogService exceptionLogService;
 
     public BillServiceImpl(BillRepository billRepository,
                            BillLineRepository billLineRepository,
@@ -66,7 +68,8 @@ public class BillServiceImpl implements BillService {
                            PinValidationService pinValidationService,
                            BillMapper billMapper,
                            BillLineMapper billLineMapper,
-                           AlertEventPublisher alertEventPublisher) {
+                           AlertEventPublisher alertEventPublisher,
+                           ExceptionLogService exceptionLogService) {
         this.billRepository = billRepository;
         this.billLineRepository = billLineRepository;
         this.orderRepository = orderRepository;
@@ -76,6 +79,7 @@ public class BillServiceImpl implements BillService {
         this.billMapper = billMapper;
         this.billLineMapper = billLineMapper;
         this.alertEventPublisher = alertEventPublisher;
+        this.exceptionLogService = exceptionLogService;
     }
 
     @Override
@@ -176,7 +180,6 @@ public class BillServiceImpl implements BillService {
 
     @Override
     @Transactional
-    @Auditable(eventType = ExceptionEventTypeEnum.MANUAL_DISCOUNT)
     public BillResponse applyDiscount(UUID billId, ApplyDiscountRequest request) {
         UUID branchId = BranchContextHolder.get();
         Bill bill = BranchScoping.find(billRepository::findByIdAndBranchId, billId, branchId, "Cuenta no encontrada");
@@ -185,7 +188,7 @@ public class BillServiceImpl implements BillService {
             throw new BusinessRuleException("REASON_INVALID", "Motivo fuera de la lista cerrada");
         }
 
-        pinValidationService.validateManagerPin(branchId, request.managerPin());
+        BranchRole authorizer = pinValidationService.validateManagerPin(branchId, request.managerPin());
 
         if (request.discountAmount().compareTo(bill.getSubtotal()) > 0) {
             throw new BusinessRuleException("DISCOUNT_EXCEEDS_SUBTOTAL", "El descuento supera el subtotal");
@@ -193,6 +196,8 @@ public class BillServiceImpl implements BillService {
 
         bill.applyDiscount(request.discountAmount());
         bill = billRepository.save(bill);
+
+        exceptionLogService.createLog(ExceptionEventTypeEnum.MANUAL_DISCOUNT, request.reason(), request.discountAmount(), null, authorizer.getPersonId());
 
         alertEventPublisher.publishFraud(branchId, Map.of(
                 "type", "manual_discount",

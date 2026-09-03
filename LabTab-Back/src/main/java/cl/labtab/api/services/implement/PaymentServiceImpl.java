@@ -1,6 +1,5 @@
 package cl.labtab.api.services.implement;
 
-import cl.labtab.api.audit.Auditable;
 import cl.labtab.api.common.BranchScoping;
 import cl.labtab.api.common.enums.DineSessionStatusEnum;
 import cl.labtab.api.common.enums.ExceptionEventTypeEnum;
@@ -15,6 +14,7 @@ import cl.labtab.api.exception.ConflictException;
 import cl.labtab.api.mappers.BillMapper;
 import cl.labtab.api.mappers.PaymentMapper;
 import cl.labtab.api.models.Bill;
+import cl.labtab.api.models.BranchRole;
 import cl.labtab.api.models.DineSession;
 import cl.labtab.api.models.Payment;
 import cl.labtab.api.repositories.BillRepository;
@@ -22,6 +22,7 @@ import cl.labtab.api.repositories.DineSessionRepository;
 import cl.labtab.api.repositories.PaymentRepository;
 import cl.labtab.api.security.BranchContextHolder;
 import cl.labtab.api.security.SecurityUtils;
+import cl.labtab.api.services.ExceptionLogService;
 import cl.labtab.api.services.PaymentService;
 import cl.labtab.api.websocket.AlertEventPublisher;
 import cl.labtab.api.websocket.PaymentEventPublisher;
@@ -46,6 +47,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final PaymentEventPublisher paymentEventPublisher;
     private final TableEventPublisher tableEventPublisher;
     private final AlertEventPublisher alertEventPublisher;
+    private final ExceptionLogService exceptionLogService;
 
     public PaymentServiceImpl(PaymentRepository paymentRepository,
                               BillRepository billRepository,
@@ -55,7 +57,8 @@ public class PaymentServiceImpl implements PaymentService {
                               BillMapper billMapper,
                               PaymentEventPublisher paymentEventPublisher,
                               TableEventPublisher tableEventPublisher,
-                              AlertEventPublisher alertEventPublisher) {
+                              AlertEventPublisher alertEventPublisher,
+                              ExceptionLogService exceptionLogService) {
         this.paymentRepository = paymentRepository;
         this.billRepository = billRepository;
         this.dineSessionRepository = dineSessionRepository;
@@ -65,6 +68,7 @@ public class PaymentServiceImpl implements PaymentService {
         this.paymentEventPublisher = paymentEventPublisher;
         this.tableEventPublisher = tableEventPublisher;
         this.alertEventPublisher = alertEventPublisher;
+        this.exceptionLogService = exceptionLogService;
     }
 
     @Override
@@ -126,7 +130,6 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     @Transactional
-    @Auditable(eventType = ExceptionEventTypeEnum.REFUND_ISSUED)
     public RefundResponse refund(UUID paymentId, RefundRequest request) {
         UUID branchId = BranchContextHolder.get();
         Payment payment = BranchScoping.find(paymentRepository::findByIdAndBranchId, paymentId, branchId, "Pago no encontrado");
@@ -135,10 +138,12 @@ public class PaymentServiceImpl implements PaymentService {
             throw new BusinessRuleException("REASON_INVALID", "Motivo fuera de la lista cerrada");
         }
 
-        pinValidationService.validateManagerPin(branchId, request.managerPin());
+        BranchRole authorizer = pinValidationService.validateManagerPin(branchId, request.managerPin());
 
         payment.setStatus(PaymentStatusEnum.REFUNDED);
         paymentRepository.save(payment);
+
+        exceptionLogService.createLog(ExceptionEventTypeEnum.REFUND_ISSUED, request.reason(), payment.getTotalAmount(), null, authorizer.getPersonId());
 
         alertEventPublisher.publishFraud(branchId, Map.of(
                 "type", "refund_issued",

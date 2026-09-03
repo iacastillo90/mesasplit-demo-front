@@ -31,19 +31,22 @@ public class PinValidationService {
         this.rateLimitService = rateLimitService;
     }
 
-    public void validateManagerPin(UUID branchId, String providedPin) {
+    public BranchRole validateManagerPin(UUID branchId, String providedPin) {
         List<BranchRole> managers = branchRoleRepository.findByBranchIdAndRole(branchId, BranchRoleEnum.MANAGER);
 
-        boolean matched = managers.stream()
+        BranchRole matched = managers.stream()
                 .filter(r -> r.getStatus() == BranchRoleStatusEnum.ACTIVE)
-                .anyMatch(r -> passwordEncoder.matches(providedPin, r.getPinCode()));
+                .filter(r -> passwordEncoder.matches(providedPin, r.getPinCode()))
+                .findFirst()
+                .orElse(null);
 
-        if (!matched) {
+        if (matched == null) {
             rateLimitService.onFailure("pin:" + branchId);
             exceptionLogService.logFailedPin(branchId);
             throw new UnauthorizedPinException("PIN incorrecto");
         }
 
         rateLimitService.onSuccess("pin:" + branchId);
+        return matched;
     }
 }

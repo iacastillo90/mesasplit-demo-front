@@ -5,6 +5,7 @@ import cl.labtab.api.common.converters.ModifierOptionListConverter;
 import cl.labtab.api.common.enums.CourseStatusEnum;
 import cl.labtab.api.common.enums.CourseTypeEnum;
 import cl.labtab.api.common.enums.OrderLineStatusEnum;
+import cl.labtab.api.exception.BusinessRuleException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
@@ -198,11 +199,10 @@ public class OrderLine extends BaseEntity {
     }
 
     public void transitionTo(OrderLineStatusEnum newStatus) {
+        if (this.status == OrderLineStatusEnum.CANCELLED) {
+            throw new BusinessRuleException("LINE_CANCELLED", "Una línea anulada no puede cambiar de estado");
+        }
         this.status = newStatus;
-    }
-
-    public void markReady() {
-        this.status = OrderLineStatusEnum.READY;
     }
 
     public void cancel() {

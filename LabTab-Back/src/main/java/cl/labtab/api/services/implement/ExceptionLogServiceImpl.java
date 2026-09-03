@@ -15,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -66,11 +67,15 @@ public class ExceptionLogServiceImpl implements ExceptionLogService {
     }
 
     @Override
-    public ExceptionLog createLog(ExceptionEventTypeEnum eventType) {
+    public ExceptionLog createLog(ExceptionEventTypeEnum eventType, String reason, BigDecimal amount, UUID orderLineId, UUID authorizedBy) {
         ExceptionLog log = new ExceptionLog();
         log.setBranchId(BranchContextHolder.get());
         log.setEventType(eventType);
         log.setPersonId(SecurityUtils.getCurrentPersonId());
+        log.setReason(reason);
+        log.setAmount(amount);
+        log.setOrderLineId(orderLineId);
+        log.setAuthorizedBy(authorizedBy);
         return exceptionLogRepository.save(log);
     }
 
