@@ -42,9 +42,6 @@ dependencies {
 	// Actuator — /actuator/health para Docker healthcheck
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
-	// AOP — @Aspect de auditoría antifraude
-	implementation 'org.springframework.boot:spring-boot-starter-aop'
-
 	// Driver JDBC de PostgreSQL 16
 	runtimeOnly 'org.postgresql:postgresql'
 
