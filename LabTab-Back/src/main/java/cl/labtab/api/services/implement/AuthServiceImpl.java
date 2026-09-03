@@ -251,9 +251,12 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private String resolveRole(UUID personId, BranchRole branchRole) {
+        UUID companyId = branchRepository.findById(branchRole.getBranchId())
+                .map(Branch::getCompanyId)
+                .orElse(null);
         boolean isCompanyAdmin = companyRoleRepository.findByPersonId(personId).stream()
-                .map(CompanyRole::getRole)
-                .anyMatch(CompanyRoleEnum.ADMIN::equals);
+                .anyMatch(companyRole -> companyRole.getRole() == CompanyRoleEnum.ADMIN
+                        && (companyId == null || companyId.equals(companyRole.getCompanyId())));
         return isCompanyAdmin ? "SUPERADMIN" : branchRole.getRole().name();
     }
 }

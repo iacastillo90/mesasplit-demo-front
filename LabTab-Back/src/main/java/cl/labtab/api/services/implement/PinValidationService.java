@@ -1,7 +1,7 @@
 package cl.labtab.api.services.implement;
 
 import cl.labtab.api.common.enums.BranchRoleEnum;
-import cl.labtab.api.exception.ResourceNotFoundException;
+import cl.labtab.api.common.enums.BranchRoleStatusEnum;
 import cl.labtab.api.exception.UnauthorizedPinException;
 import cl.labtab.api.models.BranchRole;
 import cl.labtab.api.repositories.BranchRoleRepository;
@@ -10,6 +10,7 @@ import cl.labtab.api.services.ExceptionLogService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -31,10 +32,13 @@ public class PinValidationService {
     }
 
     public void validateManagerPin(UUID branchId, String providedPin) {
-        BranchRole managerRole = branchRoleRepository.findByBranchIdAndRole(branchId, BranchRoleEnum.MANAGER)
-                .orElseThrow(() -> new ResourceNotFoundException("MANAGER no encontrado en esta sucursal"));
+        List<BranchRole> managers = branchRoleRepository.findByBranchIdAndRole(branchId, BranchRoleEnum.MANAGER);
 
-        if (!passwordEncoder.matches(providedPin, managerRole.getPinCode())) {
+        boolean matched = managers.stream()
+                .filter(r -> r.getStatus() == BranchRoleStatusEnum.ACTIVE)
+                .anyMatch(r -> passwordEncoder.matches(providedPin, r.getPinCode()));
+
+        if (!matched) {
             rateLimitService.onFailure("pin:" + branchId);
             exceptionLogService.logFailedPin(branchId);
             throw new UnauthorizedPinException("PIN incorrecto");

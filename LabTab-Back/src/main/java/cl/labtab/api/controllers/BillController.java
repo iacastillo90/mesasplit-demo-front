@@ -50,16 +50,19 @@ public class BillController {
     }
 
     @GetMapping("/bills/{billId}")
+    @PreAuthorize("hasAnyRole('SUPERADMIN','OWNER','MANAGER','STAFF','GUEST')")
     public ApiResponse<BillResponse> getBill(@PathVariable UUID billId) {
         return ApiResponse.of(billService.getBill(billId));
     }
 
     @GetMapping("/sessions/{sessionId}/bill")
+    @PreAuthorize("hasAnyRole('SUPERADMIN','OWNER','MANAGER','STAFF','GUEST')")
     public ApiResponse<BillResponse> getSessionBill(@PathVariable UUID sessionId) {
         return ApiResponse.of(billService.getSessionBill(sessionId));
     }
 
     @GetMapping("/bills/{billId}/summary-by-guest")
+    @PreAuthorize("hasAnyRole('SUPERADMIN','OWNER','MANAGER','STAFF','GUEST')")
     public ApiResponse<BillSummaryByGuestResponse> getSummaryByGuest(@PathVariable UUID billId) {
         return ApiResponse.of(billService.getSummaryByGuest(billId));
     }

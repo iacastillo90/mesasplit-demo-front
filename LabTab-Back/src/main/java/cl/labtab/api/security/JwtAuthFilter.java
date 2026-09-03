@@ -30,23 +30,18 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         if (header != null && header.startsWith("Bearer ")) {
             String token = header.substring(7);
             try {
-                if (jwtService.isTokenExpired(token)) {
-                    return;
+                if (!jwtService.isTokenExpired(token) && !"refresh".equals(jwtService.extractType(token))) {
+                    String subject = jwtService.extractSubject(token);
+                    String role = jwtService.extractRole(token);
+                    UUID branchId = jwtService.extractBranchId(token);
+                    BranchContextHolder.set(branchId);
+                    if ("GUEST".equals(role)) {
+                        SessionContextHolder.set(jwtService.extractSessionId(token));
+                    }
+                    var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
+                    var authentication = new UsernamePasswordAuthenticationToken(UUID.fromString(subject), null, authorities);
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
-                if ("refresh".equals(jwtService.extractType(token))) {
-                    return;
-                }
-                String subject = jwtService.extractSubject(token);
-                String role = jwtService.extractRole(token);
-                UUID branchId = jwtService.extractBranchId(token);
-                BranchContextHolder.set(branchId);
-                if ("GUEST".equals(role)) {
-                    SessionContextHolder.set(jwtService.extractSessionId(token));
-                }
-
-                var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
-                var authentication = new UsernamePasswordAuthenticationToken(UUID.fromString(subject), null, authorities);
-                SecurityContextHolder.getContext().setAuthentication(authentication);
             } catch (Exception e) {
                 SecurityContextHolder.clearContext();
             }
