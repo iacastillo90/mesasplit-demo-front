@@ -7,7 +7,9 @@ import cl.labtab.api.dtos.request.GuestSessionRequest;
 import cl.labtab.api.dtos.request.LoginRequest;
 import cl.labtab.api.dtos.request.LogoutRequest;
 import cl.labtab.api.dtos.request.RefreshTokenRequest;
+import cl.labtab.api.dtos.request.SwitchBranchRequest;
 import cl.labtab.api.dtos.response.AuthResponse;
+import cl.labtab.api.dtos.response.BranchOptionResponse;
 import cl.labtab.api.dtos.response.GuestAuthResponse;
 import cl.labtab.api.dtos.response.GuestSessionResponse;
 import cl.labtab.api.dtos.response.LogoutResponse;
@@ -17,6 +19,7 @@ import cl.labtab.api.exception.BusinessRuleException;
 import cl.labtab.api.exception.ConflictException;
 import cl.labtab.api.exception.ResourceNotFoundException;
 import cl.labtab.api.mappers.GuestMapper;
+import cl.labtab.api.models.Branch;
 import cl.labtab.api.models.BranchRole;
 import cl.labtab.api.models.CompanyRole;
 import cl.labtab.api.models.DineGuest;
@@ -25,6 +28,7 @@ import cl.labtab.api.models.DiningTable;
 import cl.labtab.api.models.Person;
 import cl.labtab.api.models.PersonProfile;
 import cl.labtab.api.models.RevokedToken;
+import cl.labtab.api.repositories.BranchRepository;
 import cl.labtab.api.repositories.BranchRoleRepository;
 import cl.labtab.api.repositories.CompanyRoleRepository;
 import cl.labtab.api.repositories.DineGuestRepository;
@@ -35,6 +39,7 @@ import cl.labtab.api.repositories.PersonRepository;
 import cl.labtab.api.repositories.RevokedTokenRepository;
 import cl.labtab.api.security.JwtService;
 import cl.labtab.api.security.RateLimitService;
+import cl.labtab.api.security.SecurityUtils;
 import cl.labtab.api.services.AuthService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -50,6 +55,7 @@ public class AuthServiceImpl implements AuthService {
     private final PersonProfileRepository personProfileRepository;
     private final CompanyRoleRepository companyRoleRepository;
     private final BranchRoleRepository branchRoleRepository;
+    private final BranchRepository branchRepository;
     private final DiningTableRepository diningTableRepository;
     private final DineSessionRepository dineSessionRepository;
     private final DineGuestRepository dineGuestRepository;
@@ -63,6 +69,7 @@ public class AuthServiceImpl implements AuthService {
                            PersonProfileRepository personProfileRepository,
                            CompanyRoleRepository companyRoleRepository,
                            BranchRoleRepository branchRoleRepository,
+                           BranchRepository branchRepository,
                            DiningTableRepository diningTableRepository,
                            DineSessionRepository dineSessionRepository,
                            DineGuestRepository dineGuestRepository,
@@ -75,6 +82,7 @@ public class AuthServiceImpl implements AuthService {
         this.personProfileRepository = personProfileRepository;
         this.companyRoleRepository = companyRoleRepository;
         this.branchRoleRepository = branchRoleRepository;
+        this.branchRepository = branchRepository;
         this.diningTableRepository = diningTableRepository;
         this.dineSessionRepository = dineSessionRepository;
         this.dineGuestRepository = dineGuestRepository;
@@ -120,7 +128,38 @@ public class AuthServiceImpl implements AuthService {
                         profile != null ? profile.getFullName() : null,
                         role,
                         branchRole.getBranchId(),
-                        profile != null ? profile.getAvatarUrl() : null));
+                        profile != null ? profile.getAvatarUrl() : null),
+                availableBranches(person.getId()));
+    }
+
+    @Override
+    public AuthResponse switchBranch(SwitchBranchRequest request) {
+        UUID personId = SecurityUtils.getCurrentPersonId();
+        Person person = personRepository.findById(personId)
+                .orElseThrow(() -> new BusinessRuleException("INVALID_SESSION", "Sesión inválida"));
+
+        BranchRole branchRole = branchRoleRepository.findByPersonId(personId).stream()
+                .filter(r -> r.getStatus() == BranchRoleStatusEnum.ACTIVE && r.getBranchId().equals(request.branchId()))
+                .findFirst()
+                .orElseThrow(() -> new BusinessRuleException("NO_BRANCH_ACCESS", "No tienes acceso a esa sucursal"));
+
+        String role = resolveRole(personId, branchRole);
+        String accessToken = jwtService.generateAccessToken(person, branchRole.getBranchId(), role);
+        String refreshToken = jwtService.generateRefreshToken(person);
+        PersonProfile profile = personProfileRepository.findByPersonId(personId).orElse(null);
+
+        return new AuthResponse(
+                accessToken,
+                refreshToken,
+                jwtService.getAccessTokenExpiration(),
+                new PersonAuthResponse(
+                        person.getId(),
+                        person.getEmail(),
+                        profile != null ? profile.getFullName() : null,
+                        role,
+                        branchRole.getBranchId(),
+                        profile != null ? profile.getAvatarUrl() : null),
+                availableBranches(personId));
     }
 
     @Override
@@ -196,6 +235,19 @@ public class AuthServiceImpl implements AuthService {
                 .filter(r -> r.getStatus() == BranchRoleStatusEnum.ACTIVE)
                 .findFirst()
                 .orElseThrow(() -> new BusinessRuleException("NO_BRANCH_ROLE", "El usuario no tiene un rol de sucursal activo"));
+    }
+
+    private List<BranchOptionResponse> availableBranches(UUID personId) {
+        return branchRoleRepository.findByPersonId(personId).stream()
+                .filter(r -> r.getStatus() == BranchRoleStatusEnum.ACTIVE)
+                .map(role -> {
+                    String branchName = branchRepository.findById(role.getBranchId())
+                            .map(Branch::getName)
+                            .filter(name -> name != null && !name.isBlank())
+                            .orElse(role.getBranchId().toString());
+                    return new BranchOptionResponse(role.getBranchId(), branchName, resolveRole(personId, role));
+                })
+                .toList();
     }
 
     private String resolveRole(UUID personId, BranchRole branchRole) {

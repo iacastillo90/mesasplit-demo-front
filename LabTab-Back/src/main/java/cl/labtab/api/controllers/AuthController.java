@@ -5,6 +5,7 @@ import cl.labtab.api.dtos.request.GuestSessionRequest;
 import cl.labtab.api.dtos.request.LoginRequest;
 import cl.labtab.api.dtos.request.LogoutRequest;
 import cl.labtab.api.dtos.request.RefreshTokenRequest;
+import cl.labtab.api.dtos.request.SwitchBranchRequest;
 import cl.labtab.api.dtos.response.AuthResponse;
 import cl.labtab.api.dtos.response.GuestSessionResponse;
 import cl.labtab.api.dtos.response.LogoutResponse;
@@ -14,6 +15,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -48,5 +50,11 @@ public class AuthController {
     @PostMapping("/guest-session")
     public ResponseEntity<ApiResponse<GuestSessionResponse>> guestSession(@Valid @RequestBody GuestSessionRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.of(authService.guestSession(request)));
+    }
+
+    @PostMapping("/switch-branch")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ApiResponse<AuthResponse>> switchBranch(@Valid @RequestBody SwitchBranchRequest request) {
+        return ResponseEntity.ok(ApiResponse.of(authService.switchBranch(request)));
     }
 }
