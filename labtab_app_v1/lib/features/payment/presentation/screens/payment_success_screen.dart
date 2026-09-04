@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:labtab_app_v1/core/widgets/price_text.dart';
 import 'package:labtab_app_v1/features/payment/data/providers/payment_providers.dart';
+import 'package:labtab_app_v1/features/bill/presentation/providers/bill_provider.dart';
 
 
 class PaymentSuccessScreen extends ConsumerStatefulWidget {
@@ -213,7 +214,10 @@ class _PaymentSuccessScreenState extends ConsumerState<PaymentSuccessScreen> {
               ),
               const SizedBox(height: 48),
               ElevatedButton(
-                onPressed: () => context.go('/menu'),
+                onPressed: () {
+                  ref.invalidate(billProvider);
+                  context.go('/menu');
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF10B981),
                   foregroundColor: Colors.white,

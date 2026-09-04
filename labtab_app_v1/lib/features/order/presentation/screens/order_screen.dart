@@ -104,13 +104,13 @@ class _OrderScreenState extends ConsumerState<OrderScreen> {
   }
 }
 
-class _CartSection extends StatelessWidget {
+class _CartSection extends ConsumerWidget {
   final CartState cartState;
 
   const _CartSection({required this.cartState});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.grey[100],
@@ -136,8 +136,7 @@ class _CartSection extends StatelessWidget {
                     IconButton(
                       icon: const Icon(Icons.close, size: 16),
                       onPressed: () {
-                        ProviderScope.containerOf(context).read(cartProvider.notifier)
-                            .removeItem(item.dish.id);
+                        ref.read(cartProvider.notifier).removeItem(item.dish.id);
                       },
                     ),
                   ],
