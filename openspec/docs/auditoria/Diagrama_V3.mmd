@@ -1,0 +1,432 @@
+erDiagram
+    %%
+    %% Diagrama_V3.mmd — FUENTE DE VERDAD UNIFICADA
+    %% Reconcilia Diagrama_V3.mmd (base) + Diagrama_V3.mmd (campos operativos)
+    %%
+    %% Base: XML → nombres DINING_FLOOR, DINING_TABLE, PERSON.password_hash
+    %% Reintegrados del MMD y Soporte Operativo:
+    %%   - BRANCH_ROLE.pin_code         (antifraude PIN)
+    %%   - ORDER_LINE.course_type/status (Course Control / Marchar)
+    %%   - ORDER_LINE.branch_id          (desnorm RLS)
+    %%   - BILL_LINE.branch_id           (desnorm RLS)
+    %%   - DINE_FEEDBACK.branch_id       (desnorm RLS)
+    %%   - TAX_DOCUMENT                  (entidad DTE/SII completa)
+    %%   - EXCEPTION_LOG                 (auditoria antifraude)
+    %%   - SII_CAF_POOL                  (gestion de folios DTE)
+    %%
+
+    %% ──────────────────────────────────────────
+    %% RELACIONES
+    %% ──────────────────────────────────────────
+
+    COMPANY ||--o{ COMPANY_ROLE : otorga
+    COMPANY ||--o{ BRANCH : administra
+
+    BRANCH ||--o{ BRANCH_ROLE : asigna
+    BRANCH ||--o{ DINING_FLOOR : tiene
+    BRANCH ||--o{ DINING_TABLE : contiene
+    BRANCH ||--o{ DINE_SESSION : alberga
+    BRANCH ||--o{ MENU_SECTION : ofrece
+    BRANCH ||--o{ DISH : vende
+    BRANCH ||--o{ ORDER : registra
+    BRANCH ||--o{ BILL : factura
+    BRANCH ||--o{ TAX_DOCUMENT : documenta
+    BRANCH ||--o{ PAYMENT : canaliza
+    BRANCH ||--o{ RESERVATION : recibe
+    BRANCH ||--o{ SERVICE_REQUEST : atiende
+    BRANCH ||--o{ FAVORITE : guarda
+    BRANCH ||--o{ STOCK_ITEM : controla
+    BRANCH ||--o{ EXCEPTION_LOG : registra
+    BRANCH ||--o{ SII_CAF_POOL : administra
+
+    PERSON ||--o| PERSON_PROFILE : posee
+    PERSON ||--o{ COMPANY_ROLE : tiene
+    PERSON ||--o{ BRANCH_ROLE : trabaja
+    PERSON ||--o{ PAYMENT_METHOD : guarda
+    PERSON ||--o{ FAVORITE : marca
+    PERSON ||--o{ DINE_GUEST : se_sienta_como
+
+    DINING_FLOOR ||--o{ MAP_ZONE : divide
+    DINING_FLOOR ||--o{ DINING_TABLE : ubica
+
+    DINING_TABLE ||--o{ DINE_SESSION : ocupa
+    DINING_TABLE ||--o{ RESERVATION : preasigna
+
+    DINE_SESSION ||--o{ DINE_GUEST : incluye
+    DINE_SESSION ||--o{ ORDER : genera
+    DINE_SESSION ||--o{ BILL : solicita
+    DINE_SESSION ||--o{ SERVICE_REQUEST : levanta
+    DINE_SESSION ||--o{ DINE_FEEDBACK : valora
+
+    MENU_SECTION ||--o{ DISH : agrupa
+
+    DISH ||--o{ ORDER_LINE : pedido_en
+    DISH ||--o{ RECIPE_INGREDIENT : consume
+
+    STOCK_ITEM ||--o{ RECIPE_INGREDIENT : abastece
+
+    ORDER ||--o{ ORDER_LINE : contiene
+    ORDER ||--o{ KITCHEN_TICKET : abre
+
+    ORDER_LINE ||--o{ BILL_LINE : facturado_como
+
+    BILL ||--o{ BILL_LINE : incluye
+    BILL ||--o{ PAYMENT : recibe
+    BILL ||--o{ TAX_DOCUMENT : emite
+
+    %% ──────────────────────────────────────────
+    %% ENTIDADES
+    %% ──────────────────────────────────────────
+
+    COMPANY {
+        string id PK "Identificador UUID"
+        string name "Nombre comercial"
+        string slug "Identificador corto único (UNIQUE)"
+        string logo_url "Logo (URL)"
+        string plan "Plan: STARTER, GROWTH, CHAIN"
+        boolean is_active "Activo"
+    }
+
+    COMPANY_ROLE {
+        string id PK "Identificador UUID"
+        string company_id FK "Empresa"
+        string person_id FK "Persona"
+        string role "Rol: OWNER, ADMIN"
+        string status "Estado: INVITED, ACTIVE, DISABLED"
+    }
+
+    BRANCH {
+        string id PK "Identificador UUID"
+        string company_id FK "Empresa"
+        string name "Nombre (Ej: Vitacura, Providencia)"
+        string district "Comuna"
+        string city "Ciudad (default Santiago)"
+        string address "Dirección"
+        string phone "Teléfono"
+        string[] cuisine_tags "Etiquetas de cocina (TEXT[])"
+        string cover_image_url "Foto de portada"
+        boolean is_active "Activo"
+        decimal service_charge_pct "Recargo servicio % (default 10)"
+        string timezone "Zona horaria (default America/Santiago)"
+        jsonb opening_hours "Horarios de apertura (JSONB)"
+        int table_grid_rows "Filas de grilla (default 4)"
+        int table_grid_cols "Columnas de grilla (default 4)"
+    }
+
+    BRANCH_ROLE {
+        string id PK "Identificador UUID"
+        string branch_id FK "Sucursal"
+        string person_id FK "Persona"
+        string role "Rol: OWNER, MANAGER, STAFF, KITCHEN"
+        string status "Estado: ACTIVE, INACTIVE"
+        string pin_code "Hash BCrypt del PIN antifraude (NULLABLE)"
+    }
+
+    PERSON {
+        string id PK "Identificador UUID"
+        string email "Correo (UNIQUE NOT NULL)"
+        string password_hash "Hash BCrypt de contraseña"
+        boolean is_active "Activo (default true)"
+    }
+
+    PERSON_PROFILE {
+        string id PK "Identificador UUID"
+        string person_id FK "Persona (UNIQUE — 1:1)"
+        string full_name "Nombre completo"
+        string phone "Teléfono"
+        string avatar_url "Foto de perfil"
+        date birthday "Fecha de nacimiento"
+        string[] allergies "Alergias declaradas (TEXT[] — Escudo de Alergias)"
+        string preferred_payment "Pago preferido (Ej: card)"
+        string role "Rol: guest, staff, manager, owner, superadmin"
+    }
+
+    DINING_FLOOR {
+        string id PK "Identificador UUID"
+        string branch_id FK "Sucursal"
+        string name "Nombre (default Principal)"
+        jsonb layout "Disposición visual (JSONB)"
+        int display_order "Orden de visualización"
+    }
+
+    MAP_ZONE {
+        string id PK "Identificador UUID"
+        string floor_id FK "Piso"
+        string name "Zona: Salón, Terraza, Barra"
+        int x "Posición X en el plano"
+        int y "Posición Y en el plano"
+        int w "Ancho"
+        int h "Alto"
+        string color "Color de fondo (hex)"
+        int z_index "Orden de capa"
+        boolean is_label_only "Solo es etiqueta visual (sin mesa)"
+        int sort_order "Orden de renderizado"
+    }
+
+    DINING_TABLE {
+        string id PK "Identificador UUID"
+        string branch_id FK "Sucursal"
+        string floor_id FK "Piso"
+        string name "Nombre (Ej: Mesa 1)"
+        string zone "Zona descriptiva"
+        int capacity "Capacidad de comensales (default 4)"
+        string status "Estado: AVAILABLE, OCCUPIED, RESERVED, CLEANING"
+        string qr_token "Token QR único (UNIQUE NOT NULL)"
+        int position_x "Posición X en el plano (default 100)"
+        int position_y "Posición Y en el plano (default 100)"
+        string shape "Forma: rect, circle"
+    }
+
+    DINE_SESSION {
+        string id PK "Identificador UUID"
+        string table_id FK "Mesa (DINING_TABLE)"
+        string branch_id FK "Sucursal (denorm RLS)"
+        string status "Estado: OPEN, CLOSING, CLOSED"
+        int guest_count "N° comensales (default 1)"
+        string opened_by FK "Persona que abrió la sesión"
+        timestamp started_at "Inicio de la sesión"
+        timestamp ended_at "Fin de la sesión (NULLABLE)"
+    }
+
+    DINE_GUEST {
+        string id PK "Identificador UUID"
+        string dine_session_id FK "Sesión de mesa"
+        string person_id FK "Persona (NULLABLE si anónimo)"
+        string display_name "Nombre visible (Ej: Ana)"
+        string temp_label "Etiqueta temporal (Ej: Cliente 1)"
+        string merged_into_id "Fusión de cuentas (self-FK NULLABLE)"
+        timestamp joined_at "Se unió a la sesión"
+        timestamp left_at "Se retiró (NULLABLE)"
+    }
+
+    KITCHEN_TICKET {
+        string id PK "Identificador UUID"
+        string order_id FK "Comanda"
+        string branch_id FK "Sucursal (denorm RLS)"
+        string table_name "Nombre de mesa (snapshot)"
+        string status "Estado: OPEN, IN_PROGRESS, DONE, CANCELLED"
+        string priority "Prioridad: normal, rush"
+        string items_summary "Resumen legible de ítems"
+        string notes "Notas adicionales"
+        timestamp started_at "Inicio de preparación"
+        timestamp completed_at "Fin de preparación (NULLABLE)"
+    }
+
+    MENU_SECTION {
+        string id PK "Identificador UUID"
+        string branch_id FK "Sucursal"
+        string name "Nombre (Ej: Entradas, Fondos)"
+        string description "Descripción de la sección"
+        int display_order "Orden de visualización (default 0)"
+        boolean is_active "Activo"
+    }
+
+    DISH {
+        string id PK "Identificador UUID"
+        string section_id FK "Sección de carta"
+        string branch_id FK "Sucursal (denorm RLS)"
+        string name "Nombre del plato"
+        string description "Descripción"
+        decimal price "Precio en CLP (CHECK >= 0)"
+        string image_url "Foto del plato"
+        boolean is_available "Disponible — Lista 86 (default true)"
+        string[] tags "Etiquetas descriptivas (TEXT[])"
+        string[] allergens "Alérgenos (TEXT[] — Escudo de Alergias)"
+        int display_order "Orden en el catálogo"
+    }
+
+    ORDER {
+        string id PK "Identificador UUID"
+        string branch_id FK "Sucursal (denorm RLS)"
+        string dine_session_id FK "Sesión de mesa"
+        string person_id FK "Persona (NULLABLE si anónimo)"
+        string status "Estado: PLACED, ACCEPTED, IN_PREPARATION, READY, SERVED, CANCELLED"
+        decimal subtotal "Subtotal de la comanda"
+        decimal total "Total de la comanda"
+        int item_count "Cantidad de ítems"
+        string notes "Notas generales"
+        string channel "Canal: QR, STAFF, POS"
+    }
+
+    ORDER_LINE {
+        string id PK "Identificador UUID"
+        string order_id FK "Comanda"
+        string branch_id FK "Sucursal (denorm RLS)"
+        string dish_id FK "Plato"
+        string name "Nombre del plato (snapshot al ordenar)"
+        decimal unit_price "Precio unitario (snapshot al ordenar)"
+        int quantity "Cantidad (CHECK > 0)"
+        decimal line_total "Total de la línea"
+        string item_notes "Notas del ítem"
+        string[] modifiers "Modificadores (Ej: Término Medio) (TEXT[])"
+        string status "Estado: QUEUED, PREPARING, READY, SERVED, CANCELLED"
+        string dine_guest_id FK "Comensal asignado (split de cuenta — NULLABLE)"
+        boolean paid "Pagado por ítem o comensal (default false)"
+        string course_type "Tipo de tiempo: ENTRADA, FONDO, POSTRE (NULLABLE)"
+        string course_status "Estado del tiempo: PENDING, MARCHING, DONE (NULLABLE)"
+    }
+
+    BILL {
+        string id PK "Identificador UUID"
+        string dine_session_id FK "Sesión de mesa"
+        string branch_id FK "Sucursal (denorm RLS)"
+        string status "Estado: OPEN, PAID, VOID"
+        decimal subtotal "Subtotal"
+        decimal service_charge_pct "Recargo servicio % (default 10)"
+        decimal service_charge_amount "Monto del recargo"
+        decimal discount_amount "Descuento aplicado (default 0)"
+        decimal tip_total "Propina total"
+        decimal total_amount "Total con recargo e impuestos"
+        decimal paid_total "Total ya pagado"
+        decimal balance_due "Saldo pendiente (CHECK >= 0)"
+        int version "Control de concurrencia optimista (@Version)"
+    }
+
+    BILL_LINE {
+        string id PK "Identificador UUID"
+        string bill_id FK "Cuenta"
+        string branch_id FK "Sucursal (denorm RLS)"
+        string order_line_id FK "Línea de comanda"
+        string dish_id FK "Plato"
+        string dine_guest_id FK "Comensal asignado (NULLABLE)"
+        string name "Nombre del plato (snapshot)"
+        int quantity "Cantidad"
+        decimal unit_price "Precio unitario (congelado al facturar)"
+        decimal line_total "Total de la línea"
+        decimal paid_qty "Cantidad ya pagada (fraccionado)"
+        decimal paid_amount "Monto ya pagado"
+        string status "Estado: ACTIVE, VOID"
+        string[] modifiers "Modificadores (snapshot)"
+        string notes "Notas"
+    }
+
+    PAYMENT {
+        string id PK "Identificador UUID"
+        string bill_id FK "Cuenta"
+        string branch_id FK "Sucursal (denorm RLS)"
+        string person_id FK "Persona que paga (NULLABLE si anónimo)"
+        decimal amount "Monto del pago (CHECK > 0)"
+        decimal tip_amount "Propina incluida"
+        decimal total_amount "Total cobrado (amount + tip)"
+        string method "Método: WEBPAY, MERCADO_PAGO, APPLE_PAY, GOOGLE_PAY, CARD, CASH, TRANSFER"
+        string status "Estado: PENDING, COMPLETED, FAILED, REFUNDED"
+        string provider "Proveedor: transbank, mercadopago, applepay, googlepay, stripe, manual"
+        string buy_order "Orden de compra Webpay (NULLABLE)"
+        string authorization_code "Código de autorización del gateway"
+        string external_transaction_id "ID transacción externa (UNIQUE — idempotencia)"
+        jsonb gateway_response_json "Respuesta completa del gateway (JSONB)"
+        string currency "Moneda (default CLP)"
+        timestamp paid_at "Fecha y hora del pago"
+    }
+
+    PAYMENT_METHOD {
+        string id PK "Identificador UUID"
+        string person_id FK "Persona"
+        string provider "Proveedor: WEBPAY, MERCADO_PAGO, APPLE_PAY, GOOGLE_PAY, CARD, CASH, TRANSFER"
+        string brand "Marca: VISA, Mastercard"
+        string last4 "Últimos 4 dígitos"
+        int exp_month "Mes de vencimiento"
+        int exp_year "Año de vencimiento"
+        string cardholder_name "Nombre del titular"
+        string token "Token seguro del gateway (NUNCA PAN)"
+        string wallet_id "ID de wallet (Apple Pay / Google Pay — NULLABLE)"
+        boolean is_default "Es el método por defecto"
+    }
+
+    TAX_DOCUMENT {
+        string id PK "Identificador UUID"
+        string bill_id FK "Cuenta"
+        string branch_id FK "Sucursal (denorm RLS)"
+        string type "Tipo: BOLETA, FACTURA"
+        string buyer_rut "RUT del comprador (NULLABLE — solo factura)"
+        string buyer_business_name "Razón social (NULLABLE — solo factura)"
+        string folio_number "Folio SII (UNIQUE por sucursal)"
+        string sii_status "Estado SII: ISSUED, PENDING, CONTINGENCY"
+        string pdf_url "URL del PDF del documento (NULLABLE)"
+        timestamp issued_at "Fecha y hora de emisión"
+    }
+
+    RESERVATION {
+        string id PK "Identificador UUID"
+        string branch_id FK "Sucursal"
+        string person_id FK "Persona (NULLABLE — reserva sin cuenta)"
+        string guest_name "Nombre del invitado"
+        string guest_email "Correo del invitado"
+        string guest_phone "Teléfono del invitado"
+        int party_size "N° personas (CHECK > 0)"
+        date reservation_date "Fecha de la reserva"
+        time reservation_time "Hora de la reserva"
+        string status "Estado: CONFIRMED, WAITLISTED, CANCELLED, COMPLETED, NO_SHOW"
+        int waitlist_priority "Prioridad en lista de espera"
+        string dining_table_id FK "Mesa asignada (NULLABLE — se asigna al llegar)"
+        string notes "Notas adicionales"
+    }
+
+    SERVICE_REQUEST {
+        string id PK "Identificador UUID"
+        string branch_id FK "Sucursal (denorm RLS)"
+        string dine_session_id FK "Sesión de mesa"
+        string table_name "Nombre de mesa (snapshot)"
+        string request_type "Tipo: WAITER, BILL, WATER, OTHER"
+        string status "Estado: OPEN, ACCEPTED, RESOLVED"
+        string accepted_by FK "Persona que aceptó (NULLABLE)"
+        timestamp accepted_at "Aceptada en (NULLABLE)"
+        timestamp resolved_at "Resuelta en (NULLABLE)"
+    }
+
+    DINE_FEEDBACK {
+        string id PK "Identificador UUID"
+        string dine_session_id FK "Sesión de mesa"
+        string branch_id FK "Sucursal (denorm RLS)"
+        string person_id FK "Persona (NULLABLE si anónimo)"
+        int rating "Calificación (CHECK 1 a 5)"
+        string comment "Comentario libre (NULLABLE)"
+    }
+
+    FAVORITE {
+        string id PK "Identificador UUID"
+        string person_id FK "Persona"
+        string branch_id FK "Sucursal"
+        timestamp created_at "Fecha de marcado como favorito"
+    }
+
+    STOCK_ITEM {
+        string id PK "Identificador UUID"
+        string branch_id FK "Sucursal"
+        string name "Nombre del insumo (Ej: Carne Lomo, Queso Cheddar)"
+        float stock_quantity "Cantidad actual en stock"
+        string unit "Unidad: gramos, unidades, litros"
+    }
+
+    RECIPE_INGREDIENT {
+        string id PK "Identificador UUID"
+        string dish_id FK "Plato"
+        string stock_item_id FK "Insumo"
+        float quantity_required "Cantidad requerida por porción (escandallo)"
+    }
+
+    EXCEPTION_LOG {
+        string id PK "Identificador UUID"
+        string branch_id FK "Sucursal (denorm RLS)"
+        string person_id FK "Persona que ejecutó la acción"
+        string event_type "Tipo: ITEM_VOID_AFTER_KITCHEN, ITEM_VOID_PRE_KITCHEN, MANUAL_DISCOUNT, DRAWER_OPENED_NO_SALE, REFUND_ISSUED, PIN_AUTH_FAILED"
+        string reason "Motivo de lista cerrada (NULLABLE si event_type=PIN_AUTH_FAILED)"
+        decimal amount "Monto involucrado (NULLABLE)"
+        string order_line_id FK "Línea anulada (NULLABLE)"
+        string bill_id FK "Cuenta involucrada (NULLABLE)"
+        jsonb metadata "Contexto adicional (JSONB)"
+        timestamp created_at "Fecha y hora del evento"
+    }
+
+    SII_CAF_POOL {
+        string id PK "Identificador UUID"
+        string branch_id FK "Sucursal"
+        string document_type "Tipo: BOLETA, FACTURA (CHECK IN)"
+        int folio_from "Folio inicial del rango autorizado"
+        int folio_to "Folio final del rango autorizado"
+        int last_used_folio "Último folio utilizado (default = folio_from - 1)"
+        text caf_xml "XML del Código de Autorización de Folios del SII"
+        boolean is_active "Rango activo (solo uno activo por tipo por sucursal)"
+        timestamp authorized_at "Autorizado por el SII en"
+        timestamp expires_at "Vence en (NULLABLE)"
+    }

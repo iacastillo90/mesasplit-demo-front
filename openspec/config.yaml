@@ -1,0 +1,60 @@
+# openspec/config.yaml — MesaSplit
+schema: spec-driven
+
+# Shared source of truth between agents (opencode + Antigravity).
+# NOTE: openspec/ is the SHARED, versionable source of truth. Engram is
+# LOCAL to opencode and NOT visible to other agents. Never put the only
+# copy of a decision in Engram if another agent must see it.
+context: |
+  Project: MesaSplit — demo web app (restaurant bill splitting).
+  Views: Portal/Hub, Client (Mesa Virtual), Waiter (Garzón), KDS Kitchen
+    (dark mode), Local Admin Radar, Super Admin placeholder.
+  Stack: JS/JSX — React 18.3 + Vite 6 + Tailwind 3.4 + React Router v6 +
+    Zustand v5 (persist) + Vitest 3 + Testing Library + ESLint/Prettier.
+    Realtime demo: BroadcastChannel (same-device); socket.io deferred.
+  Conventions: AGENTS.md — Spanish comments per line, Spanish conventional
+    commits with rationale. openspec/ + .atl/ + AGENTS.md gitignored.
+  Multi-agent: opencode + Antigravity collaborate on the same files.
+    openspec/ is the shared source of truth; Engram is local to opencode.
+
+strict_tdd: true
+
+testing:
+  runner: vitest
+  layers:
+    unit: true
+    integration: true
+    e2e: false
+  coverage: false
+  quality:
+    linter: true
+    type_checker: false
+    formatter: true
+  note: >-
+    Vitest 3 + Testing Library active (jsdom). 21 tests green across 6 suites
+    as of setup-stack 4.7. Strict TDD enabled — new behavior starts RED.
+
+rules:
+  proposal:
+    - Include a rollback plan for risky changes
+    - Respect multi-agent constraints: reference shared spec files in openspec/
+  specs:
+    - Use Given/When/Then for scenarios
+    - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY)
+  design:
+    - Include sequence diagrams for complex flows
+    - Document architecture decisions with rationale
+  tasks:
+    - Group by phase, use hierarchical numbering
+    - Keep tasks completable in one session
+  apply:
+    guidelines:
+      - Follow existing code patterns
+    tdd: true
+    test_command: "npm run test"
+  verify:
+    test_command: "npm run test"
+    build_command: "npm run build"
+    coverage_threshold: 0
+  archive:
+    - Warn before merging destructive deltas
